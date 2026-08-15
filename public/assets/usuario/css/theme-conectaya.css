@@ -1,0 +1,150 @@
+/* ============================================================
+   TEMA CONECTAYA — Unifica los colores del panel de usuario
+   con la paleta naranja / vino de la página principal.
+   Reemplaza los tonos negros/grises de la plantilla base
+   (aside, hero, botones por defecto de Bulma) por la
+   identidad de marca: naranja (#ff7a18 → #ffb347) y vino
+   oscuro (#3d0f1b → #7a2035).
+   Este archivo se carga AL FINAL para tener prioridad.
+   ============================================================ */
+
+:root {
+  --cy-orange: #ff7a18;
+  --cy-orange-light: #ffb347;
+  --cy-wine-dark: #3d0f1b;
+  --cy-wine: #5b1524;
+  --cy-wine-light: #7a2035;
+}
+
+/* ===== SIDEBAR (antes gris/negro #2e323a, #17191e, #282c33) ===== */
+aside.aside {
+  background: linear-gradient(180deg, var(--cy-wine-dark) 0%, var(--cy-wine) 55%, var(--cy-wine-light) 100%) !important;
+}
+
+aside.aside .aside-tools {
+  background-color: rgba(0, 0, 0, 0.18) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+aside.aside .menu-list li ul {
+  background-color: rgba(0, 0, 0, 0.16) !important;
+}
+
+.menu-list a {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.menu-list a:hover {
+  background-color: rgba(255, 122, 24, 0.18) !important;
+  color: #fff !important;
+}
+
+.menu-list a.is-active {
+  background: linear-gradient(45deg, var(--cy-orange), var(--cy-orange-light)) !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+aside.aside .menu-list li ul li a.is-active:not(:hover) {
+  background: rgba(255, 122, 24, 0.15) !important;
+  color: #fff !important;
+}
+
+aside.aside .menu-label {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Logo / marca dentro del sidebar (si el tema trae imagen sobre fondo claro) */
+aside.aside .image,
+aside.aside .aside-tools-label {
+  color: #fff;
+}
+
+/* ===== BOTONES POR DEFECTO DE BULMA (turquesa / azul → naranja / vino) ===== */
+.button.is-primary,
+.tag.is-primary,
+.notification.is-primary {
+  background-color: var(--cy-orange) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+.button.is-primary:hover,
+.button.is-primary:focus {
+  background-color: #e86a0a !important;
+}
+
+.button.is-info,
+.tag.is-info,
+.notification.is-info {
+  background-color: var(--cy-wine-light) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+.button.is-info:hover,
+.button.is-info:focus {
+  background-color: var(--cy-wine) !important;
+}
+
+/* ===== ENLACES / FOCOS (antes azul índigo por defecto de Bulma) ===== */
+a {
+  color: var(--cy-wine-light);
+}
+a:hover {
+  color: var(--cy-orange);
+}
+
+.select select:focus,
+.textarea:focus,
+.input:focus,
+.select select.is-focused,
+.is-focused.textarea,
+.is-focused.input {
+  border-color: var(--cy-orange) !important;
+  box-shadow: 0 0 0 0.125em rgba(255, 122, 24, 0.25) !important;
+}
+
+/* ===== BREADCRUMB EN LA BARRA SUPERIOR ===== */
+/* Indica en qué página estás, junto al botón de "Cerrar Sesión" */
+.navbar .navbar-start {
+  display: flex !important;
+  align-items: center;
+}
+
+.breadcrumb-nav {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #6b6b6b;
+}
+
+.breadcrumb-nav .mdi-map-marker-outline {
+  color: var(--cy-orange);
+  font-size: 1.05rem;
+}
+
+.breadcrumb-nav .crumb-section {
+  color: #9a9a9a;
+  font-weight: 500;
+}
+
+.breadcrumb-nav .crumb-sep {
+  font-size: 1rem;
+  color: #c8c8c8;
+}
+
+.breadcrumb-nav .crumb-page {
+  color: var(--cy-wine-light);
+  font-weight: 700;
+}
+
+@media (max-width: 1023px) {
+  .breadcrumb-nav {
+    font-size: 0.8rem;
+  }
+}
+
+/* ===== SCROLLBAR DEL SIDEBAR (opcional, look coherente) ===== */
+aside.aside::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+}

@@ -1,0 +1,210 @@
+/* switch.css - Estilos para el interruptor Trabajador/Empleador en el sidebar */
+
+/* ===== INTERRUPTOR EN SIDEBAR (AJUSTADO Y COMPACTO) ===== */
+.sidebar-role-switch {
+  padding: 10px 16px 10px 16px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-role-switch .switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+}
+
+/* Fondo deslizante */
+.sidebar-role-switch .switch-row .active-bg {
+  position: absolute;
+  top: 2px;
+  height: calc(100% - 4px);
+  border-radius: 5px;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 0;
+  width: calc(50% - 2px);
+}
+
+.sidebar-role-switch .switch-row .active-bg.worker-bg {
+  left: 2px;
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.10);
+}
+
+.sidebar-role-switch .switch-row .active-bg.employer-bg {
+  left: calc(50% + 0px);
+  background: rgba(96, 165, 250, 0.15);
+  border: 1px solid rgba(96, 165, 250, 0.10);
+}
+
+.sidebar-role-switch .role-text {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.20);
+  transition: all 0.35s ease;
+  white-space: nowrap;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  flex: 1;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  font-family: 'Nunito', sans-serif;
+}
+
+.sidebar-role-switch .role-text.active {
+  color: #fff;
+}
+
+/* Trabajador activo */
+.sidebar-role-switch .role-text.worker-text.active {
+  color: #34d399;
+}
+
+/* Empleador activo */
+.sidebar-role-switch .role-text.employer-text.active {
+  color: #60a5fa;
+}
+
+/* Efecto hover */
+.sidebar-role-switch .role-text:not(.active):hover {
+  color: rgba(255, 255, 255, 0.50);
+}
+
+/* ===== TOOLTIP ===== */
+.role-tooltip-sidebar {
+  position: fixed;
+  bottom: 80px;
+  left: 70px;
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  min-width: 160px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.06);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  transform: translateY(6px);
+  z-index: 999;
+}
+
+.role-tooltip-sidebar.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.role-tooltip-sidebar::before {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 30px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #1e293b;
+}
+
+.role-tooltip-sidebar .tooltip-title {
+  font-weight: 700;
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+}
+
+.role-tooltip-sidebar .tooltip-title .highlight-worker {
+  color: #34d399;
+}
+
+.role-tooltip-sidebar .tooltip-title .highlight-employer {
+  color: #60a5fa;
+}
+
+.role-tooltip-sidebar .tooltip-desc {
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .sidebar-role-switch {
+    padding: 8px 12px 8px 12px;
+  }
+  .sidebar-role-switch .switch-row {
+    padding: 2px;
+    border-radius: 5px;
+  }
+  .sidebar-role-switch .switch-row .active-bg {
+    top: 2px;
+    height: calc(100% - 4px);
+    border-radius: 4px;
+  }
+  .sidebar-role-switch .switch-row .active-bg.worker-bg {
+    left: 2px;
+  }
+  .sidebar-role-switch .switch-row .active-bg.employer-bg {
+    left: calc(50% + 0px);
+  }
+  .sidebar-role-switch .role-text {
+    font-size: 0.55rem;
+    padding: 4px 6px;
+    letter-spacing: 0.5px;
+  }
+  .role-tooltip-sidebar {
+    left: 16px;
+    bottom: 70px;
+    min-width: 140px;
+    padding: 8px 12px;
+  }
+  .role-tooltip-sidebar::before {
+    left: 20px;
+  }
+}
+
+/* ===== AVISO DE ROL ===== */
+.role-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f1f5f9;
+  padding: 8px 18px;
+  border-radius: 30px;
+  margin: 0 0 16px 0;
+  font-size: 0.85rem;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.role-notice .notice-icon {
+  font-size: 1.1rem;
+}
+
+.role-notice .notice-role {
+  font-weight: 700;
+}
+.role-notice .notice-role.worker {
+  color: #0d9488;
+}
+.role-notice .notice-role.employer {
+  color: #2563eb;
+}
+
+@media (max-width: 768px) {
+  .role-notice {
+    font-size: 0.7rem;
+    padding: 4px 12px;
+    flex-wrap: wrap;
+  }
+}

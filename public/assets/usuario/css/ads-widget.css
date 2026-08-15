@@ -1,0 +1,178 @@
+/* =====================================================================
+   ANUNCIOS LATERALES - "Negocios destacados de tu municipio"
+   Mismo look & feel que las columnas fijas de la página principal
+   (index.html: .anuncio-izq / .anuncio-der / .ad-box / .ad-titulo).
+   Se inyectan con js/ads-widget.js en todas las páginas del dashboard.
+
+   La columna izquierda se recorre 14rem (ancho del sidebar del
+   dashboard, aside.aside.is-expanded { width: 14rem; }) para no
+   taparlo.
+   ===================================================================== */
+
+.anuncio-izq,
+.anuncio-der {
+  position: fixed;
+  top: 80px;
+  width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 30;
+}
+
+.anuncio-izq {
+  left: calc(14rem + 10px);
+}
+
+.anuncio-der {
+  right: 10px;
+}
+
+.ad-titulo {
+  background: #fff;
+  width: 185px;
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, .10);
+}
+
+.ad-titulo h5 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #333;
+}
+
+.linea-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.linea-titulo span {
+  width: 26px;
+  height: 2px;
+  background: #f39c12;
+}
+
+.linea-titulo small {
+  font-size: 11px;
+  color: #555;
+  font-weight: 600;
+}
+
+.ad-box {
+  height: 200px;
+  width: 185px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f0f0f0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, .15);
+  position: relative;
+}
+
+.ad-box img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity .8s ease-in-out;
+  cursor: zoom-in;
+  pointer-events: none;
+}
+
+.ad-box img.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Se ocultan en pantallas angostas para no tapar el contenido, igual
+   que en index.html (ahí se ocultan bajo 1200px; aquí un poco más
+   tarde porque el sidebar del dashboard ya ocupa espacio a la izq). */
+@media (max-width: 1300px) {
+
+  .anuncio-izq,
+  .anuncio-der {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   IMPORTANTE: igual que .contenido en index.html reserva espacio de
+   cada lado para que los anuncios NUNCA se encimen con el contenido,
+   aquí hacemos lo mismo con #app (el contenedor raíz del dashboard).
+   #app no tiene ancho fijo, así que estos márgenes simplemente
+   "empujan" el contenido normal (title-bar, main-section, footer)
+   hacia adentro. El navbar y el aside son position:fixed, así que
+   ellos ignoran este margen y se quedan pegados a los bordes, tal
+   como debe ser.
+   --------------------------------------------------------------------- */
+@media (min-width: 1301px) {
+  #app {
+    margin-left: 200px;
+    margin-right: 200px;
+  }
+}
+
+/* =====================================================================
+   MODAL: ver anuncio en grande al tocarlo
+   Lo crea solo ads-widget.js, en cualquier página del dashboard.
+   ===================================================================== */
+.modal-anuncio-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  cursor: zoom-out;
+}
+
+.modal-anuncio-overlay.activo {
+  display: flex;
+}
+
+.modal-anuncio-overlay img {
+  max-width: 90%;
+  max-height: 85vh;
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  cursor: default;
+  animation: modalAnuncioAparece 0.2s ease-out;
+}
+
+@keyframes modalAnuncioAparece {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-anuncio-cerrar {
+  position: fixed;
+  top: 18px;
+  right: 22px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.modal-anuncio-cerrar:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
