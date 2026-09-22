@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Acerca de</title>
   <!-- Font Awesome para iconos (alternativa a los iconos personalizados) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -19,15 +20,14 @@
   <style>
     /* ===== CONTENIDO ===== */
     .contenido {
-      margin-left: 230px;
+      margin-left: 10px;
       margin-right: 230px;
       padding: 0;
       background: #fff;
       min-height: 100vh;
     }
 
-    /* ===== COLUMNAS DE ANUNCIOS ===== */
-    .anuncio-izq,
+    /* ===== COLUMNA DE ANUNCIOS (solo derecha) ===== */
     .anuncio-der {
       position: fixed;
       top: 10px;
@@ -36,13 +36,6 @@
       flex-direction: column;
       gap: 15px;
       z-index: 999;
-    }
-
-    .anuncio-izq {
-      left: 10px;
-    }
-
-    .anuncio-der {
       right: 10px;
     }
 
@@ -76,9 +69,30 @@
     }
 
     /* ===== RESPONSIVE ===== */
+
+    /* Pantallas medianas (laptops 14"-15", ~1201px a 1600px):
+       la columna se achica en vez de verse igual de grande que en
+       un monitor de escritorio de 1920px. */
+    @media (min-width: 1201px) and (max-width: 1600px) {
+      .anuncio-der {
+        width: 180px;
+      }
+
+      .ad-box {
+        height: 180px;
+      }
+
+      .ad-box img {
+        height: 180px;
+      }
+
+      .contenido {
+        margin-right: 200px;
+      }
+    }
+
     @media(max-width:1200px) {
 
-      .anuncio-izq,
       .anuncio-der {
         display: none;
       }
@@ -142,7 +156,7 @@
 
     /* Botón */
     .btn-anunciar {
-      background: #ffc107;
+      background: #000000;
       color: #000;
       text-decoration: none;
       padding: 10px 18px;
@@ -397,36 +411,8 @@
   </div>
 
   <!-- ========================= -->
-  <!-- ANUNCIOS IZQUIERDOS -->
-  <!-- ========================= -->    <div class="anuncio-izq">
-
-        <div class="ad-titulo">
-            <h5>NEGOCIOS DESTACADOS</h5>
-            <div class="linea-titulo">
-                <span></span>
-                <small>de tu municipio</small>
-                <span></span>
-            </div>
-        </div>
-
-        @forelse ($anunciosIzquierda as $anuncio)
-          @if ($anuncio->imagenes->count())
-            <div class="ad-box">
-              <div id="adLeft{{ $anuncio->orden }}" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                  @foreach ($anuncio->imagenes as $index => $img)
-                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
-                      <img src="{{ $img->imagen }}">
-                    </div>
-                  @endforeach
-                </div>
-              </div>
-            </div>
-          @endif
-        @empty
-        @endforelse
-
-    </div>
+  <!-- ANUNCIOS (solo columna derecha) -->
+  <!-- ========================= -->
 
     <!-- ========================= -->
     <!-- ANUNCIOS DERECHOS -->
@@ -448,7 +434,7 @@
               <div id="adRight{{ $anuncio->orden }}" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                   @foreach ($anuncio->imagenes as $index => $img)
-                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
+                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="6000">
                       <img src="{{ $img->imagen }}">
                     </div>
                   @endforeach
@@ -484,7 +470,7 @@
         <!-- Contact & Language -->
         <div class="header__right d-flex align-items-center">
           <div class="me-3">
-            <i class="icon-telephone"></i> Linea directa: <strong>2331014306</strong>
+            <i class="icon-telephone"></i> Línea directa: <strong>2331014306</strong>
           </div>
           <div>
             <select class="form-select form-select-sm language-select">
@@ -554,8 +540,8 @@
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="container text-center">
-        <h1 class="display-3 fw-bold">Acerca de Trabajo Express</h1>
-        <p class="lead fs-3">Conectamos talento con oportunidades</p>
+        <h1 class="display-6 fw-bold">Acerca de "Sinteczate"</h1>
+        <p class="lead fs-6">Conectamos talento con oportunidades</p>
       </div>
     </section>
 
@@ -564,21 +550,22 @@
       <div class="container">
         <div class="row align-items-center">
           <div class="col-md-6">
-            <h2 class="fw-bold" style="color: #2c3e50;">Cómo se originó esta pagina?</h2>
+            <h2 class="fw-bold" style="color: #2c3e50;">Cómo se originó esta página?</h2>
             <p class="fs-5" style="text-align: justify;">
-              Trabajo Express cuenta con una misión clara:
-              <strong class="text-danger">facilitar la conexión entre profesionales y clientes</strong>
-              de manera rápida, segura y confiable.
+              ¡SINTECZATE! nace con una misión clara:
+              <strong class="text-danger">facilitar la conexión entre quienes ofrecen su trabajo y quienes lo necesitan</strong>,
+              de manera rápida, segura y confiable, para impulsar la economía de Zacapoaxtla desde adentro.
             </p>
 
             <p style="text-align: justify;">
-              En Trabajo Express creemos que el talento local merece un espacio propio para crecer y conectar.
+              Creemos que el talento local merece un espacio propio para crecer y conectar.
               Somos una plataforma digital creada en Zacapoaxtla, inspirada en la fuerza de su comunidad,
-              sus tradiciones y su espíritu emprendedor.
+              sus tradiciones y su espíritu emprendedor — para que el trabajo, y el dinero que genera,
+              se quede y crezca aquí mismo.
             </p>
 
             <p class="fw-semibold" style="text-align: justify;">
-              Hoy somos una comunidad en crecimiento que sigue transformando vidas.
+              Hoy somos una comunidad en crecimiento que sigue transformando vidas, un empleo a la vez.
             </p>
           </div>
           <div class="col-md-6">
@@ -600,7 +587,7 @@
             <div class="card mission-card text-center p-4 h-100">
               <i class="bi bi-bullseye values-icon"></i>
               <h3 class="fw-bold mt-3">Misión</h3>
-              <p>Facilitar la conexión entre profesionales y clientes de manera rápida, segura y transparente.</p>
+              <p>Facilitar la conexión entre trabajadores y empleadores de Zacapoaxtla, de manera rápida, segura y transparente, para impulsar la economía local.</p>
             </div>
           </div>
 
@@ -608,7 +595,7 @@
             <div class="card mission-card text-center p-4 h-100">
               <i class="bi bi-eye values-icon"></i>
               <h3 class="fw-bold mt-3">Visión</h3>
-              <p>Ser la plataforma líder en empleabilidad y servicios locales en América Latina.</p>
+              <p>Ser la plataforma de referencia para encontrar empleo y servicios locales, ayudando a que la economía de Zacapoaxtla y sus alrededores crezca desde adentro.</p>
             </div>
           </div>
 
@@ -633,9 +620,9 @@
             <div class="d-flex gap-4 p-4 border rounded-4 shadow-sm h-100">
               <i class="bi bi-person-workspace fs-1" style="color: #2c3e50;"></i>
               <div>
-                <h4 class="fw-bold">Para profesionales</h4>
-                <p class="fs-5">Publica tus servicios, muestra tu portafolio y encuentra clientes que necesitan tu
-                  talento.</p>
+                <h4 class="fw-bold">Para quienes ofrecen su trabajo</h4>
+                <p class="fs-5">Publica tus servicios u oficios, date a conocer y encuentra clientes que necesitan
+                  justo lo que tú sabes hacer.</p>
                 <a href="#" class="btn dropdown-categorias">Quiero ofrecer servicios</a>
               </div>
             </div>
@@ -645,8 +632,8 @@
             <div class="d-flex gap-4 p-4 border rounded-4 shadow-sm h-100">
               <i class="bi bi-people fs-1" style="color: #2c3e50;"></i>
               <div>
-                <h4 class="fw-bold">Para clientes</h4>
-                <p class="fs-5">Encuentra profesionales calificados, compara precios y contrata con total confianza.</p>
+                <h4 class="fw-bold">Para quienes buscan contratar</h4>
+                <p class="fs-5">Encuentra trabajadores de tu zona, revisa sus calificaciones y contrata con confianza.</p>
                 <a href="#" class="btn dropdown-categorias">Quiero contratar</a>
               </div>
             </div>
@@ -655,78 +642,136 @@
       </div>
     </section>
 
-    <!-- Números -->
-    <section class="py-5 bg-light">
-      <div class="container">
-        <h2 class="text-center fw-bold mb-5" style="color: #2c3e50;">Trabajo Express en números</h2>
-
-        <div class="row text-center">
-          <div class="col-md-3">
-            <div class="stats-box">
-              <h2 class="display-3 fw-bold text-white bg-dark">10K+</h2>
-              <p class="fs-5">Profesionales</p>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stats-box">
-              <h2 class="display-3 fw-bold text-white bg-dark">5K+</h2>
-              <p class="fs-5">Clientes</p>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stats-box">
-              <h2 class="display-3 fw-bold text-white bg-dark">15K+</h2>
-              <p class="fs-5">Servicios</p>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stats-box">
-              <h2 class="display-3 fw-bold text-white bg-dark">4.8</h2>
-              <p class="fs-5">Calificación</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- Testimonios -->
-    <section class="py-5">
+    <section class="py-5" id="testimonios">
       <div class="container">
-        <h2 class="text-center fw-bold mb-5" style="color: #2c3e50;">Lo que dicen de nosotros</h2>
+        <h2 class="text-center fw-bold mb-2" style="color: #2c3e50;">Lo que dicen de nosotros</h2>
+        <p class="text-center text-muted mb-5">Reseñas reales, escritas por quienes ya usan ¡SINTECZATE!</p>
 
-        <div class="row">
-          <div class="col-md-6 mb-4">
-            <div class="card border-0 shadow p-4 h-100">
-              <i class="bi bi-quote display-1 text-info opacity-25"></i>
-              <p class="fs-5">"Gracias a Trabajo Express encontré clientes para mi negocio de reparaciones. Mi
-                emprendimiento creció un 200%."</p>
-              <div class="d-flex align-items-center mt-3">
-                <i class="bi bi-person-circle fs-1 me-3 text-secondary"></i>
-                <div>
-                  <h6 class="mb-0 fw-bold">Juan Pérez</h6>
-                  <small class="text-success">Electricista</small>
+        @if ($testimonios->count())
+          <div class="row">
+            @foreach ($testimonios as $t)
+              <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow p-4 h-100">
+                  <i class="bi bi-quote display-1 text-info opacity-25"></i>
+                  @if ($t->estrellas)
+                    <div class="mb-2">
+                      @for ($i = 1; $i <= 5; $i++)
+                        <i class="bi bi-star{{ $i <= $t->estrellas ? '-fill' : '' }}" style="color:#ffb347;"></i>
+                      @endfor
+                    </div>
+                  @endif
+                  <p class="fs-5">"{{ $t->texto }}"</p>
+                  <div class="d-flex align-items-center mt-3">
+                    <i class="bi bi-person-circle fs-1 me-3 text-secondary"></i>
+                    <div>
+                      <h6 class="mb-0 fw-bold">{{ $t->usuario->nombre ?? 'Usuario' }}</h6>
+                      <small class="text-success">Usuario de ¡SINTECZATE!</small>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            @endforeach
           </div>
+        @else
+          <div class="text-center text-muted mb-5">
+            <i class="bi bi-chat-quote display-4 d-block mb-2 opacity-50"></i>
+            Todavía no hay reseñas publicadas. ¡Sé de los primeros en dejar la tuya!
+          </div>
+        @endif
 
-          <div class="col-md-6 mb-4">
-            <div class="card border-0 shadow p-4 h-100">
-              <i class="bi bi-quote display-1 text-info opacity-25"></i>
-              <p class="fs-5">"Necesitaba un fotógrafo para mi boda y encontré al mejor. Rápido, seguro y confiable."
-              </p>
-              <div class="d-flex align-items-center mt-3">
-                <i class="bi bi-person-circle fs-1 me-3 text-secondary"></i>
-                <div>
-                  <h6 class="mb-0 fw-bold">María González</h6>
-                  <small class="text-success">Cliente</small>
+        <!-- Formulario para dejar tu testimonio (una sola vez, no editable) -->
+        <div class="row justify-content-center mt-4">
+          <div class="col-md-8">
+            <div class="card border-0 shadow-sm p-4" style="background:#fafafa;">
+              @auth
+                @if ($miTestimonio)
+                  <h5 class="text-center fw-bold mb-3">Tu reseña</h5>
+                  @if ($miTestimonio->estrellas)
+                    <div class="text-center mb-2" style="font-size:1.3rem;">
+                      @for ($i = 1; $i <= 5; $i++)
+                        <i class="bi bi-star{{ $i <= $miTestimonio->estrellas ? '-fill' : '' }}" style="color:#ffb347;"></i>
+                      @endfor
+                    </div>
+                  @endif
+                  <p class="text-center fst-italic">"{{ $miTestimonio->texto }}"</p>
+                  <p class="text-center mb-0">
+                    @if ($miTestimonio->estado === 'pendiente')
+                      <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> En revisión</span>
+                    @elseif ($miTestimonio->estado === 'aprobado')
+                      <span class="badge bg-success"><i class="bi bi-check-circle"></i> Publicada</span>
+                    @else
+                      <span class="badge bg-danger"><i class="bi bi-x-circle"></i> No aprobada</span>
+                    @endif
+                  </p>
+                  <p class="text-center text-muted small mt-2 mb-0">Ya enviaste tu reseña — no se puede editar ni eliminar.</p>
+                @else
+                  <h5 class="text-center fw-bold mb-3">Deja tu reseña de ¡SINTECZATE!</h5>
+                  <p class="text-center text-muted small">Solo puedes enviarla una vez, así que revísala bien antes de mandarla.</p>
+
+                  <div id="testimonioEstrellas" class="text-center mb-3" style="font-size: 1.8rem; color: #ddd; cursor: pointer;">
+                    <span data-val="1">★</span><span data-val="2">★</span><span data-val="3">★</span><span data-val="4">★</span><span data-val="5">★</span>
+                  </div>
+
+                  <textarea id="testimonioTexto" class="form-control mb-3" rows="3" minlength="10" maxlength="500" placeholder="Cuéntanos tu experiencia con la plataforma (mínimo 10 caracteres)..."></textarea>
+
+                  <div class="text-center">
+                    <button type="button" class="btn dropdown-categorias" onclick="enviarTestimonio()">
+                      <i class="bi bi-send"></i> Enviar reseña
+                    </button>
+                  </div>
+                @endif
+              @else
+                <p class="text-center mb-2"><i class="bi bi-lock"></i> Inicia sesión para dejar tu reseña real de la plataforma.</p>
+                <div class="text-center">
+                  <a href="/acceso" class="btn dropdown-categorias">Iniciar sesión</a>
                 </div>
-              </div>
+              @endauth
             </div>
           </div>
         </div>
       </div>
     </section>
+
+    @auth
+    @if (!$miTestimonio)
+    <script>
+      let testimonioEstrellasVal = 0;
+
+      function pintarEstrellasTestimonio(valor) {
+        document.querySelectorAll('#testimonioEstrellas span').forEach(span => {
+          span.style.color = parseInt(span.dataset.val) <= valor ? '#ffb347' : '#ddd';
+        });
+      }
+      document.querySelectorAll('#testimonioEstrellas span').forEach(span => {
+        span.addEventListener('click', function () {
+          testimonioEstrellasVal = parseInt(this.dataset.val);
+          pintarEstrellasTestimonio(testimonioEstrellasVal);
+        });
+      });
+
+      function enviarTestimonio() {
+        const texto = document.getElementById('testimonioTexto').value.trim();
+        if (texto.length < 10) { alert('Escribe al menos 10 caracteres.'); return; }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        fetch('/usuario/testimonios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+          body: JSON.stringify({ texto: texto, estrellas: testimonioEstrellasVal || null }),
+        })
+          .then(res => res.json().then(data => ({ ok: res.ok, data })))
+          .then(({ ok, data }) => {
+            if (!ok) { alert('❌ ' + (data.message || 'Ocurrió un error.')); return; }
+            alert('✅ ¡Gracias! Tu reseña quedó en revisión y se publicará en cuanto la aprobemos.');
+            location.reload();
+          })
+          .catch(() => alert('❌ Ocurrió un error de conexión.'));
+      }
+    </script>
+    @endif
+    @endauth
 
     <!-- Llamado a la acción -->
     <section class="py-5" style="background: #F38F3A;">

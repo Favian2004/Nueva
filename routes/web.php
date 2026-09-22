@@ -4,6 +4,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
 
+// Vistas previas públicas (sin necesidad de cuenta) — solo información,
+// para contactar o postularse hay que registrarse primero.
+Route::get('/servicio/{id}', [App\Http\Controllers\HomeController::class, 'verServicioPublico']);
+Route::get('/vacante/{id}', [App\Http\Controllers\HomeController::class, 'verVacantePublica']);
+
 Route::get('/acceso', [App\Http\Controllers\HomeController::class, 'acceso']);
 Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
 Route::post('/register', [App\Http\Controllers\AuthController::class, 'register']);
@@ -22,6 +27,8 @@ Route::post('/email/verification-notification', [App\Http\Controllers\AuthContro
 
 Route::get('/auth/google/redirect', [App\Http\Controllers\AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [App\Http\Controllers\AuthController::class, 'handleGoogleCallback']);
+Route::get('/completar-registro-google', [App\Http\Controllers\AuthController::class, 'mostrarAceptarTerminosGoogle']);
+Route::post('/completar-registro-google', [App\Http\Controllers\AuthController::class, 'confirmarTerminosGoogle']);
 Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout']);
 Route::get('/acerca-de', [App\Http\Controllers\HomeController::class, 'acercaDe']);
 Route::get('/servicio-cliente', [App\Http\Controllers\HomeController::class, 'servicioCliente']);
@@ -60,6 +67,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/reportes', [App\Http\Controllers\AdminReporteController::class, 'index']);
     Route::patch('/admin/reportes/{id}', [App\Http\Controllers\AdminReporteController::class, 'cambiarEstado']);
     Route::patch('/admin/reportes/{id}/suspender-usuario', [App\Http\Controllers\AdminReporteController::class, 'suspenderUsuario']);
+    Route::get('/admin/testimonios', [App\Http\Controllers\AdminTestimonioController::class, 'index']);
+    Route::patch('/admin/testimonios/{id}', [App\Http\Controllers\AdminTestimonioController::class, 'cambiarEstado']);
+    Route::delete('/admin/testimonios/{id}', [App\Http\Controllers\AdminTestimonioController::class, 'destroy']);
     Route::get('/admin/servicios', [App\Http\Controllers\AdminServicioController::class, 'index']);
     Route::patch('/admin/servicios/{id}/toggle', [App\Http\Controllers\AdminServicioController::class, 'toggle']);
     Route::delete('/admin/servicios/{id}', [App\Http\Controllers\AdminServicioController::class, 'destroy']);
@@ -84,7 +94,10 @@ Route::middleware(['auth', 'verified', 'not-admin'])->group(function () {
     Route::get('/usuario/buscar-talento', [App\Http\Controllers\UsuarioEmpleadorController::class, 'buscarTalento']);
     Route::get('/usuario/empleador', [App\Http\Controllers\UsuarioEmpleadorController::class, 'index']);
     Route::post('/usuario/empleador/postularse/{vacanteId}', [App\Http\Controllers\UsuarioEmpleadorController::class, 'postularse']);
+    Route::post('/usuario/empleador/postulacion-borrador/{vacanteId}', [App\Http\Controllers\UsuarioEmpleadorController::class, 'iniciarBorrador']);
+    Route::post('/usuario/postulantes/{postulacionId}/solicitud-empleo', [App\Http\Controllers\UsuarioEmpleadorController::class, 'subirSolicitudPostulacion']);
     Route::get('/usuario/mis-vacantes', [App\Http\Controllers\UsuarioVacanteController::class, 'misVacantes']);
+    Route::get('/usuario/ver_vacante/{id}', [App\Http\Controllers\UsuarioVacanteController::class, 'show']);
     Route::get('/usuario/mis-vacantes/{id}/editar', [App\Http\Controllers\UsuarioVacanteController::class, 'edit']);
     Route::patch('/usuario/mis-vacantes/{id}/cerrar', [App\Http\Controllers\UsuarioVacanteController::class, 'cerrar']);
     Route::patch('/usuario/mis-vacantes/{id}/reactivar', [App\Http\Controllers\UsuarioVacanteController::class, 'reactivar']);
@@ -95,8 +108,20 @@ Route::middleware(['auth', 'verified', 'not-admin'])->group(function () {
     Route::patch('/usuario/misEmpleos/{id}/toggle', [App\Http\Controllers\UsuarioServicioController::class, 'toggle']);
     Route::patch('/usuario/misEmpleos/{id}', [App\Http\Controllers\UsuarioServicioController::class, 'update']);
     Route::delete('/usuario/misEmpleos/{id}', [App\Http\Controllers\UsuarioServicioController::class, 'destroy']);
+    Route::post('/usuario/misEmpleos/{id}/solicitud-empleo', [App\Http\Controllers\UsuarioServicioController::class, 'subirSolicitudEmpleo']);
     Route::get('/usuario/postulantes', [App\Http\Controllers\UsuarioPostulanteController::class, 'index']);
     Route::patch('/usuario/postulantes/{id}', [App\Http\Controllers\UsuarioPostulanteController::class, 'cambiarEstado']);
+    Route::delete('/usuario/postulantes/{id}', [App\Http\Controllers\UsuarioPostulanteController::class, 'eliminar']);
+    Route::get('/usuario/misEmpleos/{servicioId}/cv/crear', [App\Http\Controllers\UsuarioCurriculumController::class, 'crear']);
+    Route::post('/usuario/misEmpleos/{servicioId}/cv/crear', [App\Http\Controllers\UsuarioCurriculumController::class, 'guardar']);
+    Route::post('/usuario/misEmpleos/{servicioId}/cv/subir-archivo', [App\Http\Controllers\UsuarioCurriculumController::class, 'subirArchivo']);
+    Route::delete('/usuario/misEmpleos/{servicioId}/cv/archivo', [App\Http\Controllers\UsuarioCurriculumController::class, 'eliminarArchivo']);
+    Route::get('/usuario/servicio/{servicioId}/cv', [App\Http\Controllers\UsuarioCurriculumController::class, 'ver']);
+    Route::get('/usuario/postulantes/{postulacionId}/cv/crear', [App\Http\Controllers\UsuarioCurriculumController::class, 'crearPostulacion']);
+    Route::post('/usuario/postulantes/{postulacionId}/cv/crear', [App\Http\Controllers\UsuarioCurriculumController::class, 'guardarPostulacion']);
+    Route::post('/usuario/postulantes/{postulacionId}/cv/subir-archivo', [App\Http\Controllers\UsuarioCurriculumController::class, 'subirArchivoPostulacion']);
+    Route::get('/usuario/postulantes/{postulacionId}/cv/estado', [App\Http\Controllers\UsuarioCurriculumController::class, 'estadoPostulacion']);
+    Route::get('/usuario/postulacion/{postulacionId}/cv', [App\Http\Controllers\UsuarioCurriculumController::class, 'verPostulacion']);
     Route::get('/usuario/profile', [App\Http\Controllers\UsuarioProfileController::class, 'index']);
     Route::patch('/usuario/profile', [App\Http\Controllers\UsuarioProfileController::class, 'update']);
     Route::patch('/usuario/profile/password', [App\Http\Controllers\UsuarioProfileController::class, 'updatePassword']);
@@ -110,6 +135,7 @@ Route::middleware(['auth', 'verified', 'not-admin'])->group(function () {
     Route::post('/usuario/ver_servicio/{id}/solicitar', [App\Http\Controllers\UsuarioServicioController::class, 'solicitar']);
     Route::get('/usuario/solicitudes', [App\Http\Controllers\UsuarioSolicitudController::class, 'index']);
     Route::patch('/usuario/solicitudes/{id}', [App\Http\Controllers\UsuarioSolicitudController::class, 'cambiarEstado']);
+    Route::delete('/usuario/solicitudes/{id}', [App\Http\Controllers\UsuarioSolicitudController::class, 'eliminar']);
     Route::get('/usuario/comentarios/{tipo}/{id}', [App\Http\Controllers\UsuarioComentarioController::class, 'index']);
     Route::post('/usuario/comentarios/{tipo}/{id}', [App\Http\Controllers\UsuarioComentarioController::class, 'store']);
     Route::delete('/usuario/comentarios/{id}', [App\Http\Controllers\UsuarioComentarioController::class, 'destroy']);
@@ -118,4 +144,5 @@ Route::middleware(['auth', 'verified', 'not-admin'])->group(function () {
     Route::get('/usuario/calificaciones/{servicioId}', [App\Http\Controllers\UsuarioCalificacionController::class, 'index']);
     Route::post('/usuario/calificaciones/{servicioId}', [App\Http\Controllers\UsuarioCalificacionController::class, 'store']);
     Route::delete('/usuario/calificaciones/{id}', [App\Http\Controllers\UsuarioCalificacionController::class, 'destroy']);
+    Route::post('/usuario/testimonios', [App\Http\Controllers\UsuarioTestimonioController::class, 'store']);
 });

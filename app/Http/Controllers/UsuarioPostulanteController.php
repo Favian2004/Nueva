@@ -15,7 +15,8 @@ class UsuarioPostulanteController extends Controller
         $estado = $request->input('estado');
         $q = $request->input('q');
 
-        $postulaciones = Postulacion::with(['postulante', 'vacante'])
+        $postulaciones = Postulacion::with(['postulante', 'vacante', 'curriculum'])
+            ->where('estado', '!=', 'borrador')
             ->whereHas('vacante', function ($query) {
                 $query->where('empleador_id', Auth::id());
             })
@@ -36,6 +37,7 @@ class UsuarioPostulanteController extends Controller
 
         $misPostulaciones = Postulacion::with(['vacante.empleador'])
             ->where('postulante_id', Auth::id())
+            ->where('estado', '!=', 'borrador')
             ->latest()
             ->get();
 
@@ -65,6 +67,24 @@ class UsuarioPostulanteController extends Controller
 
         $postulacion->estado = $request->input('estado');
         $postulacion->save();
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function eliminar($id)
+    {
+        // Solo se puede eliminar si ya fue rechazada, y solo si el usuario
+        // es el postulante (la envió) o el empleador de la vacante (la recibió).
+        $postulacion = Postulacion::where(function ($query) {
+                $query->where('postulante_id', Auth::id())
+                      ->orWhereHas('vacante', function ($sub) {
+                          $sub->where('empleador_id', Auth::id());
+                      });
+            })
+            ->where('estado', 'rechazado')
+            ->findOrFail($id);
+
+        $postulacion->delete();
 
         return response()->json(['ok' => true]);
     }

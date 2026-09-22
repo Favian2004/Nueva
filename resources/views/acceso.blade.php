@@ -19,15 +19,14 @@
     <style>
         /* ===== CONTENIDO ===== */
         .contenido {
-            margin-left: 230px;
+            margin-left: 10px;
             margin-right: 230px;
             padding: 0;
             background: #fff;
             min-height: 100vh;
         }
 
-        /* ===== COLUMNAS DE ANUNCIOS ===== */
-        .anuncio-izq,
+        /* ===== COLUMNA DE ANUNCIOS (solo derecha) ===== */
         .anuncio-der {
             position: fixed;
             top: 10px;
@@ -36,13 +35,6 @@
             flex-direction: column;
             gap: 15px;
             z-index: 999;
-        }
-
-        .anuncio-izq {
-            left: 10px;
-        }
-
-        .anuncio-der {
             right: 10px;
         }
 
@@ -76,9 +68,30 @@
         }
 
         /* ===== RESPONSIVE ===== */
-        @media(max-width:1200px) {
 
-            .anuncio-izq,
+        /* Pantallas medianas (laptops 14"-15", ~1201px a 1600px):
+           la columna se achica en vez de verse igual de grande que en
+           un monitor de escritorio de 1920px. */
+        @media (min-width: 1101px) and (max-width: 1600px) {
+            .anuncio-der {
+                width: 180px;
+            }
+
+            .ad-box {
+                height: 180px;
+            }
+
+            .ad-box img {
+                height: 180px;
+            }
+
+            .contenido {
+                margin-right: 200px;
+            }
+        }
+
+        @media(max-width:1100px) {
+
             .anuncio-der {
                 display: none;
             }
@@ -399,36 +412,8 @@
     </div>
 
     <!-- ========================= -->
-    <!-- ANUNCIOS IZQUIERDOS -->
-    <!-- ========================= -->    <div class="anuncio-izq">
-
-        <div class="ad-titulo">
-            <h5>NEGOCIOS DESTACADOS</h5>
-            <div class="linea-titulo">
-                <span></span>
-                <small>de tu municipio</small>
-                <span></span>
-            </div>
-        </div>
-
-        @forelse ($anunciosIzquierda as $anuncio)
-          @if ($anuncio->imagenes->count())
-            <div class="ad-box">
-              <div id="adLeft{{ $anuncio->orden }}" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                  @foreach ($anuncio->imagenes as $index => $img)
-                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
-                      <img src="{{ $img->imagen }}">
-                    </div>
-                  @endforeach
-                </div>
-              </div>
-            </div>
-          @endif
-        @empty
-        @endforelse
-
-    </div>
+    <!-- ANUNCIOS (solo columna derecha) -->
+    <!-- ========================= -->
 
     <!-- ========================= -->
     <!-- ANUNCIOS DERECHOS -->
@@ -450,7 +435,7 @@
               <div id="adRight{{ $anuncio->orden }}" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                   @foreach ($anuncio->imagenes as $index => $img)
-                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
+                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="6000">
                       <img src="{{ $img->imagen }}">
                     </div>
                   @endforeach
@@ -487,7 +472,7 @@
                 <!-- Contact & Language -->
                 <div class="header__right d-flex align-items-center">
                     <div class="me-3">
-                        <i class="icon-telephone"></i> Linea directa: <strong>2331014306</strong>
+                        <i class="icon-telephone"></i> Línea directa: <strong>2331014306</strong>
                     </div>
                     <div>
                         <select class="form-select form-select-sm language-select">
@@ -584,7 +569,7 @@
                         <form action="/login" method="POST">
                             @csrf
                             <div class="mb-4">
-                                <label class="form-label">Usuario o correo electronico</label>
+                                <label class="form-label">Usuario o correo electrónico</label>
                                 <input type="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="ejemplo@correo.com" required>
                             </div>
 
@@ -648,11 +633,6 @@
                             </div>
                             <input type="hidden" name="nombre" id="regNombreCompleto">
 
-                            <div class="mb-3">
-                                <label class="form-label">Usuario</label>
-                                <input type="text" class="form-control" placeholder="juanito2004">
-                                <small style="color:#ddd;">(Opcional por ahora, no se usa todavía)</small>
-                            </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Dirección de correo electrónico</label>
@@ -676,9 +656,17 @@
                                 <input type="password" name="password_confirmation" class="form-control" placeholder="Repite la contraseña" required minlength="8">
                             </div>
 
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" name="terminos" id="checkTerminos" required>
+                                <label class="form-check-label" for="checkTerminos" style="color:#fff; font-size:13.5px;">
+                                    He leído y acepto los <a href="/terminos" target="_blank" style="color:#123B70; font-weight:700;" text-decoration:underline;">Términos y Condiciones</a>
+                                </label>
+                            </div>
+
                             <button type="submit" id="btnRegister" class="btn-auth">
-                                <i class="bi bi-person-plus me-2"></i>Register
+                                <i class="bi bi-person-plus me-2"></i>Registrar
                             </button>
+
                         </form>
                     </div>
 

@@ -37,8 +37,8 @@ class AdminAnuncioController extends Controller
     {
         $anuncio = Anuncio::with('imagenes')->findOrFail($id);
 
-        if ($anuncio->imagenes->count() >= 5) {
-            return response()->json(['ok' => false, 'error' => 'Este espacio ya tiene el máximo de 5 imágenes.'], 422);
+        if ($anuncio->imagenes->count() >= 15) {
+            return response()->json(['ok' => false, 'error' => 'Este espacio ya tiene el máximo de 15 imágenes.'], 422);
         }
 
         $request->validate([

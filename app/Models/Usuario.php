@@ -29,6 +29,8 @@ class Usuario extends Authenticatable implements MustVerifyEmail
         'motivo_suspension',
         'verificacion_estado',
         'email_verified_at',
+        'solicitud_empleo',
+        'terminos_aceptados_en',
     ];
 
     protected $hidden = [
@@ -40,6 +42,7 @@ class Usuario extends Authenticatable implements MustVerifyEmail
         return [
             'password' => 'hashed',
             'email_verified_at' => 'datetime',
+            'terminos_aceptados_en' => 'datetime',
         ];
     }
 
@@ -48,6 +51,11 @@ class Usuario extends Authenticatable implements MustVerifyEmail
     public function localidad()
     {
         return $this->belongsTo(Localidad::class);
+    }
+
+    public function curriculum()
+    {
+        return $this->hasOne(Curriculum::class, 'usuario_id');
     }
 
     public function documentosVerificacion()

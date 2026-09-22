@@ -13,6 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo('/acceso');
 
+        // Confía en el proxy de Hostinger para que Laravel detecte bien
+        // que las peticiones llegan por HTTPS (esto evita fallos raros e
+        // intermitentes con cosas que dependen de la sesión/cookies,
+        // como el inicio de sesión con Google).
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'not-admin' => \App\Http\Middleware\RedirectIfAdmin::class,

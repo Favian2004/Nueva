@@ -704,11 +704,6 @@
     <section class="section is-main-section">
       <div class="container">
 
-        <div class="role-notice">
-          <span class="notice-icon">🏢</span>
-          <span>Estás en modo <strong class="notice-role employer">Empleador</strong> · Revisa los postulantes a tus vacantes.</span>
-        </div>
-
         <!-- PESTAÑAS -->
         <div style="display:flex; gap:8px; margin-bottom:18px;">
           <button type="button" onclick="mostrarTabPost('recibidas')" id="tabPostRecibidas" class="tab-postulantes activa">
@@ -816,6 +811,18 @@
               @if ($p->mensaje)
                 <div class="postulante-mensaje">💬 "{{ $p->mensaje }}"</div>
               @endif
+
+              @if (($p->curriculum && $p->curriculum->tieneContenido) || $p->solicitud_empleo)
+                <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+                  @if ($p->curriculum && $p->curriculum->tieneContenido)
+                    <a href="/usuario/postulacion/{{ $p->id }}/cv" style="font-size:11px; font-weight:700; color:#8a6d1f; background:#f7e9c9; padding:5px 10px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;"><i class="mdi mdi-file-account-outline"></i> Ver CV</a>
+                  @endif
+                  @if ($p->solicitud_empleo)
+                    <a href="{{ $p->solicitud_empleo }}" target="_blank" style="font-size:11px; font-weight:700; color:#8a6d1f; background:#f7e9c9; padding:5px 10px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;"><i class="mdi mdi-file-document-outline"></i> Ver Solicitud</a>
+                  @endif
+                </div>
+              @endif
+
               <div class="postulante-actions">
                 @if ($p->estado === 'contratado')
                   <button class="btn-contratar" disabled style="opacity:0.5; cursor:not-allowed;"><i class="mdi mdi-check"></i> Contratado</button>
@@ -823,12 +830,11 @@
                   @if ($telPostulante)
                     <a href="https://wa.me/52{{ preg_replace('/\D/', '', $telPostulante) }}" target="_blank" style="flex:1; text-decoration:none; background:#25D366; color:#fff; padding:7px 10px; border-radius:8px; font-size:11px; font-weight:600; text-align:center; display:flex; align-items:center; justify-content:center; gap:4px;"><i class="mdi mdi-whatsapp"></i> WhatsApp</a>
                   @endif
+                @elseif ($p->estado === 'rechazado')
+                  <button class="btn-rechazar" disabled style="opacity:0.5; cursor:not-allowed; flex:1;"><i class="mdi mdi-close"></i> Rechazado</button>
+                  <button type="button" onclick="eliminarPostulacion({{ $p->id }})" title="Eliminar" style="border:none; background:#f1f3f4; color:#5f6368; border-radius:8px; padding:6px 10px; cursor:pointer;"><i class="mdi mdi-trash-can-outline"></i></button>
                 @else
                   <button class="btn-contratar" onclick="cambiarEstado({{ $p->id }}, 'contratado')"><i class="mdi mdi-check"></i> Contratar</button>
-                @endif
-                @if ($p->estado === 'rechazado')
-                  <button class="btn-rechazar" disabled style="opacity:0.5; cursor:not-allowed;"><i class="mdi mdi-close"></i> Rechazado</button>
-                @elseif ($p->estado !== 'contratado')
                   <button class="btn-rechazar" onclick="cambiarEstado({{ $p->id }}, 'rechazado')"><i class="mdi mdi-close"></i></button>
                 @endif
               </div>
@@ -886,6 +892,7 @@
                   @endif
                 @else
                   <p style="font-size:12px; color:#dc2626; margin-top:8px;"><i class="mdi mdi-close-circle"></i> Esta postulación fue rechazada.</p>
+                  <button type="button" onclick="eliminarPostulacion({{ $p->id }})" style="margin-top:8px; width:100%; border:none; background:#f1f3f4; color:#5f6368; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:4px;"><i class="mdi mdi-trash-can-outline"></i> Eliminar</button>
                 @endif
               </div>
             @empty
@@ -1016,6 +1023,17 @@
       })
         .then(res => { if (!res.ok) throw new Error(); location.reload(); })
         .catch(() => alert('Ocurrió un error al actualizar al postulante.'));
+    }
+
+    function eliminarPostulacion(id) {
+      if (!confirm('¿Eliminar esta postulación rechazada? Esta acción no se puede deshacer.')) return;
+
+      fetch(`/usuario/postulantes/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+      })
+        .then(res => { if (!res.ok) throw new Error(); location.reload(); })
+        .catch(() => alert('Ocurrió un error al eliminar la postulación.'));
     }
   </script>
 

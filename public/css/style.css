@@ -211,6 +211,7 @@ background-size: 16px, 10px;
 }
 .carousel-item {
   max-height: 900px !important;
+  top: 10px;
 }
 
 .brand-text {
@@ -433,10 +434,7 @@ background-size: 16px, 10px;
     transition: all 0.3s ease;
 }
 
-.ps-block__item:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(40, 167, 69, 0.1);
-}
+
 
 .ps-block__left {
 
@@ -446,7 +444,7 @@ background-size: 16px, 10px;
 }
 
 .ps-block__left i {
-    background: #ff7a00; /* naranja */
+    background: linear-gradient(135deg, #CA3519,#F38F3A); /* naranja */
     color: white;       /* icono blanco */
     padding: 15px;
     border-radius: 50%; /* círculo */
@@ -792,7 +790,7 @@ background-size: 16px, 10px;
 @media (min-width: 992px){
 
     .login-container{
-        background-image: url("../img/fondos/fondo1.jpeg");
+        background-image: url("../img/fondos/fondoSintec.png");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -1010,6 +1008,7 @@ ESTILOS NUEVOS PARA TERMINOS Y CONDICIONES
 .footer-pro {
     background: linear-gradient(135deg, #F38F3A, #712333);
     color: white;
+
 }
 
 .footer-pro a {
@@ -1253,5 +1252,56 @@ product img {
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
+
+
+/* CONTENEDOR DEL BOTÓN */
+.columna-buscar {
+    display: flex;
+    align-items: flex-end;
+}
+
+/* BOTÓN BUSCAR */
+.btn-buscar {
+    width: 150px;
+    height: 45px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    background: #ff7a00;
+    color: #ffffff;
+
+    border: none;
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+/* ICONO */
+.btn-buscar i {
+    font-size: 18px;
+    orientation: center;
+
+}
+
+/* EFECTO AL PASAR EL MOUSE */
+.btn-buscar:hover {
+    background: #e56700;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(255, 122, 0, 0.3);
+}
+
+/* AL HACER CLIC */
+.btn-buscar:active {
+    transform: translateY(0);
+}
+
 
 

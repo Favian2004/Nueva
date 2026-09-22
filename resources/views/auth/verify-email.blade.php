@@ -86,5 +86,23 @@
       <button type="submit" class="logout-link">Cerrar sesión</button>
     </form>
   </div>
+
+  <script>
+    // Cada 4 segundos, revisa en silencio si ya te verificaste desde otra
+    // pestaña (por ejemplo, al abrir el link del correo) — si ya se
+    // verificó, recarga esta página, y el controlador te manda solo
+    // a tu perfil o dashboard.
+    setInterval(function () {
+      fetch(window.location.href, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (res) {
+          // Si el controlador ya nos redirigiría (porque hasVerifiedEmail() es true),
+          // fetch sigue la redirección y termina en una URL distinta a esta página.
+          if (res.redirected || res.url !== window.location.href) {
+            window.location.reload();
+          }
+        })
+        .catch(function () { /* si falla, simplemente lo vuelve a intentar en el siguiente ciclo */ });
+    }, 4000);
+  </script>
 </body>
 </html>

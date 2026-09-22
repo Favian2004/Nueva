@@ -19,6 +19,9 @@ class AuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->user();
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Fallo al iniciar sesión con Google: ' . $e->getMessage(), [
+                'excepcion' => get_class($e),
+            ]);
             return redirect('/acceso')->with('error', 'No se pudo iniciar sesión con Google. Intenta de nuevo.');
         }
 
@@ -34,36 +37,85 @@ class AuthController extends Controller
                 $usuario->google_id = $googleUser->getId();
                 $usuario->save();
             }
-        } else {
-            // Usuario nuevo: se crea con datos básicos.
-            // TODO: cuando haya más de una localidad para elegir en el registro,
-            // mandarlo a completar su perfil en vez de fijar localidad_id = 1.
-            $usuario = Usuario::create([
+
+            // Google ya confirmó que este correo es real, así que si por alguna
+            // razón la cuenta existente aún no estaba verificada, la marcamos ahora.
+            if (!$usuario->hasVerifiedEmail()) {
+                $usuario->markEmailAsVerified();
+            }
+
+            if ($usuario->estado === 'suspendido') {
+                return redirect('/acceso')->with('error', 'Tu cuenta está suspendida. Motivo: ' . ($usuario->motivo_suspension ?? 'no especificado'));
+            }
+
+            Auth::login($usuario, true);
+
+            return redirect($usuario->rol === 'admin' ? '/admin' : '/usuario');
+        }
+
+        // Usuario nuevo: todavía no lo creamos. Primero le pedimos que
+        // acepte los Términos y Condiciones, igual que en el registro normal.
+        session([
+            'google_pendiente' => [
                 'nombre' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Usuario de Google',
                 'email' => $googleUser->getEmail(),
                 'google_id' => $googleUser->getId(),
                 'foto_perfil' => $googleUser->getAvatar(),
-                'localidad_id' => 1,
-                'rol' => 'usuario',
-                'estado' => 'activo',
-                'verificacion_estado' => 'pendiente',
-                'email_verified_at' => now(),
-            ]);
+            ],
+        ]);
+
+        return redirect('/completar-registro-google');
+    }
+
+    // Muestra la pantalla de "acepta los términos" para quien se está
+    // registrando por primera vez con Google.
+    public function mostrarAceptarTerminosGoogle()
+    {
+        if (!session()->has('google_pendiente')) {
+            return redirect('/acceso');
         }
 
-        // Google ya confirmó que este correo es real, así que si por alguna
-        // razón la cuenta existente aún no estaba verificada, la marcamos ahora.
-        if (!$usuario->hasVerifiedEmail()) {
-            $usuario->markEmailAsVerified();
+        return view('aceptar_terminos_google', [
+            'nombre' => session('google_pendiente')['nombre'],
+        ]);
+    }
+
+    // Ya aceptó los términos: ahora sí se crea la cuenta.
+    public function confirmarTerminosGoogle(Request $request)
+    {
+        $request->validate([
+            'terminos' => 'required|accepted',
+        ], [
+            'terminos.required' => 'Debes aceptar los Términos y Condiciones para crear tu cuenta.',
+            'terminos.accepted' => 'Debes aceptar los Términos y Condiciones para crear tu cuenta.',
+        ]);
+
+        $datos = session('google_pendiente');
+
+        if (!$datos) {
+            return redirect('/acceso')->with('error', 'Tu sesión de registro con Google expiró. Intenta de nuevo.');
         }
 
-        if ($usuario->estado === 'suspendido') {
-            return redirect('/acceso')->with('error', 'Tu cuenta está suspendida. Motivo: ' . ($usuario->motivo_suspension ?? 'no especificado'));
-        }
+        // TODO: cuando haya más de una localidad para elegir en el registro,
+        // mandarlo a completar su perfil en vez de fijar localidad_id = 1.
+        $usuario = Usuario::create([
+            'nombre' => $datos['nombre'],
+            'email' => $datos['email'],
+            'google_id' => $datos['google_id'],
+            'foto_perfil' => $datos['foto_perfil'],
+            'localidad_id' => 1,
+            'rol' => 'usuario',
+            'estado' => 'activo',
+            'verificacion_estado' => 'pendiente',
+            'email_verified_at' => now(),
+            'terminos_aceptados_en' => now(),
+        ]);
+
+        session()->forget('google_pendiente');
 
         Auth::login($usuario, true);
 
-        return redirect($usuario->rol === 'admin' ? '/admin' : '/usuario');
+        return redirect('/usuario/profile')->with('status', '¡Bienvenido! Completa tu perfil para empezar a usar la plataforma.');
     }
 
     public function login(Request $request)
@@ -98,6 +150,10 @@ class AuthController extends Controller
             'nombre' => 'required|string|max:150',
             'email' => 'required|email|max:150|unique:usuarios,email',
             'password' => 'required|string|min:8|confirmed',
+            'terminos' => 'required|accepted',
+        ], [
+            'terminos.required' => 'Debes aceptar los Términos y Condiciones para crear tu cuenta.',
+            'terminos.accepted' => 'Debes aceptar los Términos y Condiciones para crear tu cuenta.',
         ]);
 
         // TODO: cuando haya más de una localidad para elegir en el registro,
@@ -110,6 +166,7 @@ class AuthController extends Controller
             'rol' => 'usuario',
             'estado' => 'activo',
             'verificacion_estado' => 'pendiente',
+            'terminos_aceptados_en' => now(),
         ]);
 
         Auth::login($usuario, true);
@@ -151,7 +208,11 @@ class AuthController extends Controller
 
         Auth::login($usuario, true);
 
-        return redirect(($usuario->rol === 'admin' ? '/admin' : '/usuario') . '?verificado=1');
+        if ($usuario->rol === 'admin') {
+            return redirect('/admin?verificado=1');
+        }
+
+        return redirect('/usuario/profile')->with('status', '¡Correo confirmado! Completa tu perfil para empezar a usar la plataforma.');
     }
 
     public function resendVerification(Request $request)

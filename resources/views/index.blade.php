@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inicio</title>
+  <meta name="description" content="¡SINTECZATE! Plataforma de servicios y empleos en Zacapoaxtla, Puebla. Ofrece tus servicios, encuentra profesionales o publica oportunidades de trabajo y conecta con personas de tu comunidad.">
   <!-- Font Awesome para iconos (alternativa a los iconos personalizados) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <!-- Estilos de bootstrap -->
@@ -14,22 +15,21 @@
   <!-- Estilos propios -->
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <!-- Para Android/Chrome -->
-  <link rel="icon" href="{{ asset('img/template/home.png') }}" type="image/png" sizes="192x192">
+  <link rel="icon" href="{{ asset('img/template/logo.png') }}" type="image/png" sizes="192x192">
   <!-- jQuery (OBLIGATORIO antes de tu JS) -->
 
 
   <style>
     /* ===== CONTENIDO ===== */
     .contenido {
-      margin-left: 230px;
+      margin-left: 10px;
       margin-right: 230px;
       padding: 0;
       background: #fff;
       min-height: 100vh;
     }
 
-    /* ===== COLUMNAS DE ANUNCIOS ===== */
-    .anuncio-izq,
+    /* ===== COLUMNA DE ANUNCIOS (solo derecha) ===== */
     .anuncio-der {
       position: fixed;
       top: 10px;
@@ -38,13 +38,6 @@
       flex-direction: column;
       gap: 15px;
       z-index: 999;
-    }
-
-    .anuncio-izq {
-      left: 10px;
-    }
-
-    .anuncio-der {
       right: 10px;
     }
 
@@ -88,30 +81,51 @@
 
     .anuncios-mobile-cols {
       display: flex;
-      gap: 12px;
+      justify-content: center;
       padding: 10px 15px 15px;
     }
 
     .ad-box-mobile {
-      flex: 1;
-      min-width: 0;
-      height: 190px;
-      border-radius: 12px;
+      width: 100%;
+      max-width: 420px;
+      height: 240px;
+      border-radius: 14px;
       overflow: hidden;
       box-shadow: 0 4px 15px rgba(0, 0, 0, .15);
     }
 
     .ad-box-mobile img {
       width: 100%;
-      height: 190px;
+      height: 240px;
       object-fit: cover;
       cursor: zoom-in;
     }
 
     /* ===== RESPONSIVE ===== */
+
+    /* Pantallas medianas (laptops 14"-15", ~1201px a 1600px):
+       la columna se achica en vez de verse igual de grande que en
+       un monitor de escritorio de 1920px. */
+    @media (min-width: 1201px) and (max-width: 1600px) {
+      .anuncio-der {
+        width: 180px;
+      }
+
+      .ad-box {
+        height: 180px;
+      }
+
+      .ad-box img {
+        height: 180px;
+      }
+
+      .contenido {
+        margin-right: 200px;
+      }
+    }
+
     @media(max-width:1200px) {
 
-      .anuncio-izq,
       .anuncio-der {
         display: none;
       }
@@ -179,7 +193,7 @@
 
     /* Botón */
     .btn-anunciar {
-      background: #ffc107;
+      background: #000000;
       color: #000;
       text-decoration: none;
       padding: 10px 18px;
@@ -523,6 +537,245 @@
       background: rgba(255, 255, 255, 0.3);
       transform: rotate(90deg);
     }
+
+    /* ===== SELECT DE COMUNIDAD EN EL BUSCADOR ===== */
+    .select-comunidad {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 0;
+      padding: 8px 14px;
+      font-size: 14px;
+      background: #fff;
+      max-width: 190px;
+    }
+    .select-comunidad:focus {
+      outline: none;
+      border-color: #ff7a18;
+      box-shadow: none;
+    }
+
+    /* ===== SECCIÓN DE VACANTES (mismo estilo que servicios) ===== */
+    .vacantes-section {
+      padding-top: 10px;
+    }
+    .vacante-card {
+      display: flex;
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      border: 1px solid #eee;
+      transition: 0.2s;
+    }
+    .vacante-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,.10);
+    }
+    .vacante-card img {
+      width: 110px;
+      height: 100%;
+      min-height: 150px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .vacante-card .vacante-info {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex: 1;
+    }
+    .vacante-card h5 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin: 0 0 4px;
+    }
+    .vacante-card .vacante-meta {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 6px;
+    }
+    .vacante-card .vacante-desc {
+      font-size: 12.5px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .vacante-badges span {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+    .badge-salario { background: #e6f4ea; color: #1e7e34; }
+    .badge-contrato { background: #fef7e0; color: #e37400; }
+
+    /* ===== BUSCADOR "PRO" (mismo estilo para Servicios y Vacantes) ===== */
+    .buscador-pro {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.08);
+      border: 1px solid #f2f2f2;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 920px;
+      margin: 0 auto 10px;
+      flex-wrap: wrap;
+    }
+    .buscador-pro .campo-input {
+      flex: 1 1 240px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid #ececec;
+      border-radius: 12px;
+      padding: 11px 16px;
+      transition: 0.2s;
+    }
+    .buscador-pro .campo-input:focus-within {
+      border-color: #ff7a18;
+      box-shadow: 0 0 0 3px rgba(255,122,24,.10);
+    }
+    .buscador-pro .campo-input i {
+      color: #ff7a18;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .buscador-pro .campo-input input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 14px;
+      min-width: 0;
+    }
+    .buscador-pro select {
+      border: 1.5px solid #ececec;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 14px;
+      background: #fff;
+      flex: 1 1 170px;
+      max-width: 230px;
+      color: #444;
+    }
+    .buscador-pro select:focus {
+      outline: none;
+      border-color: #ff7a18;
+    }
+    .buscador-pro button {
+      background: linear-gradient(45deg, #ff7a18, #ffb347);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 26px;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(255,122,24,.30);
+    }
+    .buscador-pro button:hover {
+      opacity: .92;
+      transform: translateY(-1px);
+    }
+    .buscador-pro-nota {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+      max-width: 920px;
+      margin: 0 auto 22px;
+    }
+    .buscador-pro-resultados {
+      text-align: center;
+      color: #777;
+      font-size: 13.5px;
+      max-width: 920px;
+      margin: 0 auto 18px;
+    }
+
+    @media (max-width: 576px) {
+      .buscador-pro {
+        padding: 14px;
+        border-radius: 16px;
+        gap: 10px;
+      }
+      .buscador-pro .campo-input,
+      .buscador-pro select,
+      .buscador-pro button {
+        flex: 1 1 100%;
+        max-width: 100%;
+        justify-content: center;
+      }
+    }
+
+
+/*!-- ===== BANNER: Crea tu cuenta / Acceder (arriba del slider) ===== --**/
+
+    .cta-cuenta {
+        background: linear-gradient(90deg, #6b1021, #8f1d2f, #b12d25);
+        border-radius: 12px;
+        padding: 10px 22px;
+        margin: 12px auto 16px;
+        max-width: 1300px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        box-shadow: 0 4px 14px rgba(0,0,0,.10);
+      }
+      .cta-cuenta-texto h3 {
+        color: #fff;
+        font-weight: 800;
+        font-size: 14.5px;
+        margin: 0 0 1px;
+      }
+      .cta-cuenta-texto p {
+        color: #f0d5d5;
+        font-size: 11.5px;
+        margin: 0;
+      }
+      .cta-cuenta-boton {
+        background: linear-gradient(45deg, #ff7a18, #ffb347);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 12.5px;
+        padding: 7px 18px;
+        border-radius: 999px;
+        white-space: nowrap;
+        box-shadow: 0 3px 10px rgba(255,122,24,.35);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: 0.2s;
+      }
+      .cta-cuenta-boton:hover {
+        color: #fff;
+        opacity: .92;
+        transform: translateY(-1px);
+      }
+      @media (max-width: 576px) {
+        .cta-cuenta {
+          flex-direction: column;
+          text-align: center;
+          padding: 14px 16px;
+        }
+        .cta-cuenta-boton {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+
   </style>
 
 </head>
@@ -536,37 +789,7 @@
   </div>
 
   <!-- ========================= -->
-  <!-- ANUNCIOS IZQUIERDOS -->
-  <!-- ========================= -->
-  <div class="anuncio-izq">
-
-    <div class="ad-titulo">
-      <h5>NEGOCIOS DESTACADOS</h5>
-      <div class="linea-titulo">
-        <span></span>
-        <small>de tu municipio</small>
-        <span></span>
-      </div>
-    </div>
-
-    @forelse ($anunciosIzquierda as $anuncio)
-      @if ($anuncio->imagenes->count())
-        <div class="ad-box">
-          <div id="adLeft{{ $anuncio->orden }}" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-              @foreach ($anuncio->imagenes as $index => $img)
-                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
-                  <img src="{{ $img->imagen }}">
-                </div>
-              @endforeach
-            </div>
-          </div>
-        </div>
-      @endif
-    @empty
-    @endforelse
-
-  </div>
+  <!-- ANUNCIOS (solo columna derecha) -->
   <!-- ========================= -->
   <div class="anuncio-der">
 
@@ -585,7 +808,7 @@
           <div id="adRight{{ $anuncio->orden }}" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
               @foreach ($anuncio->imagenes as $index => $img)
-                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
+                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="6000">
                   <img src="{{ $img->imagen }}">
                 </div>
               @endforeach
@@ -630,7 +853,7 @@
         <!-- Contact & Language -->
         <div class="header__right d-flex align-items-center">
           <div class="me-3">
-            <i class="icon-telephone"></i> Linea directa: <strong>2331014306</strong>
+            <i class="icon-telephone"></i> Línea directa: <strong>2331014306</strong>
           </div>
           <div>
             <select class="form-select form-select-sm language-select">
@@ -727,76 +950,33 @@
       </div>
     </nav>
 
-    <!-- Barra de navegación Menu2 -->
-    <nav class="navbar navbar-expand-lg navbar-search">
-      <div class="container-fluid">
+    @php
+      $iconosCategoria = [
+        'Construcción' => ['icon' => 'bi-hammer', 'color' => 'text-warning'],
+        'Hogar y limpieza' => ['icon' => 'bi-house-door', 'color' => 'text-success'],
+        'Talleres y mecánica' => ['icon' => 'bi-tools', 'color' => 'text-secondary'],
+        'Educación y clases' => ['icon' => 'bi-mortarboard', 'color' => 'text-info'],
+        'Campo y jardinería' => ['icon' => 'bi-flower1', 'color' => 'text-success'],
+        'Eventos y celebraciones' => ['icon' => 'bi-balloon-heart', 'color' => 'text-danger'],
+        'Servicios Profecionales' => ['icon' => 'bi-briefcase-fill', 'color' => 'text-primary'],
+        'Oficios y Tradiciones' => ['icon' => 'bi-palette2', 'color' => 'text-warning'],
+        'Compra y Venta Local' => ['icon' => 'bi-shop', 'color' => 'text-info'],
+        'Salud y belleza' => ['icon' => 'bi-heart-pulse', 'color' => 'text-danger'],
+        'Tecnología y electrónica' => ['icon' => 'bi-laptop', 'color' => 'text-primary'],
+        'Transporte y mensajería' => ['icon' => 'bi-truck', 'color' => 'text-secondary'],
+        'Mascotas' => ['icon' => 'bi-heart', 'color' => 'text-warning'],
+      ];
+    @endphp
 
-        <!-- Contenedor del buscador (siempre visible) -->
-        <div class="collapse navbar-collapse show" id="navbarSearch">
-          <!-- Búsqueda - Versión Premium (con ms-auto para alinear a la derecha) -->
-          <form action="/" method="GET" class="input-group ms-auto buscador-container">
-
-            <!-- Dropdown elegante -->
-            <button class="btn dropdown-toggle dropdown-categorias" type="button" data-bs-toggle="dropdown">
-              <i class="bi bi-funnel"></i> Categorias
-            </button>
-
-            @php
-              $iconosCategoria = [
-                'Construcción' => ['icon' => 'bi-hammer', 'color' => 'text-warning'],
-                'Hogar y limpieza' => ['icon' => 'bi-house-door', 'color' => 'text-success'],
-                'Talleres y mecánica' => ['icon' => 'bi-tools', 'color' => 'text-secondary'],
-                'Educación y clases' => ['icon' => 'bi-mortarboard', 'color' => 'text-info'],
-                'Campo y jardinería' => ['icon' => 'bi-flower1', 'color' => 'text-success'],
-                'Eventos y celebraciones' => ['icon' => 'bi-balloon-heart', 'color' => 'text-danger'],
-                'Servicios Profecionales' => ['icon' => 'bi-briefcase-fill', 'color' => 'text-primary'],
-                'Oficios y Tradiciones' => ['icon' => 'bi-palette2', 'color' => 'text-warning'],
-                'Compra y Venta Local' => ['icon' => 'bi-shop', 'color' => 'text-info'],
-                'Salud y belleza' => ['icon' => 'bi-heart-pulse', 'color' => 'text-danger'],
-                'Tecnología y electrónica' => ['icon' => 'bi-laptop', 'color' => 'text-primary'],
-                'Transporte y mensajería' => ['icon' => 'bi-truck', 'color' => 'text-secondary'],
-                'Mascotas' => ['icon' => 'bi-heart', 'color' => 'text-warning'],
-              ];
-            @endphp
-
-            <ul class="dropdown-menu dropdown-menu-end p-3 dropdown-categorias-menu">
-              <li>
-                <h6 class="dropdown-header text-danger fw-bold fs-6">Categorías</h6>
-              </li>
-              @foreach ($categorias as $cat)
-                @php $icono = $iconosCategoria[$cat->nombre] ?? ['icon' => 'bi-briefcase-fill', 'color' => 'text-primary']; @endphp
-                <li>
-                  <a class="dropdown-item py-2 rounded-3 {{ (string) $categoriaId === (string) $cat->id ? 'active' : '' }}" href="/?categoria_id={{ $cat->id }}">
-                    <i class="bi {{ $icono['icon'] }} me-2 {{ $icono['color'] }}"></i>
-                    {{ $cat->nombre }}
-                  </a>
-                </li>
-              @endforeach
-              @if ($categoriaId)
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                  <a class="dropdown-item text-center text-danger fw-bold" href="/">
-                    <i class="bi bi-x-circle"></i> Quitar filtro
-                  </a>
-                </li>
-              @endif
-            </ul>
-
-            <!-- Input con borde degradado -->
-            <input type="text" name="q" value="{{ $q }}" class="form-control input-buscar" placeholder="¿Qué servicio necesitas?">
-            @if ($categoriaId)
-              <input type="hidden" name="categoria_id" value="{{ $categoriaId }}">
-            @endif
-
-            <!-- Botón con efecto hover -->
-            <button class="btn boton-buscar" type="submit">
-              <i class="bi bi-search"></i>
-            </button>
-
-          </form>
-        </div>
+    <div class="cta-cuenta">
+      <div class="cta-cuenta-texto">
+        <h3>¡Crea tu cuenta y disfruta de todos los beneficios!</h3>
+        <p>Es gratis, toma menos de un minuto, y ya puedes empezar a contactar o publicar.</p>
       </div>
-    </nav>
+      <a href="/acceso" class="cta-cuenta-boton">
+        <i class="bi bi-box-arrow-in-right"></i> Acceder
+      </a>
+    </div>
 
       <!-- Agrega data-bs-ride="carousel" para que sea automático -->
     <div id="carouselExampleDark" class="carousel carousel-dark slide" data-bs-ride="carousel">
@@ -848,7 +1028,7 @@
     <!-- ========================= -->
     <div class="contador-visitas">
       <i class="bi bi-eye-fill"></i>
-      <span>Personas que han visitado esta página: <strong>{{ number_format($totalVisitas) }}</strong></span>
+      <span> ¡¡¡Visitas a la pagina!!! <strong>{{ number_format($totalVisitas) }}</strong></span>
     </div>
 
     <!-- ========================= -->
@@ -864,29 +1044,15 @@
         </div>
       </div>
       @php
-        $imgsIzquierda = $anunciosIzquierda->flatMap(fn($a) => $a->imagenes);
         $imgsDerecha = $anunciosDerecha->flatMap(fn($a) => $a->imagenes);
       @endphp
       <div class="anuncios-mobile-cols">
-        @if ($imgsIzquierda->count())
-          <div class="ad-box-mobile">
-            <div id="adMobileIzq" class="carousel slide" data-bs-ride="carousel">
-              <div class="carousel-inner">
-                @foreach ($imgsIzquierda as $index => $img)
-                  <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
-                    <img src="{{ $img->imagen }}">
-                  </div>
-                @endforeach
-              </div>
-            </div>
-          </div>
-        @endif
         @if ($imgsDerecha->count())
           <div class="ad-box-mobile">
             <div id="adMobileDer" class="carousel slide" data-bs-ride="carousel">
               <div class="carousel-inner">
                 @foreach ($imgsDerecha as $index => $img)
-                  <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
+                  <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="6000">
                     <img src="{{ $img->imagen }}">
                   </div>
                 @endforeach
@@ -900,7 +1066,222 @@
 
 
 
+
+
     <!--=====================================
+    CÓMO FUNCIONA
+======================================-->
+    <div class="como-funciona-section">
+      <div class="container">
+        <h2 class="como-funciona-titulo">¿Cómo funciona?</h2>
+        <p class="como-funciona-subtitulo">En 4 pasos sencillos, sin complicaciones</p>
+
+        <div class="row g-4 mt-2">
+          <div class="col-6 col-md-3">
+            <div class="como-funciona-card">
+              <div class="como-funciona-numero">1</div>
+              <i class="bi bi-search como-funciona-icono"></i>
+              <h5>Busca o publica</h5>
+              <p>Encuentra el servicio que necesitas, o publica el tuyo si tienes algo que ofrecer.</p>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="como-funciona-card">
+              <div class="como-funciona-numero">2</div>
+              <i class="bi bi-person-check como-funciona-icono"></i>
+              <h5>Regístrate gratis</h5>
+              <p>Crea tu cuenta en un minuto para ver los datos de contacto y hablar directo.</p>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="como-funciona-card">
+              <div class="como-funciona-numero">3</div>
+              <i class="bi bi-whatsapp como-funciona-icono"></i>
+              <h5>Contacta y contrata</h5>
+              <p>Revisa la insignia de verificado y las calificaciones antes de ponerte de acuerdo.</p>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="como-funciona-card">
+              <div class="como-funciona-numero">4</div>
+              <i class="bi bi-star como-funciona-icono"></i>
+              <h5>Califica</h5>
+              <p>Cuando termine el trabajo, deja tu reseña para ayudar a toda la comunidad.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ancla para que el buscador te traiga directo aquí -->
+    <div id="resultados"></div>
+
+    <!--=====================================
+    SERVICIOS DESTACADOS (reales, de toda la plataforma)
+======================================-->
+    <main>
+      <section class="products" id="listProducts">
+        <h2>Servicios Disponibles</h2>
+
+        <form action="/#resultados" method="GET" class="buscador-pro">
+          <div class="campo-input">
+            <i class="bi bi-search"></i>
+            <input type="text" name="q" value="{{ $q }}" placeholder="¿Qué servicio buscas?">
+          </div>
+
+          <select name="categoria_id">
+            <option value="">Todas las categorías</option>
+            @foreach ($categorias as $cat)
+              <option value="{{ $cat->id }}" {{ (string) $categoriaId === (string) $cat->id ? 'selected' : '' }}>
+                {{ $cat->nombre }} ({{ $cat->servicios_count }})
+              </option>
+            @endforeach
+          </select>
+
+          <select name="localidad_id">
+            <option value="">Toda Zacapoaxtla</option>
+            @foreach ($localidades as $loc)
+              <option value="{{ $loc->id }}" {{ (string) $localidadId === (string) $loc->id ? 'selected' : '' }}>
+                {{ $loc->nombre }}
+              </option>
+            @endforeach
+          </select>
+
+          <button type="submit"><i class="bi bi-search"></i> Buscar</button>
+        </form>
+        <p class="buscador-pro-nota">Busca por nombre, y combina con categoría y comunidad</p>
+
+        @if ($q || $categoriaId || $localidadId)
+          <p class="buscador-pro-resultados">
+            Resultados
+            @if ($q) para "<strong>{{ $q }}</strong>" @endif
+            @if ($categoriaId) en <strong>{{ $categorias->firstWhere('id', $categoriaId)->nombre ?? '' }}</strong> @endif
+            @if ($localidadId) en <strong>{{ $localidades->firstWhere('id', $localidadId)->nombre ?? '' }}</strong> @endif
+            &nbsp;·&nbsp; <a href="/">Quitar filtros</a>
+          </p>
+        @endif
+
+        <div class="products-grid container">
+
+          @forelse ($servicios as $s)
+            <div class="product">
+              <img src="{{ $s->imagen ?? asset('img/services/plomero.jpg') }}" alt="{{ $s->titulo }}">
+
+              <div class="product-info">
+                <h4>{{ $s->titulo }}
+                  @if ($s->usuario && $s->usuario->verificacion_estado === 'aprobado')
+                    <span title="Identidad verificada" style="background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; vertical-align:middle;">
+                      <i class="bi bi-patch-check-fill"></i> Verificado
+                    </span>
+                  @endif
+                </h4>
+                <p class="product-text">
+                  {{ \Illuminate\Support\Str::limit($s->descripcion, 90) }}
+                </p>
+
+                @php $prom = round($s->calificaciones_avg_estrellas ?? 0); @endphp
+                @for ($i = 1; $i <= 5; $i++)
+                  <i class="fa-solid fa-star icon-star" style="color:{{ $i <= $prom ? '#ffb347' : '#ddd' }};"></i>
+                @endfor
+                <small style="color:#999; margin-left:4px;">
+                  {{ $s->calificaciones_avg_estrellas ? number_format($s->calificaciones_avg_estrellas, 1) : 'Sin reseñas' }}
+                  @if ($s->calificaciones_count) ({{ $s->calificaciones_count }}) @endif
+                </small>
+
+                <div class="price">
+                  <span>Desde</span>
+                  <p class="currentPrice">${{ number_format($s->precio, 0) }} MXN</p>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <a href="/servicio/{{ $s->id }}" class="btn-add" style="text-decoration:none; text-align:center;">Ver más / Contactar</a>
+
+                  <!-- BOTÓN FAVORITO -->
+                  <div class="favorite-wrapper position-relative">
+                    <i class="bi bi-heart btn-fav" style="font-size: 1.3rem; cursor: pointer;"></i>
+
+                    <!-- DROPDOWN FAVORITOS DENTRO DEL PRODUCT -->
+                    <div class="fav-dropdown" style="display: none;">
+                      <p>Agregado a favoritos ❤️</p>
+                      <button class="btn btn-sm btn-danger clear-fav">Eliminar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          @empty
+            <p class="has-text-grey text-center" style="grid-column: 1 / -1;">Todavía no hay servicios publicados. ¡Sé el primero en <a href="/acceso">unirte</a>!</p>
+          @endforelse
+
+        </div>
+      </section>
+    </main>
+
+    <!--=====================================
+    VACANTES DISPONIBLES (empleos publicados por empleadores)
+======================================-->
+    <section class="products vacantes-section" id="listVacantes">
+      <h2>Vacantes Disponibles</h2>
+
+      <form action="/#listVacantes" method="GET" class="buscador-pro">
+        <div class="campo-input">
+          <i class="bi bi-search"></i>
+          <input type="text" name="q_vacante" value="{{ $qVacante }}" placeholder="¿Qué trabajo buscas?">
+        </div>
+
+        <select name="localidad_vacante_id">
+          <option value="">Toda Zacapoaxtla</option>
+          @foreach ($localidades as $loc)
+            <option value="{{ $loc->id }}" {{ (string) $localidadVacanteId === (string) $loc->id ? 'selected' : '' }}>
+              {{ $loc->nombre }}
+            </option>
+          @endforeach
+        </select>
+
+        <button type="submit"><i class="bi bi-search"></i> Buscar</button>
+      </form>
+      <p class="buscador-pro-nota">Busca por tipo de trabajo, y combina con comunidad</p>
+
+      @if ($qVacante || $localidadVacanteId)
+        <p class="buscador-pro-resultados">
+          Resultados
+          @if ($qVacante) para "<strong>{{ $qVacante }}</strong>" @endif
+          @if ($localidadVacanteId) en <strong>{{ $localidades->firstWhere('id', $localidadVacanteId)->nombre ?? '' }}</strong> @endif
+          &nbsp;·&nbsp; <a href="/#listVacantes">Quitar filtros</a>
+        </p>
+      @endif
+
+      <div class="container">
+        <div class="row g-3">
+          @forelse ($vacantes as $v)
+            <div class="col-12 col-md-6">
+              <div class="vacante-card">
+                <img src="{{ $v->imagen ?? asset('img/services/plomero.jpg') }}" alt="{{ $v->titulo }}">
+                <div class="vacante-info">
+                  <div>
+                    <h5>{{ $v->titulo }}</h5>
+                    <div class="vacante-meta">
+                      <i class="bi bi-person"></i> {{ $v->publicante ?? 'Empleador' }}
+                      &nbsp;·&nbsp; <i class="bi bi-geo-alt"></i> {{ $v->ubicacion }}
+                    </div>
+                    <p class="vacante-desc">{{ \Illuminate\Support\Str::limit($v->descripcion, 100) }}</p>
+                    <div class="vacante-badges">
+                      <span class="badge-salario"><i class="bi bi-currency-dollar"></i> {{ $v->salario }}</span>
+                      <span class="badge-contrato"><i class="bi bi-file-earmark-text"></i> {{ $v->contrato }}</span>
+                    </div>
+                  </div>
+                  <a href="/vacante/{{ $v->id }}" class="btn-add" style="text-decoration:none; text-align:center; align-self:flex-start;">Ver más / Postularme</a>
+                </div>
+              </div>
+            </div>
+          @empty
+            <p class="has-text-grey text-center" style="grid-column: 1 / -1;">Todavía no hay vacantes publicadas. ¡Sé el primero en <a href="/acceso">publicar una</a>!</p>
+          @endforelse
+        </div>
+      </div>
+    </section>
+
+       <!--=====================================
     Home Features
 =====================================-->
 
@@ -963,129 +1344,13 @@
       </div>
     </div>
 
-    <!--=====================================
-    CÓMO FUNCIONA
-======================================-->
-    <div class="como-funciona-section">
-      <div class="container">
-        <h2 class="como-funciona-titulo">¿Cómo funciona?</h2>
-        <p class="como-funciona-subtitulo">En 4 pasos sencillos, sin complicaciones</p>
-
-        <div class="row g-4 mt-2">
-          <div class="col-6 col-md-3">
-            <div class="como-funciona-card">
-              <div class="como-funciona-numero">1</div>
-              <i class="bi bi-search como-funciona-icono"></i>
-              <h5>Busca o publica</h5>
-              <p>Encuentra el servicio que necesitas, o publica el tuyo si tienes algo que ofrecer.</p>
-            </div>
-          </div>
-          <div class="col-6 col-md-3">
-            <div class="como-funciona-card">
-              <div class="como-funciona-numero">2</div>
-              <i class="bi bi-person-check como-funciona-icono"></i>
-              <h5>Regístrate gratis</h5>
-              <p>Crea tu cuenta en un minuto para ver los datos de contacto y hablar directo.</p>
-            </div>
-          </div>
-          <div class="col-6 col-md-3">
-            <div class="como-funciona-card">
-              <div class="como-funciona-numero">3</div>
-              <i class="bi bi-whatsapp como-funciona-icono"></i>
-              <h5>Contacta y contrata</h5>
-              <p>Revisa la insignia de verificado y las calificaciones antes de ponerte de acuerdo.</p>
-            </div>
-          </div>
-          <div class="col-6 col-md-3">
-            <div class="como-funciona-card">
-              <div class="como-funciona-numero">4</div>
-              <i class="bi bi-star como-funciona-icono"></i>
-              <h5>Califica</h5>
-              <p>Cuando termine el trabajo, deja tu reseña para ayudar a toda la comunidad.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!--=====================================
-    SERVICIOS DESTACADOS (reales, de toda la plataforma)
-======================================-->
-    <main>
-      <section class="products" id="listProducts">
-        <h2>Servicios Disponibles</h2>
-        @if ($q || $categoriaId)
-          <p class="text-center text-muted mb-4">
-            Resultados
-            @if ($q) para "<strong>{{ $q }}</strong>" @endif
-            @if ($categoriaId) en <strong>{{ $categorias->firstWhere('id', $categoriaId)->nombre ?? '' }}</strong> @endif
-            &nbsp;·&nbsp; <a href="/">Quitar filtros</a>
-          </p>
-        @endif
-
-        <div class="products-grid container">
-
-          @forelse ($servicios as $s)
-            <div class="product">
-              <img src="{{ $s->imagen ?? asset('img/services/plomero.jpg') }}" alt="{{ $s->titulo }}">
-
-              <div class="product-info">
-                <h4>{{ $s->titulo }}
-                  @if ($s->usuario && $s->usuario->verificacion_estado === 'aprobado')
-                    <span title="Identidad verificada" style="background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; vertical-align:middle;">
-                      <i class="bi bi-patch-check-fill"></i> Verificado
-                    </span>
-                  @endif
-                </h4>
-                <p class="product-text">
-                  {{ \Illuminate\Support\Str::limit($s->descripcion, 90) }}
-                </p>
-
-                @php $prom = round($s->calificaciones_avg_estrellas ?? 0); @endphp
-                @for ($i = 1; $i <= 5; $i++)
-                  <i class="fa-solid fa-star icon-star" style="color:{{ $i <= $prom ? '#ffb347' : '#ddd' }};"></i>
-                @endfor
-                <small style="color:#999; margin-left:4px;">
-                  {{ $s->calificaciones_avg_estrellas ? number_format($s->calificaciones_avg_estrellas, 1) : 'Sin reseñas' }}
-                  @if ($s->calificaciones_count) ({{ $s->calificaciones_count }}) @endif
-                </small>
-
-                <div class="price">
-                  <span>Desde</span>
-                  <p class="currentPrice">${{ number_format($s->precio, 0) }} MXN</p>
-                </div>
-
-                <div class="d-flex gap-2">
-                  <a href="/acceso" class="btn-add" style="text-decoration:none; text-align:center;">Ver más / Contactar</a>
-
-                  <!-- BOTÓN FAVORITO -->
-                  <div class="favorite-wrapper position-relative">
-                    <i class="bi bi-heart btn-fav" style="font-size: 1.3rem; cursor: pointer;"></i>
-
-                    <!-- DROPDOWN FAVORITOS DENTRO DEL PRODUCT -->
-                    <div class="fav-dropdown" style="display: none;">
-                      <p>Agregado a favoritos ❤️</p>
-                      <button class="btn btn-sm btn-danger clear-fav">Eliminar</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          @empty
-            <p class="has-text-grey text-center" style="grid-column: 1 / -1;">Todavía no hay servicios publicados. ¡Sé el primero en <a href="/acceso">unirte</a>!</p>
-          @endforelse
-
-        </div>
-      </section>
-    </main>
-
 
     <!-- MENÚ INFERIOR SOLO PARA CELULAR -->
     <div class="menu-movil d-lg-none">
 
       <a class="item" data-bs-toggle="offcanvas" href="#panelCategorias">
         <i class="bi bi-grid"></i>
-        <span>Categorias</span>
+        <span>Categorías</span>
       </a>
 
       <a class="item" data-bs-toggle="offcanvas" href="#panelFavoritos">
@@ -1125,6 +1390,7 @@
                 <i class="bi {{ $icono['icon'] }} me-2 {{ $icono['color'] }}"></i>
                 {{ $cat->nombre }}
               </div>
+              <span class="badge rounded-pill bg-danger">{{ $cat->servicios_count }}</span>
               </a>
       @endforeach
 
@@ -1184,9 +1450,9 @@
             <!-- Contacto -->
             <div class="col-md-4 text-center text-md-end">
               <h5 class="text-white mb-3">Contacto</h5>
-              <p><i class="bi bi-telephone"></i> 2331014306</p>
-              <p><i class="bi bi-geo-alt"></i> Teziutlán, Puebla</p>
-              <p><i class="bi bi-envelope"></i> contacto@conectaya.com</p>
+              <p><i class="bi bi-telephone"></i> 2331442834</p>
+              <p><i class="bi bi-geo-alt"></i> Zacapoaxtla, Puebla</p>
+              <p><i class="bi bi-envelope"></i> sinteczate1996@gmail.com</p>
 
             </div>
 

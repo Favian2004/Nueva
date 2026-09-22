@@ -115,6 +115,12 @@
             <span class="menu-item-label">Reportes</span>
           </a>
         </li>
+          <li>
+          <a href="/admin/testimonios" class="has-icon">
+            <span class="icon"><i class="mdi mdi-comment-quote"></i></span>
+            <span class="menu-item-label">Testimonios</span>
+          </a>
+        </li>
         <li>
           <a href="/admin/categorias" class="has-icon">
             <span class="icon"><i class="mdi mdi-shape"></i></span>
@@ -168,8 +174,7 @@
 
     <div class="notification is-info is-light">
       <span class="icon"><i class="mdi mdi-information"></i></span>
-      Cada lado de la página principal tiene <b>3 espacios fijos</b>. Cada espacio puede mostrar
-      de <b>2 a 5 imágenes en carrusel</b> (generadas con IA). Sube, ordena o quita imágenes de cada espacio aquí.
+      La <b>columna derecha</b> es la que se muestra en las <b>páginas públicas</b> (Inicio, Términos, etc.) y también en el <b>dashboard de usuario</b> — son los mismos anuncios en los dos lugares. La <b>columna izquierda</b> ahora mismo no se muestra en ningún lado (queda disponible por si más adelante la quieres volver a usar). Cada lado tiene <b>3 espacios fijos</b>, y cada espacio puede mostrar de <b>2 a 15 imágenes en carrusel</b>. Sube, ordena o quita imágenes de cada espacio aquí.
     </div>
     <div class="field mb-4">
       <div class="control">
@@ -184,11 +189,11 @@
     </div>
     <div class="columns">
       <div class="column is-6">
-        <h3 class="title is-5"><span class="icon"><i class="mdi mdi-page-layout-sidebar-left"></i></span> Columna izquierda</h3>
+        <h3 class="title is-5"><span class="icon"><i class="mdi mdi-page-layout-sidebar-left"></i></span> Columna izquierda <small class="has-text-grey">(sin uso por ahora)</small></h3>
         <div id="col-izquierda"></div>
       </div>
       <div class="column is-6">
-        <h3 class="title is-5"><span class="icon"><i class="mdi mdi-page-layout-sidebar-right"></i></span> Columna derecha</h3>
+        <h3 class="title is-5"><span class="icon"><i class="mdi mdi-page-layout-sidebar-right"></i></span> Columna derecha <small class="has-text-grey">(páginas públicas + dashboard)</small></h3>
         <div id="col-derecha"></div>
       </div>
     </div>
@@ -202,7 +207,7 @@
         </header>
         <section class="modal-card-body">
           <input type="hidden" id="modal-anuncio-id">
-          <p class="help mb-3">Máximo 5 imágenes por espacio. Se muestran en el orden en que las agregues.</p>
+          <p class="help mb-3">Máximo 15 imágenes por espacio. Se muestran en el orden en que las agregues.</p>
           <div class="columns is-multiline" id="modal-anuncio-imgs"></div>
           <div class="field mt-4">
             <div class="field file is-fullwidth">
@@ -258,7 +263,7 @@
   }
 
   function renderEspacio(a) {
-    const imgs = a.imagenes.slice(0, 5);
+    const imgs = a.imagenes.slice(0, 15);
     const thumbs = imgs.map(i => `<img src="${i.imagen}" class="anuncio-thumb" style="width:60px;height:40px;margin-right:4px;">`).join('') || '<span class="has-text-grey">Sin imágenes</span>';
     return `
       <div class="card mb-4">
@@ -322,9 +327,9 @@
         <button class="button is-small is-danger mt-1" onclick="quitarImagen(${i.id})"><span class="icon"><i class="mdi mdi-trash-can"></i></span></button>
       </div>`).join('');
     const btn = document.getElementById('btn-agregar-imagen');
-    btn.classList.toggle('is-static', imgs.length >= 5);
-    if (imgs.length >= 5) {
-      btn.querySelector('span:last-child').textContent = 'Máximo de 5 imágenes alcanzado';
+    btn.classList.toggle('is-static', imgs.length >= 15);
+    if (imgs.length >= 15) {
+      btn.querySelector('span:last-child').textContent = 'Máximo de 15 imágenes alcanzado';
     }
   }
   function quitarImagen(imgId) {
@@ -344,7 +349,7 @@
   }
   document.getElementById('input-nueva-imagen').addEventListener('change', function (e) {
     const imgs = getImagenesAnuncio(modalAnuncioId);
-    if (imgs.length >= 5) { alert('Este espacio ya tiene el máximo de 5 imágenes.'); e.target.value = ''; return; }
+    if (imgs.length >= 15) { alert('Este espacio ya tiene el máximo de 15 imágenes.'); e.target.value = ''; return; }
     const file = e.target.files[0];
     if (!file) return;
 

@@ -51,4 +51,20 @@ class UsuarioSolicitudController extends Controller
 
         return response()->json(['ok' => true]);
     }
+
+    public function eliminar($id)
+    {
+        // Solo se puede eliminar si ya fue cancelada, y solo si el usuario
+        // es el contratante (la envió) o el trabajador del servicio (la recibió).
+        $solicitud = Contratacion::where(function ($query) {
+                $query->where('contratante_id', Auth::id())
+                      ->orWhere('trabajador_id', Auth::id());
+            })
+            ->where('estado', 'cancelado')
+            ->findOrFail($id);
+
+        $solicitud->delete();
+
+        return response()->json(['ok' => true]);
+    }
 }

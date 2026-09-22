@@ -1,45 +1,36 @@
 /* =====================================================================
    ANUNCIOS LATERALES - "Negocios destacados de tu municipio"
    Mismo look & feel que las columnas fijas de la página principal
-   (index.html: .anuncio-izq / .anuncio-der / .ad-box / .ad-titulo).
+   (index.html: .anuncio-izq / .ad-box / .ad-titulo).
    Se inyectan con js/ads-widget.js en todas las páginas del dashboard.
 
-   La columna izquierda se recorre 14rem (ancho del sidebar del
-   dashboard, aside.aside.is-expanded { width: 14rem; }) para no
-   taparlo.
+   Solo se muestra una columna (se quitó la del otro lado a
+   petición del profesor). Va del lado IZQUIERDO, tamaño original.
    ===================================================================== */
 
-.anuncio-izq,
-.anuncio-der {
+.anuncio-izq {
   position: fixed;
-  top: 80px;
-  width: 170px;
+  top: 60px;
+  width: 200px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   z-index: 30;
-}
-
-.anuncio-izq {
-  left: calc(14rem + 10px);
-}
-
-.anuncio-der {
-  right: 10px;
+  left: calc(15rem + 10px);
 }
 
 .ad-titulo {
   background: #fff;
-  width: 185px;
-  border-radius: 12px;
-  padding: 12px 8px;
+  width: 200px;
+  border-radius: 10px;
+  padding: 6px 6px;
   text-align: center;
   box-shadow: 0 4px 15px rgba(0, 0, 0, .10);
 }
 
 .ad-titulo h5 {
   margin: 0;
-  font-size: 15px;
+  font-size: 11px;
   font-weight: 800;
   color: #333;
 }
@@ -49,24 +40,24 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 5px;
+  margin-top: 3px;
 }
 
 .linea-titulo span {
-  width: 26px;
+  width: 20px;
   height: 2px;
   background: #f39c12;
 }
 
 .linea-titulo small {
-  font-size: 11px;
+  font-size: 9px;
   color: #555;
   font-weight: 600;
 }
 
 .ad-box {
-  height: 200px;
-  width: 185px;
+  height: 180px;
+  width: 200px;
   border-radius: 14px;
   overflow: hidden;
   background: #f0f0f0;
@@ -91,31 +82,71 @@
   pointer-events: auto;
 }
 
+/* Laptops normales (14", ~1301px a 1450px, ej. 1366x768) */
+@media (min-width: 1301px) and (max-width: 1450px) {
+  .anuncio-izq {
+    width: 155px;
+  }
+
+  .ad-titulo {
+    width: 155px;
+    padding: 5px 4px;
+  }
+
+  .ad-titulo h5 {
+    font-size: 10px;
+  }
+
+  .ad-box {
+    width: 155px;
+    height: 180px;
+  }
+
+  #app {
+    margin-left: 185px;
+  }
+}
+
+/* Laptops medianas (15"-16", ~1451px a 1650px, ej. 1536x864, 1600x900) */
+@media (min-width: 1451px) and (max-width: 1650px) {
+  .anuncio-izq {
+    width: 175px;
+  }
+
+  .ad-titulo {
+    width: 190px;
+  }
+
+  .ad-box {
+    width: 190px;
+    height: 190px;
+  }
+
+  #app {
+    margin-left: 205px;
+  }
+}
+
 /* Se ocultan en pantallas angostas para no tapar el contenido, igual
    que en index.html (ahí se ocultan bajo 1200px; aquí un poco más
    tarde porque el sidebar del dashboard ya ocupa espacio a la izq). */
 @media (max-width: 1300px) {
 
-  .anuncio-izq,
-  .anuncio-der {
+  .anuncio-izq {
     display: none;
   }
 }
 
 /* ---------------------------------------------------------------------
-   IMPORTANTE: igual que .contenido en index.html reserva espacio de
-   cada lado para que los anuncios NUNCA se encimen con el contenido,
+   IMPORTANTE: igual que .contenido en index.html reserva espacio a la
+   izquierda para que los anuncios NUNCA se encimen con el contenido,
    aquí hacemos lo mismo con #app (el contenedor raíz del dashboard).
-   #app no tiene ancho fijo, así que estos márgenes simplemente
-   "empujan" el contenido normal (title-bar, main-section, footer)
-   hacia adentro. El navbar y el aside son position:fixed, así que
-   ellos ignoran este margen y se quedan pegados a los bordes, tal
-   como debe ser.
+   Este rango es solo para pantallas GRANDES (1651px+); las medianas
+   (1301px-1650px) ya tienen su propio margen más chico arriba.
    --------------------------------------------------------------------- */
-@media (min-width: 1301px) {
+@media (min-width: 1651px) {
   #app {
-    margin-left: 200px;
-    margin-right: 200px;
+    margin-left: 230px;
   }
 }
 

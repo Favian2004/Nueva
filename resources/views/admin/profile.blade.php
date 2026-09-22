@@ -204,6 +204,12 @@
             <span class="menu-item-label">Reportes</span>
           </a>
         </li>
+          <li>
+          <a href="/admin/testimonios" class="has-icon">
+            <span class="icon"><i class="mdi mdi-comment-quote"></i></span>
+            <span class="menu-item-label">Testimonios</span>
+          </a>
+        </li>
         <li>
           <a href="/admin/categorias" class="has-icon">
             <span class="icon"><i class="mdi mdi-shape"></i></span>

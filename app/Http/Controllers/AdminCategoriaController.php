@@ -13,9 +13,22 @@ class AdminCategoriaController extends Controller
         $categorias = Categoria::orderBy('nombre')->get();
         $subcategorias = Subcategoria::with('categoria')->orderBy('nombre')->get();
 
+        $categoriasJson = $categorias->map(fn($c) => [
+            'id' => $c->id,
+            'nombre' => $c->nombre,
+        ]);
+
+        $subcategoriasJson = $subcategorias->map(fn($s) => [
+            'id' => $s->id,
+            'nombre' => $s->nombre,
+            'categoria_id' => $s->categoria_id,
+        ]);
+
         return view('admin.categorias', [
             'categorias' => $categorias,
             'subcategorias' => $subcategorias,
+            'categoriasJson' => $categoriasJson,
+            'subcategoriasJson' => $subcategoriasJson,
         ]);
     }
 

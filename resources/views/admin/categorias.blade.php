@@ -17,6 +17,27 @@
     .is-image-cell .image img { object-fit: cover; }
     .anuncio-thumb { width: 160px; height: 90px; object-fit: cover; border-radius: 6px; }
     .badge-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+
+    .cat-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px; border-radius: 8px; cursor: pointer;
+      margin-bottom: 4px; transition: 0.15s; border: 1px solid transparent;
+    }
+    .cat-item:hover { background: #f5f5f5; }
+    .cat-item.activa { background: #eef6ff; border-color: #7957d5; font-weight: 700; }
+    .cat-item .cat-nombre { flex: 1; }
+    .cat-item .cat-acciones { display: flex; align-items: center; gap: 6px; }
+    .cat-item .tag { flex-shrink: 0; }
+    .cat-item .btn-borrar-cat { background: none; border: none; color: #b5b5b5; cursor: pointer; padding: 2px; }
+    .cat-item .btn-borrar-cat:hover { color: #f14668; }
+
+    .sub-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #f5f5f5; border-radius: 20px; padding: 6px 8px 6px 14px;
+      font-size: 13px;
+    }
+    .sub-chip .btn-borrar-sub { background: #fff; border: none; color: #b5b5b5; cursor: pointer; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1; }
+    .sub-chip .btn-borrar-sub:hover { color: #f14668; background: #ffe3e8; }
   </style>
 
   <link rel="stylesheet" href="{{ asset('assets/admin/css/theme-conectaya-admin.css') }}">
@@ -115,6 +136,12 @@
             <span class="menu-item-label">Reportes</span>
           </a>
         </li>
+          <li>
+          <a href="/admin/testimonios" class="has-icon">
+            <span class="icon"><i class="mdi mdi-comment-quote"></i></span>
+            <span class="menu-item-label">Testimonios</span>
+          </a>
+        </li>
         <li>
           <a href="/admin/categorias" class="is-active router-link-active has-icon">
             <span class="icon"><i class="mdi mdi-shape"></i></span>
@@ -167,77 +194,40 @@
   <section class="section is-main-section">
 
     <div class="columns">
-      <div class="column is-5">
+      <div class="column is-4">
         <div class="card has-table">
           <header class="card-header">
-            <p class="card-header-title"><span class="icon"><i class="mdi mdi-shape default"></i></span>Categorías</p>
+            <p class="card-header-title"><span class="icon"><i class="mdi mdi-shape default"></i></span>Categorías <span class="tag is-light ml-2">{{ $categorias->count() }}</span></p>
           </header>
           <div class="card-content">
-            <div class="field has-addons mb-4">
-              <div class="control is-expanded"><input class="input" id="nueva-categoria" placeholder="Nueva categoría..."></div>
+            <div class="field has-addons mb-3">
+              <div class="control is-expanded"><input class="input" id="nueva-categoria" placeholder="Nueva categoría..." onkeydown="if(event.key==='Enter'){event.preventDefault();agregarCategoria();}"></div>
               <div class="control"><button class="button is-primary" onclick="agregarCategoria()"><span class="icon"><i class="mdi mdi-plus"></i></span></button></div>
             </div>
-            <table class="table is-fullwidth is-striped is-hoverable">
-              <thead><tr><th>Nombre</th><th class="is-actions-cell">Acciones</th></tr></thead>
-              <tbody id="tbl-categorias">
-                @forelse ($categorias as $c)
-                  <tr>
-                    <td>{{ $c->nombre }}</td>
-                    <td class="is-actions-cell">
-                      <div class="buttons is-right">
-                        <button class="button is-small is-danger" title="Eliminar" onclick="eliminarCategoria({{ $c->id }})">
-                          <span class="icon"><i class="mdi mdi-trash-can"></i></span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                @empty
-                  <tr><td colspan="2" class="has-text-centered has-text-grey">No hay categorías todavía.</td></tr>
-                @endforelse
-              </tbody>
-            </table>
+            <div class="control mb-3 has-icons-left">
+              <input class="input is-small" id="buscar-categoria" placeholder="Buscar categoría..." oninput="filtrarCategorias()">
+              <span class="icon is-small is-left"><i class="mdi mdi-magnify"></i></span>
+            </div>
+            <div id="lista-categorias" style="max-height:600px; overflow-y:auto;"></div>
           </div>
         </div>
       </div>
-      <div class="column is-7">
+      <div class="column is-8">
         <div class="card has-table">
           <header class="card-header">
-            <p class="card-header-title"><span class="icon"><i class="mdi mdi-shape-outline default"></i></span>Subcategorías</p>
+            <p class="card-header-title"><span class="icon"><i class="mdi mdi-shape-outline default"></i></span><span id="titulo-subcategorias">Selecciona una categoría</span></p>
           </header>
           <div class="card-content">
-            <div class="field has-addons mb-4">
-              <div class="control">
-                <div class="select">
-                  <select id="select-categoria-padre">
-                    @foreach ($categorias as $c)
-                      <option value="{{ $c->id }}">{{ $c->nombre }}</option>
-                    @endforeach
-                  </select>
-                </div>
-              </div>
-              <div class="control is-expanded"><input class="input" id="nueva-subcategoria" placeholder="Nueva subcategoría..."></div>
-              <div class="control"><button class="button is-primary" onclick="agregarSubcategoria()"><span class="icon"><i class="mdi mdi-plus"></i></span></button></div>
+            <div class="field has-addons mb-3">
+              <div class="control is-expanded"><input class="input" id="nueva-subcategoria" placeholder="Nueva subcategoría / oficio..." disabled onkeydown="if(event.key==='Enter'){event.preventDefault();agregarSubcategoria();}"></div>
+              <div class="control"><button class="button is-primary" id="btn-agregar-sub" onclick="agregarSubcategoria()" disabled><span class="icon"><i class="mdi mdi-plus"></i></span></button></div>
             </div>
-            <table class="table is-fullwidth is-striped is-hoverable">
-              <thead><tr><th>Subcategoría</th><th>Categoría</th><th class="is-actions-cell">Acciones</th></tr></thead>
-              <tbody id="tbl-subcategorias">
-                @forelse ($subcategorias as $s)
-                  <tr>
-                    <td>{{ $s->nombre }}</td>
-                    <td>{{ $s->categoria->nombre ?? '—' }}</td>
-                    <td class="is-actions-cell">
-                      <div class="buttons is-right">
-                        <button class="button is-small is-danger" title="Eliminar" onclick="eliminarSubcategoria({{ $s->id }})">
-                          <span class="icon"><i class="mdi mdi-trash-can"></i></span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                @empty
-                  <tr><td colspan="3" class="has-text-centered has-text-grey">No hay subcategorías todavía.</td></tr>
-                @endforelse
-              </tbody>
-            </table>
+            <div class="control mb-3 has-icons-left">
+              <input class="input is-small" id="buscar-subcategoria" placeholder="Buscar dentro de esta categoría..." oninput="filtrarSubcategorias()">
+              <span class="icon is-small is-left"><i class="mdi mdi-magnify"></i></span>
+            </div>
+            <div id="grid-subcategorias" style="display:flex; flex-wrap:wrap; gap:8px; max-height:520px; overflow-y:auto; align-content:flex-start;"></div>
+            <p id="vacio-subcategorias" class="has-text-centered has-text-grey mt-4" style="display:none;">Esta categoría todavía no tiene subcategorías. Agrega la primera arriba.</p>
           </div>
         </div>
       </div>
@@ -268,6 +258,88 @@
 <script>
   // ===== Categorías y subcategorías (guardan de verdad en la base de datos) =====
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  // Datos ya cargados del servidor, para que cambiar de categoría sea instantáneo
+  const categorias = @json($categoriasJson);
+  const subcategorias = @json($subcategoriasJson);
+
+  let categoriaSeleccionadaId = null;
+
+  function subsDe(catId) {
+    return subcategorias.filter(s => s.categoria_id === catId).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  function pintarCategorias(filtro = '') {
+    const cont = document.getElementById('lista-categorias');
+    const filtroLower = filtro.trim().toLowerCase();
+    const lista = categorias
+      .filter(c => c.nombre.toLowerCase().includes(filtroLower))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+    if (!lista.length) {
+      cont.innerHTML = '<p class="has-text-grey has-text-centered">No hay categorías que coincidan.</p>';
+      return;
+    }
+
+    cont.innerHTML = lista.map(c => {
+      const count = subsDe(c.id).length;
+      const activa = c.id === categoriaSeleccionadaId ? 'activa' : '';
+      return `
+        <div class="cat-item ${activa}" onclick="seleccionarCategoria(${c.id})">
+          <span class="cat-nombre">${escaparHtml(c.nombre)}</span>
+          <span class="cat-acciones">
+            <span class="tag ${count === 0 ? 'is-warning' : 'is-light'}">${count}</span>
+            <button class="btn-borrar-cat" title="Eliminar categoría" onclick="event.stopPropagation(); eliminarCategoria(${c.id})"><i class="mdi mdi-trash-can-outline"></i></button>
+          </span>
+        </div>`;
+    }).join('');
+  }
+
+  function seleccionarCategoria(id) {
+    categoriaSeleccionadaId = id;
+    document.getElementById('buscar-subcategoria').value = '';
+    document.getElementById('nueva-subcategoria').disabled = false;
+    document.getElementById('btn-agregar-sub').disabled = false;
+    pintarCategorias(document.getElementById('buscar-categoria').value);
+    pintarSubcategorias();
+  }
+
+  function pintarSubcategorias(filtro = '') {
+    const cat = categorias.find(c => c.id === categoriaSeleccionadaId);
+    document.getElementById('titulo-subcategorias').textContent = cat ? `Subcategorías de "${cat.nombre}"` : 'Selecciona una categoría';
+
+    const grid = document.getElementById('grid-subcategorias');
+    const vacio = document.getElementById('vacio-subcategorias');
+
+    if (!cat) { grid.innerHTML = ''; vacio.style.display = 'none'; return; }
+
+    const filtroLower = filtro.trim().toLowerCase();
+    const lista = subsDe(cat.id).filter(s => s.nombre.toLowerCase().includes(filtroLower));
+
+    if (!lista.length) {
+      grid.innerHTML = '';
+      vacio.style.display = 'block';
+      vacio.textContent = filtroLower ? 'No hay ninguna que coincida con tu búsqueda.' : 'Esta categoría todavía no tiene subcategorías. Agrega la primera arriba.';
+      return;
+    }
+
+    vacio.style.display = 'none';
+    grid.innerHTML = lista.map(s => `
+      <span class="sub-chip">
+        ${escaparHtml(s.nombre)}
+        <button class="btn-borrar-sub" title="Eliminar" onclick="eliminarSubcategoria(${s.id})"><i class="mdi mdi-close"></i></button>
+      </span>
+    `).join('');
+  }
+
+  function filtrarCategorias() { pintarCategorias(document.getElementById('buscar-categoria').value); }
+  function filtrarSubcategorias() { pintarSubcategorias(document.getElementById('buscar-subcategoria').value); }
+
+  function escaparHtml(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto;
+    return div.innerHTML;
+  }
 
   function agregarCategoria() {
     const input = document.getElementById('nueva-categoria');
@@ -302,14 +374,13 @@
 
   function agregarSubcategoria() {
     const input = document.getElementById('nueva-subcategoria');
-    const catId = document.getElementById('select-categoria-padre').value;
     const nombre = input.value.trim();
-    if (!nombre || !catId) return;
+    if (!nombre || !categoriaSeleccionadaId) return;
 
     fetch('/admin/subcategorias', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-      body: JSON.stringify({ nombre: nombre, categoria_id: catId }),
+      body: JSON.stringify({ nombre: nombre, categoria_id: categoriaSeleccionadaId }),
     })
       .then(res => {
         if (!res.ok) throw new Error();
@@ -331,6 +402,10 @@
       })
       .catch(() => alert('Ocurrió un error al eliminar la subcategoría. Intenta de nuevo.'));
   }
+
+  // Pinta la lista de categorías al cargar, y selecciona la primera automáticamente
+  pintarCategorias();
+  if (categorias.length) seleccionarCategoria([...categorias].sort((a, b) => a.nombre.localeCompare(b.nombre))[0].id);
 </script>
 
 

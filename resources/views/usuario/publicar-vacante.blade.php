@@ -465,11 +465,6 @@
     <section class="section is-main-section">
       <div class="container">
 
-        <div class="role-notice">
-          <span class="notice-icon">🏢</span>
-          <span>Estás en modo <strong class="notice-role employer">Empleador</strong> · Publica una nueva vacante para encontrar talento.</span>
-        </div>
-
         <div class="publicar-card">
           <div class="publicar-card-header">
             <h2><i class="mdi mdi-{{ $vacante ? 'pencil' : 'plus-circle' }}"></i> {{ $vacante ? 'Editar Vacante' : 'Publicar Nueva Vacante' }}</h2>
@@ -486,10 +481,17 @@
 
             <form id="vacanteForm">
 
+              @if ($tituloDescripcionBloqueada)
+                <div class="form-group" style="background:#fef7e0; border:1px solid #f5d78e; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:#8a6d1f;">
+                  <i class="mdi mdi-lock-outline"></i>
+                  Esta vacante ya tiene postulaciones, así que el título y la descripción ya no se pueden cambiar (para no confundir a quien ya se postuló pensando que era para este trabajo). El resto de los datos sí se puede editar. Si necesitas más trabajadores para un tipo de trabajo distinto, publica una vacante nueva.
+                </div>
+              @endif
+
               <!-- TÍTULO -->
               <div class="form-group">
                 <label for="titulo">Título de la Vacante <span class="required">*</span></label>
-                <input type="text" id="titulo" name="titulo" value="{{ $vacante->titulo ?? '' }}" placeholder="Ej: Electricista Industrial" required>
+                <input type="text" id="titulo" name="titulo" value="{{ $vacante->titulo ?? '' }}" placeholder="Ej: Electricista Industrial" required {{ $tituloDescripcionBloqueada ? 'disabled' : '' }}>
               </div>
 
               <!-- PUBLICANTE Y UBICACIÓN -->
@@ -559,7 +561,17 @@
               <!-- DESCRIPCIÓN -->
               <div class="form-group">
                 <label for="descripcion">Descripción del trabajo <span class="required">*</span></label>
-                <textarea id="descripcion" name="descripcion" placeholder="Describe las responsabilidades y requisitos del puesto..." required>{{ $vacante->descripcion ?? '' }}</textarea>
+                <textarea id="descripcion" name="descripcion" placeholder="Describe las responsabilidades y requisitos del puesto..." required {{ $tituloDescripcionBloqueada ? 'disabled' : '' }}>{{ $vacante->descripcion ?? '' }}</textarea>
+              </div>
+
+              <!-- DOCUMENTOS QUE PIDES A QUIEN SE POSTULE -->
+              <div class="form-group">
+                <label>¿Qué documentos necesitas de quien se postule?</label>
+                <span class="form-hint" style="display:block; margin-bottom:6px;">Opcional — marca solo lo que de verdad necesites para este puesto.</span>
+                <div class="beneficios-grid">
+                  <label><input type="checkbox" name="requiere_cv" value="1" {{ ($vacante->requiere_cv ?? false) ? 'checked' : '' }}> 📄 CV</label>
+                  <label><input type="checkbox" name="requiere_solicitud_empleo" value="1" {{ ($vacante->requiere_solicitud_empleo ?? false) ? 'checked' : '' }}> 📋 Solicitud de empleo</label>
+                </div>
               </div>
 
               <!-- BENEFICIOS -->
@@ -645,10 +657,10 @@
         </div>
         <div class="banner-destaca">
           <h2>DESTACA TU NEGOCIO</h2>
-          <h1>EN ¡CONECTAYA!</h1>
+          <h1>EN ¡SINTECZATE!</h1>
         </div>
         <div class="banner-boton">
-          <a href="/anunciar" class="btn-anunciar"></a>¡ANÚNCIATE AQUÍ!</a>
+          <a href="/anunciar" class="btn-anunciar">¡ANÚNCIATE AQUÍ!</a>
           <small>Más información →</small>
         </div>
         <div class="banner-persona">

@@ -23,6 +23,8 @@ class Vacante extends Model
         'contrato',
         'beneficios',
         'descripcion',
+        'requiere_cv',
+        'requiere_solicitud_empleo',
         'fecha_trabajo',
         'duracion',
         'fecha_limite',

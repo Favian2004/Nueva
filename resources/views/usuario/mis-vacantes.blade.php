@@ -796,10 +796,6 @@
         <section class="section is-main-section">
             <div class="container">
 
-                <div class="role-notice">
-                    <span class="notice-icon">🏢</span>
-                    <span>Estás en modo <strong class="notice-role employer">Empleador</strong> · Gestiona tus vacantes publicadas.</span>
-                </div>
 
                 <!-- ===== ESTADÍSTICAS ===== -->
                 <div class="estadisticas-row">
@@ -851,11 +847,11 @@
                         <option value="Eventual" {{ $contrato === 'Eventual' ? 'selected' : '' }}>Eventual</option>
                     </select>
 
-                    <input type="text" name="q" value="{{ $q }}" placeholder="🔍 Buscar vacante...">
+                    <input type="text" name="q" value="{{ $q }}" placeholder=" Buscar vacante...">
 
                     <button type="submit" class="btn-filtrar">
                         <i class="mdi mdi-filter"></i>
-                        Filtrar
+                        Buscar
                     </button>
 
                 </form>

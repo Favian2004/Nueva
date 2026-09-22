@@ -9,7 +9,7 @@
 (function () {
   function buildAdBox(anuncio) {
     const imgsHtml = anuncio.imagenes
-      .map((img, idx) => `<img src="${img.imagen}" alt="Negocio destacado" class="${idx === 0 ? 'is-visible' : ''}">`)
+      .map((img, idx) => `<img src="${img.imagen}" alt="Negocio destacado">`)
       .join('');
     return `<div class="ad-box" data-anuncio-id="${anuncio.id}">${imgsHtml}</div>`;
   }
@@ -27,33 +27,46 @@
     return titulo + anuncios.map(buildAdBox).join('');
   }
 
+  // Recuerda, entre una página y otra, en qué foto se quedó cada anuncio
+  // (así, aunque la gente navegue rápido entre páginas, con el tiempo
+  // se alcanzan a ver TODAS las fotos de cada negocio, no solo la primera).
+  function leerIndiceGuardado(anuncioId) {
+    const val = parseInt(localStorage.getItem('anuncio-idx-' + anuncioId), 10);
+    return isNaN(val) ? 0 : val;
+  }
+  function guardarIndice(anuncioId, idx) {
+    localStorage.setItem('anuncio-idx-' + anuncioId, String(idx));
+  }
+
   function startCarousel(box) {
     const imgs = box.querySelectorAll('img');
+    if (!imgs.length) return;
+    const anuncioId = box.dataset.anuncioId;
+
+    let current = leerIndiceGuardado(anuncioId) % imgs.length;
+    imgs[current].classList.add('is-visible');
+    guardarIndice(anuncioId, current);
+
     if (imgs.length < 2) return;
-    let current = 0;
+
     setInterval(() => {
       imgs[current].classList.remove('is-visible');
       current = (current + 1) % imgs.length;
       imgs[current].classList.add('is-visible');
-    }, 2800);
+      guardarIndice(anuncioId, current);
+    }, 6000);
   }
 
   function renderColumns(anuncios) {
-    const izquierda = anuncios.filter(a => a.posicion === 'izquierda');
-    const derecha = anuncios.filter(a => a.posicion === 'derecha');
+    // Usa los MISMOS anuncios que el home (posicion = 'derecha'), pero
+    // se muestran del lado izquierdo dentro del dashboard.
+    const anunciosHome = anuncios.filter(a => a.posicion === 'derecha');
 
-    if (izquierda.length) {
-      const colIzq = document.createElement('div');
-      colIzq.className = 'anuncio-izq';
-      colIzq.innerHTML = buildColumn(izquierda);
-      document.body.appendChild(colIzq);
-    }
-
-    if (derecha.length) {
-      const colDer = document.createElement('div');
-      colDer.className = 'anuncio-der';
-      colDer.innerHTML = buildColumn(derecha);
-      document.body.appendChild(colDer);
+    if (anunciosHome.length) {
+      const col = document.createElement('div');
+      col.className = 'anuncio-izq';
+      col.innerHTML = buildColumn(anunciosHome);
+      document.body.appendChild(col);
     }
 
     document.querySelectorAll('.ad-box').forEach(startCarousel);

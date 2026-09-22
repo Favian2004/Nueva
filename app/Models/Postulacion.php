@@ -16,6 +16,7 @@ class Postulacion extends Model
         'postulante_id',
         'estado',
         'mensaje',
+        'solicitud_empleo',
     ];
 
     public function vacante()
@@ -26,5 +27,10 @@ class Postulacion extends Model
     public function postulante()
     {
         return $this->belongsTo(Usuario::class, 'postulante_id');
+    }
+
+    public function curriculum()
+    {
+        return $this->hasOne(Curriculum::class, 'postulacion_id');
     }
 }

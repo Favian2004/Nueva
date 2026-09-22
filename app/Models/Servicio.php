@@ -22,12 +22,18 @@ class Servicio extends Model
         'whatsapp',
         'precio',
         'imagen',
+        'solicitud_empleo',
         'estado',
     ];
 
     public function usuario()
     {
         return $this->belongsTo(Usuario::class);
+    }
+
+    public function curriculum()
+    {
+        return $this->hasOne(Curriculum::class, 'servicio_id');
     }
 
     public function categoria()

@@ -382,23 +382,22 @@
   color: #5f6368;
 }
 
-/* Descripción - UNA LÍNEA */
+/* Descripción - HASTA 6 LÍNEAS, sin desbordarse */
 .products-list .product-row .product-info .job-description {
   font-size: 12px;
   color: #5f6368;
-  margin: 1px 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
+  margin: 4px 0;
+  line-height: 1.5;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
 }
 
 .products-list .product-row .product-info .job-description .mdi {
   font-size: 14px;
   color: #5f6368;
-  flex-shrink: 0;
+  margin-right: 4px;
 }
 
 /* ===== ACCIONES ===== */
@@ -507,51 +506,51 @@
   .products-list {
     gap: 10px;
   }
-  
+
   .products-list .product-row {
     flex-direction: column;
     border-radius: 12px;
   }
-  
+
   .products-list .product-row .product-img {
     width: 100%;
     height: 120px;
   }
-  
+
   .products-list .product-row .product-info {
     padding: 10px 12px;
   }
-  
+
   .products-list .product-row .product-info .job-title {
     font-size: 13px;
     white-space: normal;
   }
-  
+
   .products-list .product-row .product-info .job-publisher {
     font-size: 11px;
   }
-  
+
   .products-list .product-row .product-info .job-details {
     font-size: 11px;
     gap: 10px;
   }
-  
+
   .products-list .product-row .product-info .job-description {
     font-size: 11px;
-    white-space: normal;
+    -webkit-line-clamp: 6;
   }
-  
+
   .products-list .product-row .product-info .job-actions {
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
   }
-  
+
   .products-list .product-row .product-info .job-actions .left {
     justify-content: space-between;
     flex-wrap: wrap;
   }
-  
+
   .products-list .product-row .product-info .btn-add {
     width: 100%;
     justify-content: center;
@@ -564,28 +563,28 @@
   .products-list .product-row .product-img {
     height: 100px;
   }
-  
+
   .products-list .product-row .product-info .job-title {
     font-size: 12px;
   }
-  
+
   .products-list .product-row .product-info .job-publisher {
     font-size: 10px;
   }
-  
+
   .products-list .product-row .product-info .job-details {
     font-size: 10px;
     gap: 8px;
   }
-  
+
   .products-list .product-row .product-info .job-description {
     font-size: 10px;
   }
-  
+
   .products-list .product-row .product-info .job-actions .postulados {
     font-size: 10px;
   }
-  
+
   .products-list .product-row .product-info .job-actions .job-status {
     font-size: 9px;
     padding: 1px 8px;
@@ -812,38 +811,38 @@
   .acciones-rapidas {
     margin: 12px 0 16px 0;
   }
-  
+
   .acciones-titulo {
     font-size: 16px;
     text-align: center;
     justify-content: center;
   }
-  
+
   .acciones-titulo::after {
     width: 30px;
   }
-  
+
   .acciones-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
-  
+
   .accion-card {
     padding: 12px 10px;
     border-radius: 12px;
     gap: 4px;
   }
-  
+
   .accion-card .icon {
     width: 40px;
     height: 40px;
     font-size: 1.4rem;
   }
-  
+
   .accion-card .icon i {
     font-size: 22px;
   }
-  
+
   .accion-card span:last-child {
     font-size: 11px;
   }
@@ -854,28 +853,28 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
-  
+
   .accion-card {
     padding: 10px 8px;
     border-radius: 10px;
     gap: 4px;
   }
-  
+
   .accion-card .icon {
     width: 36px;
     height: 36px;
     font-size: 1.2rem;
     border-radius: 10px;
   }
-  
+
   .accion-card .icon i {
     font-size: 18px;
   }
-  
+
   .accion-card span:last-child {
     font-size: 10px;
   }
-  
+
   .accion-card {
     border-top-width: 2px !important;
   }
@@ -951,20 +950,20 @@
     gap: 10px;
     margin: 0 0 16px 0;
   }
-  
+
   .estadisticas-row .box {
     padding: 12px 10px;
     min-height: 90px;
   }
-  
+
   .estadisticas-row .box .icon i {
     font-size: 26px;
   }
-  
+
   .estadisticas-row .box .title {
     font-size: 22px;
   }
-  
+
   .estadisticas-row .box .has-text-grey {
     font-size: 11px;
   }
@@ -975,20 +974,20 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
-  
+
   .estadisticas-row .box {
     padding: 10px 8px;
     min-height: 75px;
   }
-  
+
   .estadisticas-row .box .icon i {
     font-size: 22px;
   }
-  
+
   .estadisticas-row .box .title {
     font-size: 18px;
   }
-  
+
   .estadisticas-row .box .has-text-grey {
     font-size: 10px;
   }
@@ -1055,7 +1054,7 @@
     font-size: 10px;
     gap: 8px;
   }
-  
+
   .job-extras .exp-badge,
   .job-extras .salary-badge {
     font-size: 9px;
@@ -1153,7 +1152,7 @@
   .job-dates {
     gap: 8px;
   }
-  
+
   .job-date-work,
   .job-date-duration,
   .job-date-limit,
@@ -1169,7 +1168,7 @@
     flex-direction: column;
     gap: 6px;
   }
-  
+
   .job-date-work,
   .job-date-duration,
   .job-date-limit,
@@ -1212,4 +1211,3 @@
     font-size:16px;
     color:#fff;
 }
-

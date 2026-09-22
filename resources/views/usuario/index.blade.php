@@ -241,7 +241,7 @@
     <aside class="aside is-placed-left is-expanded" id="mainSidebar">
       <div class="aside-tools">
         <div class="aside-tools-label">
-          <span><b> Modo Empleado</b></span>
+          <span><b> Modo Trabajador</b></span>
         </div>
       </div>
 
@@ -312,11 +312,6 @@
     <section class="section is-main-section" id="mainContent">
       <div class="container">
 
-        <!-- AVISO DE ROL -->
-        <div class="role-notice" id="roleNotice">
-          <span class="notice-icon">👷</span>
-          <span>Estás en modo <strong class="notice-role worker" id="roleNameDisplay">Trabajador</strong> · Puedes gestionar tus servicios y buscar empleos.</span>
-        </div>
 
         <!-- BARRA DE TÍTULO + LOGO -->
         <section class="section is-title-bar custom-bar">

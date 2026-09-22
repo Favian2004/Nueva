@@ -16,6 +16,23 @@ class UsuarioVacanteController extends Controller
         return view('usuario.publicar-vacante', [
             'usuario' => $usuario,
             'vacante' => null,
+            'tituloDescripcionBloqueada' => false,
+        ]);
+    }
+
+    // Página completa con toda la información de UNA vacante.
+    public function show($id)
+    {
+        $vacante = Vacante::withCount('postulaciones')->findOrFail($id);
+
+        $yaPostulado = Postulacion::where('vacante_id', $vacante->id)
+            ->where('postulante_id', Auth::id())
+            ->whereIn('estado', ['pendiente', 'contratado'])
+            ->exists();
+
+        return view('usuario.ver-vacante', [
+            'vacante' => $vacante,
+            'yaPostulado' => $yaPostulado,
         ]);
     }
 
@@ -58,6 +75,8 @@ class UsuarioVacanteController extends Controller
             'contrato' => $request->input('contrato'),
             'beneficios' => $request->input('beneficios', []),
             'descripcion' => $request->input('descripcion'),
+            'requiere_cv' => $request->boolean('requiere_cv'),
+            'requiere_solicitud_empleo' => $request->boolean('requiere_solicitud_empleo'),
             'fecha_trabajo' => $request->input('fecha_trabajo'),
             'duracion' => $request->input('duracion'),
             'fecha_limite' => $request->input('fecha_limite'),
@@ -75,9 +94,12 @@ class UsuarioVacanteController extends Controller
         $usuario = Auth::user();
         $vacante = Vacante::where('empleador_id', Auth::id())->findOrFail($id);
 
+        $tituloDescripcionBloqueada = $vacante->postulaciones()->exists();
+
         return view('usuario.publicar-vacante', [
             'usuario' => $usuario,
             'vacante' => $vacante,
+            'tituloDescripcionBloqueada' => $tituloDescripcionBloqueada,
         ]);
     }
 
@@ -85,8 +107,9 @@ class UsuarioVacanteController extends Controller
     {
         $vacante = Vacante::where('empleador_id', Auth::id())->findOrFail($id);
 
-        $request->validate([
-            'titulo' => 'required|string|max:255',
+        $tituloDescripcionBloqueada = $vacante->postulaciones()->exists();
+
+        $reglas = [
             'publicante' => 'required|string|max:150',
             'ubicacion' => 'required|string|max:255',
             'trabajadores_requeridos' => 'required|integer|min:1',
@@ -94,7 +117,6 @@ class UsuarioVacanteController extends Controller
             'salario' => 'nullable|string|max:100',
             'experiencia' => 'required|in:Sin experiencia,6 meses mínimo,1 año mínimo,2 años mínimo,3 años mínimo,5 años mínimo',
             'contrato' => 'required|in:Temporal,Temporada,Por obra,Fijo,Eventual',
-            'descripcion' => 'required|string',
             'fecha_trabajo' => 'required|string|max:150',
             'duracion' => 'nullable|string|max:100',
             'fecha_limite' => 'nullable|date',
@@ -103,15 +125,23 @@ class UsuarioVacanteController extends Controller
             'imagen' => 'nullable|image|max:4096',
             'beneficios' => 'nullable|array',
             'beneficios.*' => 'string|max:100',
-        ]);
+        ];
+
+        // Título y descripción solo se validan/permiten cambiar si la
+        // vacante todavía no tiene ninguna postulación.
+        if (!$tituloDescripcionBloqueada) {
+            $reglas['titulo'] = 'required|string|max:255';
+            $reglas['descripcion'] = 'required|string';
+        }
+
+        $request->validate($reglas);
 
         $rutaImagen = $vacante->imagen;
         if ($request->hasFile('imagen')) {
             $rutaImagen = '/storage/' . $request->file('imagen')->store('vacantes', 'public');
         }
 
-        $vacante->update([
-            'titulo' => $request->input('titulo'),
+        $datos = [
             'publicante' => $request->input('publicante'),
             'ubicacion' => $request->input('ubicacion'),
             'trabajadores_requeridos' => $request->input('trabajadores_requeridos'),
@@ -120,14 +150,26 @@ class UsuarioVacanteController extends Controller
             'experiencia' => $request->input('experiencia'),
             'contrato' => $request->input('contrato'),
             'beneficios' => $request->input('beneficios', []),
-            'descripcion' => $request->input('descripcion'),
+            'requiere_cv' => $request->boolean('requiere_cv'),
+            'requiere_solicitud_empleo' => $request->boolean('requiere_solicitud_empleo'),
             'fecha_trabajo' => $request->input('fecha_trabajo'),
             'duracion' => $request->input('duracion'),
             'fecha_limite' => $request->input('fecha_limite'),
             'telefono' => $request->input('telefono'),
             'whatsapp' => $request->input('whatsapp'),
             'imagen' => $rutaImagen,
-        ]);
+        ];
+
+        // Si NO está bloqueada, sí se actualizan título y descripción con
+        // lo que mande el formulario. Si SÍ está bloqueada, se ignora
+        // cualquier intento de cambiarlos (se quedan como ya estaban),
+        // sin importar qué se haya mandado en la petición.
+        if (!$tituloDescripcionBloqueada) {
+            $datos['titulo'] = $request->input('titulo');
+            $datos['descripcion'] = $request->input('descripcion');
+        }
+
+        $vacante->update($datos);
 
         return response()->json(['ok' => true]);
     }

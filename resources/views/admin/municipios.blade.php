@@ -17,6 +17,28 @@
     .is-image-cell .image img { object-fit: cover; }
     .anuncio-thumb { width: 160px; height: 90px; object-fit: cover; border-radius: 6px; }
     .badge-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+
+    .cat-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px; border-radius: 8px; cursor: pointer;
+      margin-bottom: 4px; transition: 0.15s; border: 1px solid transparent;
+    }
+    .cat-item:hover { background: #f5f5f5; }
+    .cat-item.activa { background: #eef6ff; border-color: #7957d5; font-weight: 700; }
+    .cat-item .cat-nombre { flex: 1; }
+    .cat-item .cat-acciones { display: flex; align-items: center; gap: 6px; }
+    .cat-item .tag { flex-shrink: 0; }
+    .cat-item .btn-borrar-cat { background: none; border: none; color: #b5b5b5; cursor: pointer; padding: 2px; }
+    .cat-item .btn-borrar-cat:hover { color: #f14668; }
+
+    .sub-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #f5f5f5; border-radius: 20px; padding: 6px 8px 6px 14px;
+      font-size: 13px;
+    }
+    .sub-chip .usuarios-badge { color: #7a7a7a; font-size: 11px; }
+    .sub-chip .btn-borrar-sub { background: #fff; border: none; color: #b5b5b5; cursor: pointer; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1; }
+    .sub-chip .btn-borrar-sub:hover { color: #f14668; background: #ffe3e8; }
   </style>
 
   <link rel="stylesheet" href="{{ asset('assets/admin/css/theme-conectaya-admin.css') }}">
@@ -115,6 +137,12 @@
             <span class="menu-item-label">Reportes</span>
           </a>
         </li>
+          <li>
+          <a href="/admin/testimonios" class="has-icon">
+            <span class="icon"><i class="mdi mdi-comment-quote"></i></span>
+            <span class="menu-item-label">Testimonios</span>
+          </a>
+        </li>
         <li>
           <a href="/admin/categorias" class="has-icon">
             <span class="icon"><i class="mdi mdi-shape"></i></span>
@@ -170,81 +198,37 @@
       <div class="column is-4">
         <div class="card has-table">
           <header class="card-header">
-            <p class="card-header-title"><span class="icon"><i class="mdi mdi-map-marker default"></i></span>Municipios</p>
+            <p class="card-header-title"><span class="icon"><i class="mdi mdi-map-marker default"></i></span>Municipios <span class="tag is-light ml-2">{{ $municipios->count() }}</span></p>
           </header>
           <div class="card-content">
-            <div class="field has-addons mb-4">
-              <div class="control is-expanded"><input class="input" id="nuevo-municipio" placeholder="Nuevo municipio..."></div>
+            <div class="field has-addons mb-3">
+              <div class="control is-expanded"><input class="input" id="nuevo-municipio" placeholder="Nuevo municipio..." onkeydown="if(event.key==='Enter'){event.preventDefault();agregarMunicipio();}"></div>
               <div class="control"><button class="button is-primary" onclick="agregarMunicipio()"><span class="icon"><i class="mdi mdi-plus"></i></span></button></div>
             </div>
-            <table class="table is-fullwidth is-striped is-hoverable">
-              <thead><tr><th>Nombre</th><th>Localidades</th><th class="is-actions-cell">Acciones</th></tr></thead>
-              <tbody id="tbl-municipios">
-                @forelse ($municipios as $m)
-                  <tr>
-                    <td>{{ $m->nombre }}</td>
-                    <td>{{ $m->localidades_count }}</td>
-                    <td class="is-actions-cell">
-                      <div class="buttons is-right">
-                        <button class="button is-small is-danger" title="Eliminar" onclick="eliminarMunicipio({{ $m->id }})">
-                          <span class="icon"><i class="mdi mdi-trash-can"></i></span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                @empty
-                  <tr><td colspan="3" class="has-text-centered has-text-grey">No hay municipios todavía.</td></tr>
-                @endforelse
-              </tbody>
-            </table>
+            <div class="control mb-3 has-icons-left">
+              <input class="input is-small" id="buscar-municipio" placeholder="Buscar municipio..." oninput="filtrarMunicipios()">
+              <span class="icon is-small is-left"><i class="mdi mdi-magnify"></i></span>
+            </div>
+            <div id="lista-municipios" style="max-height:600px; overflow-y:auto;"></div>
           </div>
         </div>
       </div>
       <div class="column is-8">
         <div class="card has-table">
           <header class="card-header">
-            <p class="card-header-title"><span class="icon"><i class="mdi mdi-map-marker-outline default"></i></span>Localidades</p>
+            <p class="card-header-title"><span class="icon"><i class="mdi mdi-map-marker-outline default"></i></span><span id="titulo-localidades">Selecciona un municipio</span></p>
           </header>
           <div class="card-content">
-            <div class="field has-addons mb-4">
-              <div class="control">
-                <div class="select">
-                  <select id="select-municipio-padre">
-                    @foreach ($municipios as $m)
-                      <option value="{{ $m->id }}">{{ $m->nombre }}</option>
-                    @endforeach
-                  </select>
-                </div>
-              </div>
-              <div class="control is-expanded"><input class="input" id="nueva-localidad" placeholder="Nueva localidad..."></div>
-              <div class="control"><button class="button is-primary" onclick="agregarLocalidad()"><span class="icon"><i class="mdi mdi-plus"></i></span></button></div>
+            <div class="field has-addons mb-3">
+              <div class="control is-expanded"><input class="input" id="nueva-localidad" placeholder="Nueva localidad..." disabled onkeydown="if(event.key==='Enter'){event.preventDefault();agregarLocalidad();}"></div>
+              <div class="control"><button class="button is-primary" id="btn-agregar-loc" onclick="agregarLocalidad()" disabled><span class="icon"><i class="mdi mdi-plus"></i></span></button></div>
             </div>
-            <div class="field">
-              <div class="control">
-                <input class="input" id="buscar-localidad" placeholder="Buscar localidad...">
-              </div>
+            <div class="control mb-3 has-icons-left">
+              <input class="input is-small" id="buscar-localidad" placeholder="Buscar dentro de este municipio..." oninput="filtrarLocalidades()">
+              <span class="icon is-small is-left"><i class="mdi mdi-magnify"></i></span>
             </div>
-            <table class="table is-fullwidth is-striped is-hoverable">
-              <thead><tr><th>Localidad</th><th>Municipio</th><th>Usuarios</th><th class="is-actions-cell">Acciones</th></tr></thead>
-              <tbody id="tbl-localidades">
-                @forelse ($localidades as $l)
-                  <tr>
-                    <td data-label="Localidad">{{ $l->nombre }}</td>
-                    <td data-label="Municipio">{{ $l->municipio->nombre ?? '—' }}</td>
-                    <td data-label="Usuarios">{{ $l->usuarios_count }}</td>
-                    <td class="is-actions-cell">
-                      <div class="buttons is-right">
-                        <button class="button is-small is-danger" title="Eliminar" onclick="eliminarLocalidad({{ $l->id }})">
-                          <span class="icon"><i class="mdi mdi-trash-can"></i></span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                @empty
-                  <tr><td colspan="4" class="has-text-centered has-text-grey">No hay localidades todavía.</td></tr>
-                @endforelse
-              </tbody>
-            </table>
+            <div id="grid-localidades" style="display:flex; flex-wrap:wrap; gap:8px; max-height:520px; overflow-y:auto; align-content:flex-start;"></div>
+            <p id="vacio-localidades" class="has-text-centered has-text-grey mt-4" style="display:none;">Este municipio todavía no tiene localidades. Agrega la primera arriba.</p>
           </div>
         </div>
       </div>
@@ -273,7 +257,91 @@
 
 <script type="text/javascript" src="{{ asset('assets/admin/js/main.min.js') }}"></script>
 <script>
+  // ===== Municipios y localidades (guardan de verdad en la base de datos) =====
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  // Datos ya cargados del servidor, para que cambiar de municipio sea instantáneo
+  const municipios = @json($municipiosJson);
+  const localidades = @json($localidadesJson);
+
+  let municipioSeleccionadoId = null;
+
+  function locsDe(munId) {
+    return localidades.filter(l => l.municipio_id === munId).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  function pintarMunicipios(filtro = '') {
+    const cont = document.getElementById('lista-municipios');
+    const filtroLower = filtro.trim().toLowerCase();
+    const lista = municipios
+      .filter(m => m.nombre.toLowerCase().includes(filtroLower))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+    if (!lista.length) {
+      cont.innerHTML = '<p class="has-text-grey has-text-centered">No hay municipios que coincidan.</p>';
+      return;
+    }
+
+    cont.innerHTML = lista.map(m => {
+      const count = locsDe(m.id).length;
+      const activa = m.id === municipioSeleccionadoId ? 'activa' : '';
+      return `
+        <div class="cat-item ${activa}" onclick="seleccionarMunicipio(${m.id})">
+          <span class="cat-nombre">${escaparHtml(m.nombre)}</span>
+          <span class="cat-acciones">
+            <span class="tag ${count === 0 ? 'is-warning' : 'is-light'}">${count}</span>
+            <button class="btn-borrar-cat" title="Eliminar municipio" onclick="event.stopPropagation(); eliminarMunicipio(${m.id})"><i class="mdi mdi-trash-can-outline"></i></button>
+          </span>
+        </div>`;
+    }).join('');
+  }
+
+  function seleccionarMunicipio(id) {
+    municipioSeleccionadoId = id;
+    document.getElementById('buscar-localidad').value = '';
+    document.getElementById('nueva-localidad').disabled = false;
+    document.getElementById('btn-agregar-loc').disabled = false;
+    pintarMunicipios(document.getElementById('buscar-municipio').value);
+    pintarLocalidades();
+  }
+
+  function pintarLocalidades(filtro = '') {
+    const mun = municipios.find(m => m.id === municipioSeleccionadoId);
+    document.getElementById('titulo-localidades').textContent = mun ? `Localidades de "${mun.nombre}"` : 'Selecciona un municipio';
+
+    const grid = document.getElementById('grid-localidades');
+    const vacio = document.getElementById('vacio-localidades');
+
+    if (!mun) { grid.innerHTML = ''; vacio.style.display = 'none'; return; }
+
+    const filtroLower = filtro.trim().toLowerCase();
+    const lista = locsDe(mun.id).filter(l => l.nombre.toLowerCase().includes(filtroLower));
+
+    if (!lista.length) {
+      grid.innerHTML = '';
+      vacio.style.display = 'block';
+      vacio.textContent = filtroLower ? 'No hay ninguna que coincida con tu búsqueda.' : 'Este municipio todavía no tiene localidades. Agrega la primera arriba.';
+      return;
+    }
+
+    vacio.style.display = 'none';
+    grid.innerHTML = lista.map(l => `
+      <span class="sub-chip">
+        ${escaparHtml(l.nombre)}
+        ${l.usuarios_count > 0 ? `<span class="usuarios-badge" title="Usuarios registrados aquí"><i class="mdi mdi-account"></i> ${l.usuarios_count}</span>` : ''}
+        <button class="btn-borrar-sub" title="Eliminar" onclick="eliminarLocalidad(${l.id})"><i class="mdi mdi-close"></i></button>
+      </span>
+    `).join('');
+  }
+
+  function filtrarMunicipios() { pintarMunicipios(document.getElementById('buscar-municipio').value); }
+  function filtrarLocalidades() { pintarLocalidades(document.getElementById('buscar-localidad').value); }
+
+  function escaparHtml(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto;
+    return div.innerHTML;
+  }
 
   function agregarMunicipio() {
     const input = document.getElementById('nuevo-municipio');
@@ -308,14 +376,13 @@
 
   function agregarLocalidad() {
     const input = document.getElementById('nueva-localidad');
-    const munId = document.getElementById('select-municipio-padre').value;
     const nombre = input.value.trim();
-    if (!nombre || !munId) return;
+    if (!nombre || !municipioSeleccionadoId) return;
 
     fetch('/admin/localidades', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-      body: JSON.stringify({ nombre: nombre, municipio_id: munId }),
+      body: JSON.stringify({ nombre: nombre, municipio_id: municipioSeleccionadoId }),
     })
       .then(res => {
         if (!res.ok) throw new Error();
@@ -338,15 +405,9 @@
       .catch(() => alert('Ocurrió un error al eliminar la localidad. Intenta de nuevo.'));
   }
 
-  // ===== Buscador de localidades (filtra las filas ya renderizadas) =====
-  document.getElementById('buscar-localidad').addEventListener('input', function (e) {
-    const f = e.target.value.toLowerCase();
-    document.querySelectorAll('#tbl-localidades tr').forEach(function (tr) {
-      const nombreCell = tr.querySelector('[data-label="Localidad"]');
-      if (!nombreCell) return; // fila de "no hay localidades"
-      tr.style.display = nombreCell.textContent.toLowerCase().includes(f) ? '' : 'none';
-    });
-  });
+  // Pinta la lista de municipios al cargar, y selecciona el primero automáticamente
+  pintarMunicipios();
+  if (municipios.length) seleccionarMunicipio([...municipios].sort((a, b) => a.nombre.localeCompare(b.nombre))[0].id);
 </script>
 
 

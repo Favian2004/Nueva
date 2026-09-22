@@ -130,9 +130,15 @@
             </a>
           </li>
           <li>
-            <a href="/admin/reportes" class="is-active router-link-active has-icon">
+            <a href="/admin/reportes" class="has-icon">
               <span class="icon"><i class="mdi mdi-alert-octagon"></i></span>
               <span class="menu-item-label">Reportes</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/testimonios" class="has-icon">
+              <span class="icon"><i class="mdi mdi-comment-quote"></i></span>
+              <span class="menu-item-label">Testimonios</span>
             </a>
           </li>
           <li>

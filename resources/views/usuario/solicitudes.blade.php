@@ -351,7 +351,7 @@
     <aside class="aside is-placed-left is-expanded" id="mainSidebar">
       <div class="aside-tools">
         <div class="aside-tools-label">
-          <span><b> Modo Empleado</b></span>
+          <span><b> Modo Trabajador</b></span>
         </div>
       </div>
 
@@ -393,10 +393,6 @@
     <section class="section is-main-section">
       <div class="container">
 
-        <div class="role-notice" id="roleNotice">
-          <span class="notice-icon">👷</span>
-          <span>Estás en modo <strong class="notice-role worker" id="roleNameDisplay">Trabajador</strong> · Aquí puedes ver quién solicitó tus servicios.</span>
-        </div>
 
         <!-- PESTAÑAS -->
         <div style="display:flex; gap:8px; margin-bottom:18px;">
@@ -510,10 +506,11 @@
                   @endif
                   <button class="btn-finalizar" onclick="cambiarEstado({{ $s->id }}, 'finalizado')"><i class="mdi mdi-flag-checkered"></i> Marcar finalizado</button>
                   <button class="btn-cancelar" onclick="cambiarEstado({{ $s->id }}, 'cancelado')"><i class="mdi mdi-close"></i> Cancelar</button>
+                @elseif ($s->estado === 'cancelado')
+                  <button disabled style="opacity:.5; cursor:default; flex:1; border:none; padding:7px 10px; border-radius:8px; font-size:11px; background:#f1f3f4; color:#5f6368;">❌ Cancelado</button>
+                  <button type="button" onclick="eliminarSolicitud({{ $s->id }})" title="Eliminar" style="border:none; background:#f1f3f4; color:#5f6368; border-radius:8px; padding:6px 10px; cursor:pointer;"><i class="mdi mdi-trash-can-outline"></i></button>
                 @else
-                  <button disabled style="opacity:.5; cursor:default; flex:1; border:none; padding:7px 10px; border-radius:8px; font-size:11px; background:#f1f3f4; color:#5f6368;">
-                    {{ $s->estado === 'finalizado' ? '🏁 Finalizado' : '❌ Cancelado' }}
-                  </button>
+                  <button disabled style="opacity:.5; cursor:default; flex:1; border:none; padding:7px 10px; border-radius:8px; font-size:11px; background:#f1f3f4; color:#5f6368;">🏁 Finalizado</button>
                 @endif
               </div>
             </div>
@@ -564,6 +561,7 @@
                   <p style="font-size:12px; color:#2563eb; margin-top:8px;"><i class="mdi mdi-flag-checkered"></i> Este trabajo ya se marcó como finalizado.</p>
                 @else
                   <p style="font-size:12px; color:#dc2626; margin-top:8px;"><i class="mdi mdi-close-circle"></i> Esta solicitud fue cancelada.</p>
+                  <button type="button" onclick="eliminarSolicitud({{ $s->id }})" style="margin-top:8px; width:100%; border:none; background:#f1f3f4; color:#5f6368; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:4px;"><i class="mdi mdi-trash-can-outline"></i> Eliminar</button>
                 @endif
               </div>
             @empty
@@ -655,6 +653,17 @@
       })
         .then(res => { if (!res.ok) throw new Error(); location.reload(); })
         .catch(() => alert('Ocurrió un error al actualizar la solicitud.'));
+    }
+
+    function eliminarSolicitud(id) {
+      if (!confirm('¿Eliminar esta solicitud cancelada? Esta acción no se puede deshacer.')) return;
+
+      fetch(`/usuario/solicitudes/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+      })
+        .then(res => { if (!res.ok) throw new Error(); location.reload(); })
+        .catch(() => alert('Ocurrió un error al eliminar la solicitud.'));
     }
   </script>
 

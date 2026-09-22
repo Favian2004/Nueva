@@ -373,11 +373,6 @@
     <section class="section is-main-section">
       <div class="container">
 
-        <div class="role-notice">
-          <span class="notice-icon">🏢</span>
-          <span>Estás en modo <strong class="notice-role employer">Empleador</strong> · Explora todas las vacantes
-            publicadas en la plataforma.</span>
-        </div>
 
         <div class="buscar-talento-wrap">
           <form method="GET" action="/usuario/buscar-talento">
@@ -450,15 +445,11 @@
                     <span><i class="mdi mdi-file-document"></i> <span class="contract-badge">{{ $v->contrato }}</span></span>
                   </div>
 
-                  <div class="job-description">
-                    <i class="mdi mdi-information"></i> {{ $v->descripcion }}
-                  </div>
-
-                  @if ($v->beneficios && count($v->beneficios))
-                    <div class="job-benefits">
-                      @foreach ($v->beneficios as $beneficio)
-                        <span><i class="mdi mdi-check-circle" style="color:#2e7d32;"></i> {{ $beneficio }}</span>
-                      @endforeach
+                  @if ($v->requiere_cv || $v->requiere_solicitud_empleo)
+                    <div class="job-extras" style="margin-top:4px;">
+                      <span style="color:#8a6d1f; font-size:12px; font-weight:700;"><i class="mdi mdi-file-check-outline"></i> Pide:</span>
+                      @if ($v->requiere_cv)<span class="exp-badge" style="background:#f7e9c9; color:#8a6d1f;">CV</span>@endif
+                      @if ($v->requiere_solicitud_empleo)<span class="exp-badge" style="background:#f7e9c9; color:#8a6d1f;">Solicitud de empleo</span>@endif
                     </div>
                   @endif
 
@@ -480,13 +471,6 @@
                       </div>
                     @endif
                   </div>
-
-                  <div class="job-contact">
-                    <i class="mdi mdi-phone"></i> <span class="contact-text">{{ $v->telefono }}</span>
-                    @if ($v->whatsapp)
-                      <i class="mdi mdi-whatsapp" style="color:#25D366; margin-left: 12px;"></i> <span class="contact-text">{{ $v->whatsapp }}</span>
-                    @endif
-                  </div>
                 </div>
 
                 <!-- ACCIONES -->
@@ -501,35 +485,29 @@
 
                   <div class="job-buttons">
 
-                    @if ($v->whatsapp)
-                      <a href="https://wa.me/52{{ preg_replace('/\D/', '', $v->whatsapp) }}?text={{ urlencode('Hola, me interesa el trabajo de ' . $v->titulo) }}"
-                        target="_blank" class="btn-whatsapp">
-                        <i class="mdi mdi-whatsapp"></i>
-                        WhatsApp
+                    <a href="/usuario/ver_vacante/{{ $v->id }}" class="btn-add" style="background:#fff; border:1.5px solid #ff7a18; color:#ff7a18; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                      <i class="mdi mdi-text-box-search-outline"></i>
+                      Ver información
+                    </a>
+
+                    @if ($v->empleador_id !== auth()->id())
+                      @if ($yaPostulado)
+                        <button class="btn-add" type="button" disabled style="opacity:.6; cursor:default;">
+                          <i class="mdi mdi-check-circle"></i>
+                          Ya te postulaste
+                        </button>
+                      @else
+                        <button class="btn-add" type="button" onclick="abrirModalPostular({{ $v->id }}, '{{ addslashes($v->titulo) }}', {{ $v->requiere_cv ? 'true' : 'false' }}, {{ $v->requiere_solicitud_empleo ? 'true' : 'false' }})">
+                          <i class="mdi mdi-account-plus"></i>
+                          Postularme
+                        </button>
+                      @endif
+                    @else
+                      <a href="/usuario/mis-vacantes/{{ $v->id }}/editar" class="btn-add" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                        <i class="mdi mdi-pencil"></i>
+                        Editar
                       </a>
                     @endif
-
-                    @if ($yaPostulado)
-                      <button class="btn-add" type="button" disabled style="opacity:.6; cursor:default;">
-                        <i class="mdi mdi-check-circle"></i>
-                        Ya te postulaste
-                      </button>
-                    @else
-                      <button class="btn-add" type="button" onclick="abrirModalPostular({{ $v->id }}, '{{ addslashes($v->titulo) }}')">
-                        <i class="mdi mdi-account-plus"></i>
-                        Postularme
-                      </button>
-                    @endif
-
-                    <button class="btn-comments" type="button" onclick="abrirModalComentarios('vacante', {{ $v->id }}, '{{ addslashes($v->titulo) }}')">
-                      <i class="mdi mdi-comment-text-outline"></i>
-                      Comentarios
-                    </button>
-
-                    <button class="btn-report" type="button" onclick="abrirModalReportar('vacante', {{ $v->id }})">
-                      <i class="mdi mdi-flag-outline"></i>
-                      Reportar
-                    </button>
 
                   </div>
 
@@ -559,27 +537,52 @@
     </section>
 
     <!-- MODAL: Postularse a una vacante -->
-    <div id="modal-postular" class="modal" style="position:fixed; top:0; left:0; right:0; bottom:0;">
-      <div class="modal-background" onclick="document.getElementById('modal-postular').classList.remove('is-active')"></div>
+    <div id="modal-postular" class="modal modal-postular" style="position:fixed; top:0; left:0; right:0; bottom:0;">
+      <div class="modal-background" onclick="document.getElementById('modal-postular').classList.remove('is-active')" style="background:rgba(26,26,46,0.55); backdrop-filter:blur(2px);"></div>
       <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Postularte a <span id="modalPostularTitulo"></span></p>
-          <button class="delete" aria-label="close" onclick="document.getElementById('modal-postular').classList.remove('is-active')"></button>
+        <header class="modal-card-head" style="background:linear-gradient(135deg,#ff7a18,#ffb347); border:none; padding:20px 22px;">
+          <p class="modal-card-title" style="color:#fff; font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+            <i class="mdi mdi-send-circle-outline" style="font-size:1.3rem;"></i>
+            Postularte a <span id="modalPostularTitulo" style="font-weight:800;"></span>
+          </p>
+          <button class="delete" aria-label="close" onclick="document.getElementById('modal-postular').classList.remove('is-active')" style="background:rgba(255,255,255,0.3);"></button>
         </header>
-        <section class="modal-card-body">
+        <section class="modal-card-body" style="background:#fffaf5; padding:22px;">
+          <div id="modalPostularDocs"></div>
           <div class="field">
-            <label class="label">Mensaje / carta de presentación (opcional)</label>
+            <label class="label" style="color:#3c2f2f; font-size:0.85rem;"><i class="mdi mdi-message-text-outline" style="color:#ff7a18;"></i>&nbsp;Mensaje / carta de presentación (opcional)</label>
             <div class="control">
-              <textarea id="modalPostularMensaje" class="textarea" rows="4" placeholder="Cuéntale al empleador por qué eres una buena opción..."></textarea>
+              <textarea id="modalPostularMensaje" class="textarea" rows="4" placeholder="Cuéntale al empleador por qué eres una buena opción..." style="border-radius:12px; border:1.5px solid #f0d9c0; resize:vertical;"></textarea>
             </div>
           </div>
         </section>
-        <footer class="modal-card-foot">
-          <button class="button is-success" onclick="enviarPostulacion()"><i class="mdi mdi-send"></i>&nbsp;Enviar postulación</button>
-          <button class="button" onclick="document.getElementById('modal-postular').classList.remove('is-active')">Cancelar</button>
+        <footer class="modal-card-foot" style="background:#fff; border-top:1px solid #f5ebe0; padding:16px 22px; display:flex; gap:10px;">
+          <button id="btnEnviarPostulacion" onclick="enviarPostulacion()" style="background:linear-gradient(45deg,#ff7a18,#ffb347); border:none; color:#fff; padding:10px 22px; border-radius:30px; font-weight:700; font-size:13.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(255,122,24,0.3);">
+            <i class="mdi mdi-send"></i> Enviar postulación
+          </button>
+          <button onclick="document.getElementById('modal-postular').classList.remove('is-active')" style="background:#fff; border:1.5px solid #e5e7eb; color:#5f6368; padding:10px 22px; border-radius:30px; font-weight:600; font-size:13.5px; cursor:pointer;">
+            Cancelar
+          </button>
         </footer>
       </div>
     </div>
+
+    <style>
+      .modal-postular .modal-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(255, 122, 24, 0.25);
+        transform: scale(0.9) translateY(16px);
+        opacity: 0;
+        transition: transform 0.28s cubic-bezier(.34,1.56,.64,1), opacity 0.22s ease;
+      }
+      .modal-postular.is-active .modal-card {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+      .modal-postular .delete:hover { background: rgba(255,255,255,0.45) !important; }
+      #btnEnviarPostulacion:hover { opacity: 0.9; transform: translateY(-1px); }
+    </style>
 
     <!-- MODAL: Comentarios (estilo chat) -->
     <div id="modal-comentarios" class="modal" style="position:fixed; top:0; left:0; right:0; bottom:0;">
@@ -785,12 +788,142 @@
     // ===== Postularse (abre el modal y manda la postulación real) =====
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
     let vacanteIdActual = null;
+    let postulacionBorradorId = null;
+    let miTieneCvEnBorrador = false;
+    let miTieneSolicitudEnBorrador = false;
+    let modalRequiereCv = false;
+    let modalRequiereSolicitud = false;
 
-    function abrirModalPostular(vacanteId, titulo) {
+    function abrirModalPostular(vacanteId, titulo, requiereCv, requiereSolicitud) {
       vacanteIdActual = vacanteId;
+      postulacionBorradorId = null;
+      miTieneCvEnBorrador = false;
+      miTieneSolicitudEnBorrador = false;
+      modalRequiereCv = requiereCv;
+      modalRequiereSolicitud = requiereSolicitud;
       document.getElementById('modalPostularTitulo').textContent = titulo;
       document.getElementById('modalPostularMensaje').value = '';
       document.getElementById('modal-postular').classList.add('is-active');
+
+      if (!requiereCv && !requiereSolicitud) {
+        document.getElementById('modalPostularDocs').innerHTML = '';
+        return;
+      }
+
+      document.getElementById('modalPostularDocs').innerHTML = '<p style="font-size:12.5px; color:#8a6d1f;"><i class="mdi mdi-loading mdi-spin"></i> Preparando...</p>';
+
+      fetch(`/usuario/empleador/postulacion-borrador/${vacanteId}`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+      })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            document.getElementById('modal-postular').classList.remove('is-active');
+            alert('❌ ' + (data.error || 'Ocurrió un error.'));
+            return;
+          }
+          postulacionBorradorId = data.postulacionId;
+
+          // Consulta el estado real ANTES de pintar, por si ya tenías CV
+          // o Solicitud guardados de un intento anterior con esta vacante.
+          fetch(`/usuario/postulantes/${postulacionBorradorId}/cv/estado`)
+            .then(res => res.json())
+            .then(estado => {
+              if (estado.ok) { miTieneCvEnBorrador = estado.tieneCv; miTieneSolicitudEnBorrador = estado.tieneSolicitud; }
+              pintarDocsModal();
+              iniciarConsultaEstado();
+            })
+            .catch(() => { pintarDocsModal(); iniciarConsultaEstado(); });
+        })
+        .catch(() => { alert('❌ Ocurrió un error de conexión.'); });
+    }
+
+    function pintarDocsModal() {
+      const cont = document.getElementById('modalPostularDocs');
+      let html = '<div style="background:#fff3e6; border:1px solid #ffe0bd; border-radius:14px; padding:16px; margin-bottom:18px;"><p style="font-size:12.5px; color:#c96410; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px;"><i class="mdi mdi-file-check-outline" style="font-size:15px;"></i> Este empleador pide lo siguiente para postularte:</p>';
+
+      if (modalRequiereCv) {
+        html += miTieneCvEnBorrador
+          ? '<div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:13px; color:#1e7e34; font-weight:600;"><i class="mdi mdi-check-circle" style="font-size:16px;"></i> CV listo</div>'
+          : `<div style="margin-bottom:10px;">
+              <div style="font-size:13px; color:#d93025; margin-bottom:8px; font-weight:600;"><i class="mdi mdi-alert-circle-outline"></i> Falta tu CV</div>
+              <a href="/usuario/postulantes/${postulacionBorradorId}/cv/crear" style="background:linear-gradient(45deg,#ff7a18,#ffb347); color:#fff; border:none; padding:7px 16px; border-radius:20px; font-size:12.5px; font-weight:700; text-decoration:none; margin-right:8px; display:inline-block;">Crear CV</a>
+              <label style="background:#fff; border:1.5px solid #ff7a18; color:#ff7a18; padding:6px 16px; border-radius:20px; font-size:12.5px; font-weight:700; cursor:pointer; display:inline-block;">Subir CV (PDF/Word)<input type="file" accept=".pdf,.doc,.docx" style="display:none;" onchange="subirCvDesdeModal(this)"></label>
+            </div>`;
+      }
+
+      if (modalRequiereSolicitud) {
+        html += miTieneSolicitudEnBorrador
+          ? '<div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#1e7e34; font-weight:600;"><i class="mdi mdi-check-circle" style="font-size:16px;"></i> Solicitud de Empleo lista</div>'
+          : `<div>
+              <div style="font-size:13px; color:#d93025; margin-bottom:8px; font-weight:600;"><i class="mdi mdi-alert-circle-outline"></i> Falta tu Solicitud de Empleo</div>
+              <label style="background:#fff; border:1.5px solid #ff7a18; color:#ff7a18; padding:6px 16px; border-radius:20px; font-size:12.5px; font-weight:700; cursor:pointer; display:inline-block;">Subir Solicitud (PDF)<input type="file" accept=".pdf" style="display:none;" onchange="subirSolicitudDesdeModal(this)"></label>
+            </div>`;
+      }
+
+      html += '</div>';
+      cont.innerHTML = html;
+    }
+
+    // Mientras el modal está abierto y todavía falta algo, le pregunta al
+    // servidor cada 2 segundos si ya se guardó de verdad en la base de
+    // datos (por si terminaste de crear/subir el CV en la otra pestaña).
+    let pollIntervalId = null;
+
+    function iniciarConsultaEstado() {
+      detenerConsultaEstado();
+      pollIntervalId = setInterval(() => {
+        const modalAbierto = document.getElementById('modal-postular').classList.contains('is-active');
+        if (!modalAbierto) { detenerConsultaEstado(); return; }
+        if (!postulacionBorradorId) return;
+        const faltaAlgo = (modalRequiereCv && !miTieneCvEnBorrador) || (modalRequiereSolicitud && !miTieneSolicitudEnBorrador);
+        if (!faltaAlgo) { detenerConsultaEstado(); return; }
+
+        fetch(`/usuario/postulantes/${postulacionBorradorId}/cv/estado`)
+          .then(res => res.json())
+          .then(data => {
+            if (!data.ok) return;
+            miTieneCvEnBorrador = data.tieneCv;
+            miTieneSolicitudEnBorrador = data.tieneSolicitud;
+            pintarDocsModal();
+          })
+          .catch(() => { /* ignorar, reintenta en el próximo intervalo */ });
+      }, 2000);
+    }
+
+    function detenerConsultaEstado() {
+      if (pollIntervalId) { clearInterval(pollIntervalId); pollIntervalId = null; }
+    }
+
+    function subirCvDesdeModal(input) {
+      const file = input.files[0];
+      if (!file || !postulacionBorradorId) return;
+      const fd = new FormData();
+      fd.append('archivo', file);
+      fetch(`/usuario/postulantes/${postulacionBorradorId}/cv/subir-archivo`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok }) => {
+          if (!ok) { alert('❌ Ocurrió un error al subir tu CV.'); return; }
+          miTieneCvEnBorrador = true;
+          pintarDocsModal();
+        })
+        .catch(() => alert('❌ Ocurrió un error de conexión.'));
+    }
+
+    function subirSolicitudDesdeModal(input) {
+      const file = input.files[0];
+      if (!file || !postulacionBorradorId) return;
+      const fd = new FormData();
+      fd.append('archivo', file);
+      fetch(`/usuario/postulantes/${postulacionBorradorId}/solicitud-empleo`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok }) => {
+          if (!ok) { alert('❌ Ocurrió un error al subir tu Solicitud de Empleo. Confirma que sea un PDF.'); return; }
+          miTieneSolicitudEnBorrador = true;
+          pintarDocsModal();
+        })
+        .catch(() => alert('❌ Ocurrió un error de conexión.'));
     }
 
     function enviarPostulacion() {

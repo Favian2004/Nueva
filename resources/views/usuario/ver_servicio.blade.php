@@ -272,6 +272,12 @@
               @if ($servicio->usuario->email)
                 <a href="mailto:{{ $servicio->usuario->email }}" class="btn-contact btn-contact-outline"><i class="mdi mdi-email"></i> Enviar Email</a>
               @endif
+              @if ($servicio->curriculum && $servicio->curriculum->tieneContenido)
+                <a href="/usuario/servicio/{{ $servicio->id }}/cv" target="_blank" class="btn-contact btn-contact-outline"><i class="mdi mdi-file-account-outline"></i> Ver CV</a>
+              @endif
+              @if ($servicio->solicitud_empleo)
+                <a href="{{ $servicio->solicitud_empleo }}" target="_blank" class="btn-contact btn-contact-outline"><i class="mdi mdi-file-document-outline"></i> Ver Solicitud de Empleo</a>
+              @endif
             </div>
           @endif
 

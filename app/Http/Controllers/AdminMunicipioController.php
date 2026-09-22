@@ -13,9 +13,24 @@ class AdminMunicipioController extends Controller
         $municipios = Municipio::withCount('localidades')->orderBy('nombre')->get();
         $localidades = Localidad::with('municipio')->withCount('usuarios')->orderBy('nombre')->get();
 
+        $municipiosJson = $municipios->map(fn($m) => [
+            'id' => $m->id,
+            'nombre' => $m->nombre,
+            'localidades_count' => $m->localidades_count,
+        ]);
+
+        $localidadesJson = $localidades->map(fn($l) => [
+            'id' => $l->id,
+            'nombre' => $l->nombre,
+            'municipio_id' => $l->municipio_id,
+            'usuarios_count' => $l->usuarios_count,
+        ]);
+
         return view('admin.municipios', [
             'municipios' => $municipios,
             'localidades' => $localidades,
+            'municipiosJson' => $municipiosJson,
+            'localidadesJson' => $localidadesJson,
         ]);
     }
 

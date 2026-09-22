@@ -159,8 +159,16 @@
   <section class="section is-main-section">
     <div class="container">
 
+
       <!-- Toast de notificación -->
       <div id="profileToast" class="notification is-success" style="display: none; position: fixed; top: 70px; right: 20px; z-index: 1000; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
+
+      @if (session('status'))
+        <div class="notification is-warning" style="border-radius: 14px; background: #fff7e6; border: 1.5px solid #ffd8a8; color: #8a5a00; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+          <i class="mdi mdi-clipboard-text-clock mdi-24px"></i>
+          <span><strong>{{ session('status') }}</strong> Entre más completa esté tu información, más confianza generas con quienes vean tu perfil.</span>
+        </div>
+      @endif
 
       <!-- Estadísticas rápidas (más pro) -->
       <div class="columns">
@@ -554,8 +562,7 @@
         setTimeout(() => location.reload(), 1200);
       })
       .catch(() => mostrarToast('❌ Ocurrió un error al subir el documento.', 'is-danger'));
-  }
-</script>
+  }</script>
   <script src="{{ asset('assets/usuario/js/dashboard-data.js') }}"></script>
   <script src="{{ asset('assets/usuario/js/ads-widget.js') }}"></script>
 

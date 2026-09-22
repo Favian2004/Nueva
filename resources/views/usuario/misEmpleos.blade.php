@@ -285,13 +285,6 @@
     <!-- CONTENIDO -->
     <section class="section is-main-section mis-empleos-section">
 
-      <!-- AVISO DE ROL -->
-      <div class="role-notice" id="roleNotice">
-        <span class="notice-icon">👷</span>
-        <span>Estás en modo <strong class="notice-role worker" id="roleNameDisplay">Trabajador</strong> · Puedes
-          gestionar tus servicios y buscar empleos.</span>
-      </div>
-
       <!-- ESTADÍSTICAS -->
       <div class="empleos-stats">
         <div class="stat-card">

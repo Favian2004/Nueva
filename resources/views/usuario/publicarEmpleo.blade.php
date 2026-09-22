@@ -299,12 +299,7 @@
 
     <!-- ==================== FORMULARIO PRINCIPAL ==================== -->
     <section class="section is-main-section publicar-section">
-      <!-- AVISO DE ROL -->
-      <div class="role-notice" id="roleNotice">
-        <span class="notice-icon">👷</span>
-        <span>Estás en modo <strong class="notice-role worker" id="roleNameDisplay">Trabajador</strong> · Puedes
-          gestionar tus servicios y buscar empleos.</span>
-      </div>
+
       <div class="publicar-card">
         <div class="publicar-card-header">
           <h2>{{ $servicio ? '✏️ Editar Publicación' : '📋 Nueva Publicación' }}</h2>
@@ -324,10 +319,16 @@
             </div>
 
             <!-- Categoría y Subcategoría (dinámico, con datos reales de tu base de datos) -->
+            @if ($categoriaBloqueada)
+              <div class="form-group" style="background:#fef7e0; border:1px solid #f5d78e; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:#8a6d1f;">
+                <i class="mdi mdi-lock-outline"></i>
+                Este servicio ya tiene contrataciones o calificaciones, así que la categoría y subcategoría ya no se pueden cambiar (para evitar que se use la misma tarjeta para ofrecer algo distinto). Si quieres ofrecer otro tipo de servicio, publica uno nuevo.
+              </div>
+            @endif
             <div class="form-row">
               <div class="form-group">
                 <label>Categoría *</label>
-                <select id="categoriaSelect" name="categoria_id" required>
+                <select id="categoriaSelect" name="categoria_id" required {{ $categoriaBloqueada ? 'disabled' : '' }}>
                   <option value="">Seleccionar categoría</option>
                 </select>
               </div>
@@ -385,6 +386,37 @@
                 <input type="tel" id="whatsapp" name="whatsapp" value="{{ $servicio->whatsapp ?? $usuario->whatsapp }}" placeholder="Ej. 222 123 4567">
               </div>
             </div>
+
+            <!-- CV Y SOLICITUD DE EMPLEO (opcional, propio de ESTE servicio) -->
+            @if ($servicio)
+              <div class="form-group" style="background:#f3ead9; border-radius:10px; padding:14px 18px;">
+                <label style="margin-bottom:4px;"><i class="mdi mdi-file-account-outline"></i> ¿Quieres que tu CV y/o Solicitud de Empleo se puedan ver en este servicio?</label>
+                <p style="font-size:12.5px; color:#6b5d52; margin:0 0 10px;">Opcional. Cada servicio tiene su propio CV — puedes tener uno distinto para cada uno. Aplica para cualquier tipo de trabajo, no solo profesionistas.</p>
+
+                <div style="margin-bottom:10px;">
+                  @if ($tieneCv)
+                    <span style="display:inline-flex; align-items:center; gap:6px; font-size:13px; color:#2e7d32;"><i class="mdi mdi-check-circle"></i> Este servicio ya tiene CV &nbsp;<a href="/usuario/servicio/{{ $servicio->id }}/cv" style="color:#8a6d1f;">(ver)</a> &nbsp;<a href="/usuario/misEmpleos/{{ $servicio->id }}/cv/crear" style="color:#8a6d1f;">(editar)</a></span>
+                  @else
+                    <span style="font-size:13px; color:#8a6d1f;">CV:</span>
+                    <a href="/usuario/misEmpleos/{{ $servicio->id }}/cv/crear" class="button is-small" style="margin:4px 6px 0 6px;">Crear CV para este servicio</a>
+                    <label class="button is-small btn-outline-orange" style="cursor:pointer; margin-top:4px;">Subir CV (PDF/Word)<input type="file" accept=".pdf,.doc,.docx" style="display:none;" onchange="subirCvDesdeFormulario(this)"></label>
+                  @endif
+                </div>
+
+                <div>
+                  @if ($tieneSolicitud)
+                    <span style="display:inline-flex; align-items:center; gap:6px; font-size:13px; color:#2e7d32;"><i class="mdi mdi-check-circle"></i> Este servicio ya tiene Solicitud de Empleo &nbsp;<a href="{{ $servicio->solicitud_empleo }}" target="_blank" style="color:#8a6d1f;">(ver)</a></span>
+                  @else
+                    <span style="font-size:13px; color:#8a6d1f;">Solicitud de empleo:</span>
+                    <label class="button is-small btn-outline-orange" style="cursor:pointer; margin-top:4px;">Subir Solicitud (PDF)<input type="file" accept=".pdf" style="display:none;" onchange="subirSolicitudDesdeFormulario(this)"></label>
+                  @endif
+                </div>
+              </div>
+            @else
+              <div class="form-group" style="background:#f3ead9; border-radius:10px; padding:12px 18px; font-size:12.5px; color:#6b5d52;">
+                <i class="mdi mdi-information-outline"></i> Después de publicar este servicio, vas a poder agregarle su propio CV y/o Solicitud de Empleo (editándolo).
+              </div>
+            @endif
 
             <button type="submit" class="btn-publicar"><i class="mdi mdi-send"></i> {{ $servicio ? 'Guardar Cambios' : 'Publicar empleo' }}</button>
           </form>
@@ -480,10 +512,18 @@
     // ===== Si estamos editando, precargar la categoría/subcategoría ya guardadas =====
     const servicioCategoriaId = @json($servicio->categoria_id ?? null);
     const servicioSubcategoriaId = @json($servicio->subcategoria_id ?? null);
+    const categoriaBloqueada = @json($categoriaBloqueada);
     if (servicioCategoriaId) {
       catSelect.value = servicioCategoriaId;
       catSelect.dispatchEvent(new Event('change'));
       subcatSelect.value = servicioSubcategoriaId;
+    }
+    // Si el servicio ya tiene contrataciones/calificaciones, la subcategoría
+    // también se bloquea (el <select> de categoría ya viene "disabled" desde
+    // el HTML, pero el evento 'change' de arriba vuelve a habilitar el de
+    // subcategoría, así que aquí lo re-bloqueamos).
+    if (categoriaBloqueada) {
+      subcatSelect.disabled = true;
     }
 
     // Vista previa de imagen
@@ -509,6 +549,36 @@
     const successToast = document.getElementById('successToast');
     const errorToast = document.getElementById('errorToast');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    function subirCvDesdeFormulario(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append('archivo', file);
+      fetch('/usuario/misEmpleos/{{ $servicio->id ?? "" }}/cv/subir-archivo', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok }) => {
+          if (!ok) { alert('❌ Ocurrió un error al subir tu CV.'); return; }
+          alert('✅ CV subido correctamente.');
+          location.reload();
+        })
+        .catch(() => alert('❌ Ocurrió un error de conexión.'));
+    }
+
+    function subirSolicitudDesdeFormulario(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append('archivo', file);
+      fetch('/usuario/misEmpleos/{{ $servicio->id ?? "" }}/solicitud-empleo', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok }) => {
+          if (!ok) { alert('❌ Ocurrió un error al subir tu Solicitud de Empleo. Confirma que sea un PDF.'); return; }
+          alert('✅ Solicitud de Empleo subida correctamente.');
+          location.reload();
+        })
+        .catch(() => alert('❌ Ocurrió un error de conexión.'));
+    }
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -576,7 +646,11 @@
           }
           successToast.style.display = 'block';
           errorToast.style.display = 'none';
-          setTimeout(() => { window.location.href = '/usuario/misEmpleos'; }, 1500);
+          // Si es un servicio nuevo, lo mandamos directo a editarlo (ahí ya puede
+          // agregarle su CV/Solicitud, porque ya existe el ID). Si ya existía
+          // (edición), lo mandamos de vuelta a la lista, como antes.
+          const destino = data.servicioId ? `/usuario/misEmpleos/${data.servicioId}/editar` : '/usuario/misEmpleos';
+          setTimeout(() => { window.location.href = destino; }, 1500);
         })
         .catch((err) => {
           console.error('Error al guardar el servicio:', err);

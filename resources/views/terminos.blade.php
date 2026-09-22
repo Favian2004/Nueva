@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Terminos y condiciones</title>
+    <title>Términos y condiciones</title>
     <!-- Font Awesome para iconos (alternativa a los iconos personalizados) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
@@ -17,15 +17,14 @@
 
       /* ===== CONTENIDO ===== */
 .contenido{
-    margin-left:230px;
+    margin-left:10px;
     margin-right:230px;
     padding:0;
     background:#fff;
     min-height:100vh;
 }
 
-/* ===== COLUMNAS DE ANUNCIOS ===== */
-.anuncio-izq,
+/* ===== COLUMNA DE ANUNCIOS (solo derecha) ===== */
 .anuncio-der{
     position:fixed;
     top:10px;
@@ -34,13 +33,6 @@
     flex-direction:column;
     gap:15px;
     z-index:999;
-}
-
-.anuncio-izq{
-    left:10px;
-}
-
-.anuncio-der{
     right:10px;
 }
 
@@ -74,9 +66,30 @@
 }
 
 /* ===== RESPONSIVE ===== */
-@media(max-width:1200px){
 
-    .anuncio-izq,
+/* Pantallas medianas (laptops 14"-15", ~1201px a 1600px):
+   la columna se achica en vez de verse igual de grande que en
+   un monitor de escritorio de 1920px. */
+@media (min-width: 1101px) and (max-width: 1600px) {
+    .anuncio-der {
+        width: 180px;
+    }
+
+    .ad-box {
+        height: 180px;
+    }
+
+    .ad-box img {
+        height: 180px;
+    }
+
+    .contenido {
+        margin-right: 200px;
+    }
+}
+
+@media(max-width:1100px){
+
     .anuncio-der{
         display:none;
     }
@@ -137,7 +150,7 @@
 
 /* Botón */
 .btn-anunciar{
-    background:#ffc107;
+    background: #000000;
     color:#000;
     text-decoration:none;
     padding:10px 18px;
@@ -390,36 +403,8 @@
     </div>
 
       <!-- ========================= -->
-<!-- ANUNCIOS IZQUIERDOS -->
-<!-- ========================= -->    <div class="anuncio-izq">
-
-        <div class="ad-titulo">
-            <h5>NEGOCIOS DESTACADOS</h5>
-            <div class="linea-titulo">
-                <span></span>
-                <small>de tu municipio</small>
-                <span></span>
-            </div>
-        </div>
-
-        @forelse ($anunciosIzquierda as $anuncio)
-          @if ($anuncio->imagenes->count())
-            <div class="ad-box">
-              <div id="adLeft{{ $anuncio->orden }}" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                  @foreach ($anuncio->imagenes as $index => $img)
-                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
-                      <img src="{{ $img->imagen }}">
-                    </div>
-                  @endforeach
-                </div>
-              </div>
-            </div>
-          @endif
-        @empty
-        @endforelse
-
-    </div>
+<!-- ANUNCIOS (solo columna derecha) -->
+<!-- ========================= -->
 
     <!-- ========================= -->
     <!-- ANUNCIOS DERECHOS -->
@@ -441,7 +426,7 @@
               <div id="adRight{{ $anuncio->orden }}" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                   @foreach ($anuncio->imagenes as $index => $img)
-                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="2500">
+                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="6000">
                       <img src="{{ $img->imagen }}">
                     </div>
                   @endforeach
@@ -475,7 +460,7 @@
         <!-- Contact & Language -->
         <div class="header__right d-flex align-items-center">
             <div class="me-3">
-                <i class="icon-telephone"></i> Linea directa: <strong>2331014306</strong>
+                <i class="icon-telephone"></i> Línea directa: <strong>2331014306</strong>
             </div>
             <div>
                 <select class="form-select form-select-sm language-select">
@@ -688,36 +673,36 @@ SECCIÓN TÉRMINOS Y CONDICIONES
 
      <div class="container my-4">
 
-    <div class="banner-negocio">
+          <div class="banner-negocio">
 
-        <div class="banner-texto">
-            <h2>¿TIENES UN NEGOCIO?</h2>
-            <p>Promociona tu negocio y llega a más clientes en tu municipio</p>
-        </div>
+            <div class="banner-texto">
+              <h2>¿TIENES UN NEGOCIO?</h2>
+              <p>Promociona tu negocio y llega a más clientes en tu municipio</p>
+            </div>
 
-        <div class="banner-icono">
-            <img src="{{ asset('img/anuncios/tienda.png') }}" alt="Tienda">
-        </div>
+            <div class="banner-icono">
+              <img src="{{ asset('img/anuncios/tienda.png') }}" alt="Tienda">
+            </div>
 
-        <div class="banner-destaca">
-            <h2>DESTACA TU NEGOCIO</h2>
-            <h1>SINTECZATE</h1>
-        </div>
+            <div class="banner-destaca">
+              <h2>DESTACA TU NEGOCIO</h2>
+              <h1>EN ¡SINTECZATE!</h1>
+            </div>
 
-        <div class="banner-boton">
-            <a href="/anunciar" class="btn-anunciar">
+            <div class="banner-boton">
+              <a href="/anunciar" class="btn-anunciar">
                 ¡ANÚNCIATE AQUÍ!
-            </a>
-            <small>Más información →</small>
+              </a>
+              <small>Más información →</small>
+            </div>
+
+            <div class="banner-persona">
+              <img src="{{ asset('img/anuncios/persona.png') }}" alt="Anunciante">
+            </div>
+
+          </div>
+
         </div>
-
-        <div class="banner-persona">
-            <img src="{{ asset('img/anuncios/persona.png') }}" alt="Anunciante">
-        </div>
-
-    </div>
-
-     </div>
 
 </footer>
 
