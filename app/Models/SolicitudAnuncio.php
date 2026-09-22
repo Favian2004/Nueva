@@ -17,10 +17,21 @@ class SolicitudAnuncio extends Model
         'telefono',
         'whatsapp',
         'email',
+        'link_externo',
         'plan',
         'imagen_negocio',
         'comprobante_pago',
         'estado',
         'notas_admin',
     ];
+
+    public function pagos()
+    {
+        return $this->hasMany(PagoAnuncio::class, 'solicitud_anuncio_id');
+    }
+
+    public function pagoAprobado()
+    {
+        return $this->hasOne(PagoAnuncio::class, 'solicitud_anuncio_id')->where('estado', 'aprobado');
+    }
 }

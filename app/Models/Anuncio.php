@@ -17,6 +17,7 @@ class Anuncio extends Model
         'posicion',
         'orden',
         'estado',
+        'link_externo',
     ];
 
     public function creador()

@@ -19,6 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // como el inicio de sesión con Google).
         $middleware->trustProxies(at: '*');
 
+        // El webhook de Mercado Pago llega directo desde sus servidores,
+        // sin pasar por ningún formulario nuestro, así que nunca va a traer
+        // el token de seguridad (_token) — lo excluimos para que no le dé
+        // un error 419 y bloquee la confirmación del pago.
+        $middleware->validateCsrfTokens(except: [
+            'anunciar/webhook',
+        ]);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'not-admin' => \App\Http\Middleware\RedirectIfAdmin::class,

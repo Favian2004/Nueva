@@ -301,27 +301,23 @@
       </table>
     </div>
 
-    <!-- DATOS DE DEPÓSITO -->
+    <!-- CÓMO SE PAGA -->
     <div class="deposito-box">
-      <h5><i class="bi bi-bank"></i> Datos para tu transferencia</h5>
-      <div class="dato"><span>Banco</span><span class="valor">{{ $banco }}</span></div>
-      <div class="dato"><span>CLABE</span><span class="valor">{{ $clabe }}</span></div>
-      <div class="dato"><span>A nombre de</span><span class="valor">{{ $titular }}</span></div>
-      <p class="mb-0 mt-3" style="font-size:12.5px; opacity:.85;">
-        Haz tu transferencia por el plan que elegiste, toma una foto o captura de pantalla del comprobante, y súbela en el formulario de abajo. En cuanto confirmemos tu pago, publicamos tu anuncio.
+      <h5><i class="bi bi-credit-card"></i> Pago seguro con Mercado Pago</h5>
+      <p class="mb-0" style="font-size:13px; opacity:.9;">
+        Llena el formulario de abajo, elige tu plan, y al enviarlo te llevamos directo a Mercado Pago para completar tu pago.
       </p>
-
       <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,.12);">
         <p class="mb-2" style="font-size:13px; font-weight:700; color:#ffcf33;">
-          <i class="bi bi-check-circle-fill"></i> Aceptamos transferencia desde cualquier banco o app:
+          <i class="bi bi-check-circle-fill"></i> Puedes pagar con:
         </p>
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
-          @foreach (['BBVA','Santander','Banorte','HSBC','Banamex','Banco Azteca','Mercado Pago','Nu'] as $bancoAceptado)
-            <span style="background:rgba(255,255,255,.12); padding:4px 12px; border-radius:20px; font-size:12px;">{{ $bancoAceptado }}</span>
+          @foreach (['Tarjeta de débito','Tarjeta de crédito','Transferencia SPEI','OXXO'] as $formaPago)
+            <span style="background:rgba(255,255,255,.12); padding:4px 12px; border-radius:20px; font-size:12px;">{{ $formaPago }}</span>
           @endforeach
         </div>
         <p class="mb-0 mt-2" style="font-size:11.5px; opacity:.75;">
-          Solo necesitas la app de tu propio banco — busca "Transferir" o "SPEI" y pega la CLABE de arriba. No se acepta efectivo en OXXO ni en cajeros.
+          En cuanto Mercado Pago confirme tu pago, tu solicitud queda lista para su revisión final y publicación.
         </p>
       </div>
     </div>
@@ -360,6 +356,12 @@
         </div>
 
         <div class="mb-3">
+          <label class="form-label">Link a tu página o red social (opcional)</label>
+          <input type="url" name="link_externo" class="form-control" value="{{ old('link_externo') }}" placeholder="https://facebook.com/tu-negocio">
+          <small class="text-muted">Si lo agregas, tu anuncio va a tener un botón que lleve directo ahí.</small>
+        </div>
+
+        <div class="mb-3">
           <label class="form-label">Elige tu plan <span class="text-danger">*</span></label>
           <div class="plan-radio" id="planRadioGroup">
             <label class="seleccionado" data-plan="mensual">
@@ -373,20 +375,14 @@
           </div>
         </div>
 
-        <div class="mb-3">
+        <div class="mb-4">
           <label class="form-label">¿Ya tienes tu diseño del anuncio? (opcional)</label>
           <input type="file" name="imagen_negocio" class="form-control" accept="image/*">
           <small class="text-muted">Si no subes nada, te ayudamos a armar uno con tu descripción de arriba.</small>
         </div>
 
-        <div class="mb-4">
-          <label class="form-label">Sube tu comprobante de transferencia <span class="text-danger">*</span></label>
-          <input type="file" name="comprobante_pago" class="form-control" accept="image/*,.pdf" required>
-          <small class="text-muted">Puede ser una foto, captura de pantalla, o el PDF que te dio tu banco.</small>
-        </div>
-
         <button type="submit" class="btn-enviar-anuncio">
-          <i class="bi bi-send-fill"></i> Enviar solicitud
+          <i class="bi bi-credit-card-fill"></i> Pagar con Mercado Pago
         </button>
       </form>
     </div>

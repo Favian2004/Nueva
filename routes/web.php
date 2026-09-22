@@ -35,6 +35,10 @@ Route::get('/servicio-cliente', [App\Http\Controllers\HomeController::class, 'se
 Route::get('/terminos', [App\Http\Controllers\HomeController::class, 'terminos']);
 Route::get('/anunciar', [App\Http\Controllers\SolicitudAnuncioController::class, 'create'])->name('anunciar');
 Route::post('/anunciar', [App\Http\Controllers\SolicitudAnuncioController::class, 'store'])->name('anunciar.store');
+Route::get('/anunciar/pago/exito', [App\Http\Controllers\SolicitudAnuncioController::class, 'pagoExito'])->name('anunciar.pago.exito');
+Route::get('/anunciar/pago/fallo', [App\Http\Controllers\SolicitudAnuncioController::class, 'pagoFallo'])->name('anunciar.pago.fallo');
+Route::get('/anunciar/pago/pendiente', [App\Http\Controllers\SolicitudAnuncioController::class, 'pagoPendiente'])->name('anunciar.pago.pendiente');
+Route::post('/anunciar/webhook', [App\Http\Controllers\SolicitudAnuncioController::class, 'webhook'])->name('anunciar.webhook');
 Route::get('/api/anuncios', [App\Http\Controllers\Api\AnuncioApiController::class, 'index']);
 
 

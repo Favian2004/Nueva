@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PagoAnuncio;
 use App\Models\SolicitudAnuncio;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use MercadoPago\Client\Payment\PaymentClient;
+use MercadoPago\Client\Preference\PreferenceClient;
+use MercadoPago\Exceptions\MPApiException;
+use MercadoPago\MercadoPagoConfig;
 
 class SolicitudAnuncioController extends Controller
 {
-    // Datos de depósito (cámbialos aquí si algún día cambias de cuenta)
-    const CLABE = 'Aun esta en proceso';
-    const TITULAR = 'Juan perez';
-    const BANCO = 'Nu México';
+    // Precios reales de tus planes (mismos que ya se muestran en /anunciar).
+    const PRECIOS = [
+        'mensual' => 49.00,
+        'anual' => 490.00,
+    ];
 
     public function create()
     {
-        return view('anunciar', [
-            'clabe' => self::CLABE,
-            'titular' => self::TITULAR,
-            'banco' => self::BANCO,
-        ]);
+        return view('anunciar');
     }
 
     public function store(Request $request)
@@ -29,22 +32,199 @@ class SolicitudAnuncioController extends Controller
             'telefono' => 'required|string|max:20',
             'whatsapp' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:150',
+            'link_externo' => 'nullable|url|max:255',
             'plan' => 'required|in:mensual,anual',
             'imagen_negocio' => 'nullable|image|max:4096',
-            'comprobante_pago' => 'required|mimes:jpg,jpeg,png,webp,pdf|max:4096',
         ]);
 
-        $data = $request->only(['nombre_negocio', 'descripcion', 'telefono', 'whatsapp', 'email', 'plan']);
+        $data = $request->only(['nombre_negocio', 'descripcion', 'telefono', 'whatsapp', 'email', 'link_externo', 'plan']);
 
         if ($request->hasFile('imagen_negocio')) {
             $data['imagen_negocio'] = '/storage/' . $request->file('imagen_negocio')->store('solicitudes-anuncio', 'public');
         }
 
-        $data['comprobante_pago'] = '/storage/' . $request->file('comprobante_pago')->store('solicitudes-anuncio/comprobantes', 'public');
-        $data['estado'] = 'pendiente';
+        $data['estado'] = 'pendiente_pago';
 
-        SolicitudAnuncio::create($data);
+        $solicitud = SolicitudAnuncio::create($data);
 
-        return redirect()->route('anunciar')->with('exito', '¡Solicitud enviada! La revisaremos y en cuanto confirmemos tu transferencia, tu anuncio quedará publicado.');
+        // En vez de mandarlo de regreso con un mensaje, lo mandamos directo
+        // a pagar con Mercado Pago.
+        return $this->irAPagar($solicitud);
+    }
+
+    // Crea la preferencia de pago en Mercado Pago y redirige ahí.
+    protected function irAPagar(SolicitudAnuncio $solicitud)
+    {
+        MercadoPagoConfig::setAccessToken(config('services.mercadopago.access_token'));
+
+        // Necesario para poder probar en localhost / 127.0.0.1 — en producción
+        // (Hostinger) esta línea no hace daño, simplemente no aplica.
+        if (app()->environment('local')) {
+            MercadoPagoConfig::setRuntimeEnviroment(MercadoPagoConfig::LOCAL);
+        }
+
+        $monto = self::PRECIOS[$solicitud->plan];
+
+        $client = new PreferenceClient();
+
+        $datosPreferencia = [
+            'items' => [
+                [
+                    'title' => 'Anuncio en ¡SINTECZATE! - Plan ' . ucfirst($solicitud->plan),
+                    'quantity' => 1,
+                    'unit_price' => $monto,
+                    'currency_id' => 'MXN',
+                ],
+            ],
+            'back_urls' => [
+                'success' => route('anunciar.pago.exito'),
+                'failure' => route('anunciar.pago.fallo'),
+                'pending' => route('anunciar.pago.pendiente'),
+            ],
+            'external_reference' => (string) $solicitud->id,
+        ];
+
+        // Mercado Pago exige que back_urls.success y notification_url sean
+        // URLs públicas y válidas (https, dominio real) para usar auto_return
+        // y para poder llamar al webhook. En local (http://127.0.0.1:8000)
+        // las rechaza, así que solo las activamos cuando ya son https
+        // (Hostinger, o local con ngrok).
+        $urlWebhook = route('anunciar.webhook');
+
+        if (str_starts_with($urlWebhook, 'https://')) {
+            $datosPreferencia['notification_url'] = $urlWebhook;
+        }
+
+        if (str_starts_with($datosPreferencia['back_urls']['success'], 'https://')) {
+            $datosPreferencia['auto_return'] = 'approved';
+        }
+
+        try {
+            $preference = $client->create($datosPreferencia);
+        } catch (MPApiException $e) {
+            Log::error('Error al crear preferencia en Mercado Pago', [
+                'status' => $e->getApiResponse()?->getStatusCode(),
+                'content' => $e->getApiResponse()?->getContent(),
+            ]);
+
+            return back()->withErrors(['mercadopago' => 'No se pudo conectar con Mercado Pago. Código: ' . $e->getApiResponse()?->getStatusCode() . ' — Revisa storage/logs/laravel.log para más detalle.']);
+        }
+
+        // Guarda el intento de pago, en estado "pendiente" hasta que el
+        // webhook confirme qué pasó de verdad.
+        PagoAnuncio::create([
+            'solicitud_anuncio_id' => $solicitud->id,
+            'plan' => $solicitud->plan,
+            'monto' => $monto,
+            'moneda' => 'MXN',
+            'estado' => 'pendiente',
+            'mp_preference_id' => $preference->id,
+        ]);
+
+        // Con credenciales de PRUEBA, hay que usar sandbox_init_point.
+        // Con credenciales de producción, sería $preference->init_point.
+        $urlPago = str_starts_with(config('services.mercadopago.access_token'), 'TEST')
+            || str_contains(config('services.mercadopago.access_token'), 'APP_USR')
+                ? ($preference->sandbox_init_point ?? $preference->init_point)
+                : $preference->init_point;
+
+        return redirect($urlPago);
+    }
+
+    // ===== Páginas a las que Mercado Pago regresa al usuario =====
+    // OJO: estas páginas son solo informativas. NUNCA activan nada por sí
+    // solas — la activación real solo pasa cuando llega el webhook.
+
+    public function pagoExito(Request $request)
+    {
+        return view('anuncio-pago-resultado', [
+            'tipo' => 'exito',
+            'mensaje' => '¡Gracias! Tu pago está siendo confirmado. En cuanto se verifique, tu anuncio quedará listo para su revisión final.',
+        ]);
+    }
+
+    public function pagoFallo(Request $request)
+    {
+        return view('anuncio-pago-resultado', [
+            'tipo' => 'fallo',
+            'mensaje' => 'Tu pago no se pudo completar. Puedes intentarlo de nuevo desde el formulario de "Anúnciate aquí".',
+        ]);
+    }
+
+    public function pagoPendiente(Request $request)
+    {
+        return view('anuncio-pago-resultado', [
+            'tipo' => 'pendiente',
+            'mensaje' => 'Tu pago está pendiente de confirmación (por ejemplo, si pagaste con OXXO o transferencia). Te avisaremos por correo en cuanto se confirme.',
+        ]);
+    }
+
+    // ===== Webhook: aquí es donde REALMENTE se confirma el pago =====
+    public function webhook(Request $request)
+    {
+        Log::info('Webhook Mercado Pago recibido', $request->all());
+
+        // Mercado Pago manda el aviso de 2 formas posibles: por query string
+        // (?type=payment&data.id=123) o por el cuerpo JSON. Cubrimos ambas.
+        $tipo = $request->input('type') ?? $request->input('topic');
+        $paymentId = $request->input('data.id') ?? $request->query('id') ?? $request->input('id');
+
+        if ($tipo !== 'payment' || !$paymentId) {
+            return response()->json(['ok' => true]); // Ignoramos otros tipos de eventos
+        }
+
+        MercadoPagoConfig::setAccessToken(config('services.mercadopago.access_token'));
+
+        try {
+            $client = new PaymentClient();
+            $payment = $client->get($paymentId);
+        } catch (\Exception $e) {
+            Log::error('Error al consultar el pago en Mercado Pago: ' . $e->getMessage());
+            return response()->json(['ok' => false], 500);
+        }
+
+        $solicitudId = $payment->external_reference;
+        $solicitud = SolicitudAnuncio::find($solicitudId);
+
+        if (!$solicitud) {
+            Log::warning('Webhook de Mercado Pago: no se encontró la solicitud ' . $solicitudId);
+            return response()->json(['ok' => true]);
+        }
+
+        $pago = PagoAnuncio::where('solicitud_anuncio_id', $solicitud->id)
+            ->where('estado', 'pendiente')
+            ->latest()
+            ->first();
+
+        if (!$pago) {
+            Log::warning('Webhook de Mercado Pago: no se encontró el pago pendiente para la solicitud ' . $solicitud->id);
+            return response()->json(['ok' => true]);
+        }
+
+        $pago->mp_payment_id = $payment->id;
+
+        if ($payment->status === 'approved') {
+            $pago->estado = 'aprobado';
+            $pago->fecha_pago = now();
+            $pago->fecha_inicio_anuncio = now()->toDateString();
+            $pago->fecha_vencimiento_anuncio = $solicitud->plan === 'anual'
+                ? now()->addYear()->toDateString()
+                : now()->addMonth()->toDateString();
+            $pago->save();
+
+            $solicitud->estado = 'pagado';
+            $solicitud->save();
+        } elseif ($payment->status === 'rejected') {
+            $pago->estado = 'rechazado';
+            $pago->save();
+
+            $solicitud->estado = 'pago_rechazado';
+            $solicitud->save();
+        } else {
+            // pending, in_process, etc.
+            $pago->save();
+        }
+
+        return response()->json(['ok' => true]);
     }
 }
