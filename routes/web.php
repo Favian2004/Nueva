@@ -52,6 +52,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/admin/anuncios/{id}/toggle', [App\Http\Controllers\AdminAnuncioController::class, 'toggle']);
     Route::post('/admin/anuncios/{id}/imagenes', [App\Http\Controllers\AdminAnuncioController::class, 'storeImagen']);
     Route::delete('/admin/anuncio-imagenes/{id}', [App\Http\Controllers\AdminAnuncioController::class, 'destroyImagen']);
+    Route::get('/admin/solicitudes-anuncio', [App\Http\Controllers\AdminSolicitudAnuncioController::class, 'index']);
+    Route::post('/admin/solicitudes-anuncio/{id}/activar', [App\Http\Controllers\AdminSolicitudAnuncioController::class, 'activar']);
+    Route::post('/admin/solicitudes-anuncio/{id}/rechazar', [App\Http\Controllers\AdminSolicitudAnuncioController::class, 'rechazar']);
     Route::get('/admin/categorias', [App\Http\Controllers\AdminCategoriaController::class, 'index']);
     Route::post('/admin/categorias', [App\Http\Controllers\AdminCategoriaController::class, 'storeCategoria']);
     Route::delete('/admin/categorias/{id}', [App\Http\Controllers\AdminCategoriaController::class, 'destroyCategoria']);

@@ -139,6 +139,12 @@
             <span class="menu-item-label">Anuncios</span>
           </a>
         </li>
+        <li>
+          <a href="/admin/solicitudes-anuncio" class="has-icon">
+            <span class="icon"><i class="mdi mdi-cash-register"></i></span>
+            <span class="menu-item-label">Solicitudes de Anuncio</span>
+          </a>
+        </li>
       </ul>
     </div>
   </aside>

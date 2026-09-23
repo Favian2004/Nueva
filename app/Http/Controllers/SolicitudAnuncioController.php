@@ -15,6 +15,7 @@ class SolicitudAnuncioController extends Controller
 {
     // Precios reales de tus planes (mismos que ya se muestran en /anunciar).
     const PRECIOS = [
+        'basico' => 29.00,
         'mensual' => 49.00,
         'anual' => 490.00,
     ];
@@ -28,16 +29,19 @@ class SolicitudAnuncioController extends Controller
     {
         $request->validate([
             'nombre_negocio' => 'required|string|max:150',
+            'nombre_encargado' => 'required|string|max:150',
             'descripcion' => 'required|string|max:2000',
+            'direccion' => 'required|string|max:255',
             'telefono' => 'required|string|max:20',
             'whatsapp' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:150',
             'link_externo' => 'nullable|url|max:255',
-            'plan' => 'required|in:mensual,anual',
-            'imagen_negocio' => 'nullable|image|max:4096',
+            'eslogan' => 'required_if:plan,mensual,anual|nullable|string|max:150',
+            'plan' => 'required|in:basico,mensual,anual',
+            'imagen_negocio' => 'required_if:plan,basico|nullable|image|max:4096',
         ]);
 
-        $data = $request->only(['nombre_negocio', 'descripcion', 'telefono', 'whatsapp', 'email', 'link_externo', 'plan']);
+        $data = $request->only(['nombre_negocio', 'nombre_encargado', 'descripcion', 'direccion', 'telefono', 'whatsapp', 'email', 'link_externo', 'eslogan', 'plan']);
 
         if ($request->hasFile('imagen_negocio')) {
             $data['imagen_negocio'] = '/storage/' . $request->file('imagen_negocio')->store('solicitudes-anuncio', 'public');
@@ -67,10 +71,13 @@ class SolicitudAnuncioController extends Controller
 
         $client = new PreferenceClient();
 
+        // Nombres bonitos para mostrar en Mercado Pago (con acentos correctos)
+        $nombresPlan = ['basico' => 'Básico', 'mensual' => 'Mensual', 'anual' => 'Anual'];
+
         $datosPreferencia = [
             'items' => [
                 [
-                    'title' => 'Anuncio en ¡SINTECZATE! - Plan ' . ucfirst($solicitud->plan),
+                    'title' => 'Anuncio en ¡SINTECZATE! - Plan ' . $nombresPlan[$solicitud->plan],
                     'quantity' => 1,
                     'unit_price' => $monto,
                     'currency_id' => 'MXN',
@@ -82,6 +89,16 @@ class SolicitudAnuncioController extends Controller
                 'pending' => route('anunciar.pago.pendiente'),
             ],
             'external_reference' => (string) $solicitud->id,
+            // Solo aceptamos tarjeta (débito/crédito) — excluimos OXXO,
+            // transferencia SPEI y otros métodos que dejan el pago en
+            // estado "pendiente" por horas/días.
+            'payment_methods' => [
+                'excluded_payment_types' => [
+                    ['id' => 'ticket'],         // OXXO y similares
+                    ['id' => 'bank_transfer'],  // SPEI
+                    ['id' => 'atm'],
+                ],
+            ],
         ];
 
         // Mercado Pago exige que back_urls.success y notification_url sean
@@ -208,9 +225,11 @@ class SolicitudAnuncioController extends Controller
             $pago->estado = 'aprobado';
             $pago->fecha_pago = now();
             $pago->fecha_inicio_anuncio = now()->toDateString();
-            $pago->fecha_vencimiento_anuncio = $solicitud->plan === 'anual'
-                ? now()->addYear()->toDateString()
-                : now()->addMonth()->toDateString();
+            $pago->fecha_vencimiento_anuncio = match ($solicitud->plan) {
+                'anual' => now()->addYear()->toDateString(),
+                'basico' => now()->addDays(15)->toDateString(),
+                default => now()->addMonth()->toDateString(),
+            };
             $pago->save();
 
             $solicitud->estado = 'pagado';

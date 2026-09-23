@@ -13,11 +13,14 @@ class SolicitudAnuncio extends Model
 
     protected $fillable = [
         'nombre_negocio',
+        'nombre_encargado',
         'descripcion',
+        'direccion',
         'telefono',
         'whatsapp',
         'email',
         'link_externo',
+        'eslogan',
         'plan',
         'imagen_negocio',
         'comprobante_pago',

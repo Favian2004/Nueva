@@ -51,10 +51,15 @@
 
     .planes-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      max-width: 700px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      max-width: 820px;
       margin: 0 auto 40px;
+    }
+    @media (max-width: 576px) {
+      .planes-grid {
+        grid-template-columns: 1fr;
+      }
     }
     .plan-card {
       background: #fff;
@@ -274,6 +279,11 @@
     <!-- PLANES -->
     <div class="planes-grid">
       <div class="plan-card">
+        <h5>Básico</h5>
+        <div class="precio">$29 <small>/15 días</small></div>
+        <div class="por-dia">≈ $1.93 al día</div>
+      </div>
+      <div class="plan-card">
         <h5>Mensual</h5>
         <div class="precio">$49 <small>/mes</small></div>
         <div class="por-dia">≈ $1.63 al día</div>
@@ -301,23 +311,42 @@
       </table>
     </div>
 
+    <!-- QUÉ INCLUYE TU ANUNCIO -->
+    <div class="deposito-box" style="margin-bottom:16px;">
+      <h5><i class="bi bi-megaphone-fill"></i> ¿Qué incluye tu anuncio?</h5>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+        <div style="display:flex; gap:10px; align-items:flex-start;">
+          <i class="bi bi-check-circle-fill" style="color:#ffcf33; margin-top:2px;"></i>
+          <span style="font-size:13px;">Tu anuncio (imagen + link a tu página/redes si lo agregas) aparece en la columna de "Negocios destacados" que se ve en <strong>todas las páginas</strong> del sitio, y en la portada de inicio.</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:flex-start;">
+          <i class="bi bi-check-circle-fill" style="color:#ffcf33; margin-top:2px;"></i>
+          <span style="font-size:13px;">Se muestra durante <strong>todo el tiempo de tu plan</strong> (1 mes o 1 año), rotando junto con los demás anuncios activos.</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:flex-start;">
+          <i class="bi bi-check-circle-fill" style="color:#ffcf33; margin-top:2px;"></i>
+          <span style="font-size:13px;">Al tocarlo, la gente puede verlo en grande, y si agregaste tu link, un botón los lleva directo a tu página o red social.</span>
+        </div>
+      </div>
+    </div>
+
     <!-- CÓMO SE PAGA -->
     <div class="deposito-box">
       <h5><i class="bi bi-credit-card"></i> Pago seguro con Mercado Pago</h5>
       <p class="mb-0" style="font-size:13px; opacity:.9;">
-        Llena el formulario de abajo, elige tu plan, y al enviarlo te llevamos directo a Mercado Pago para completar tu pago.
+        Llena el formulario de abajo, elige tu plan, y al enviarlo te llevamos directo a Mercado Pago para completar tu pago con tarjeta.
       </p>
       <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,.12);">
         <p class="mb-2" style="font-size:13px; font-weight:700; color:#ffcf33;">
           <i class="bi bi-check-circle-fill"></i> Puedes pagar con:
         </p>
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
-          @foreach (['Tarjeta de débito','Tarjeta de crédito','Transferencia SPEI','OXXO'] as $formaPago)
+          @foreach (['Tarjeta de débito','Tarjeta de crédito'] as $formaPago)
             <span style="background:rgba(255,255,255,.12); padding:4px 12px; border-radius:20px; font-size:12px;">{{ $formaPago }}</span>
           @endforeach
         </div>
         <p class="mb-0 mt-2" style="font-size:11.5px; opacity:.75;">
-          En cuanto Mercado Pago confirme tu pago, tu solicitud queda lista para su revisión final y publicación.
+          En cuanto Mercado Pago confirme tu pago (al instante), tu solicitud queda lista para su revisión final — usualmente en menos de 24 horas.
         </p>
       </div>
     </div>
@@ -335,8 +364,19 @@
         </div>
 
         <div class="mb-3">
+          <label class="form-label">Nombre de quien atiende / encargado <span class="text-danger">*</span></label>
+          <input type="text" name="nombre_encargado" class="form-control" value="{{ old('nombre_encargado') }}" placeholder="Ej. María López" required>
+          <small class="text-muted">Para saber con quién coordinar si necesitamos contactarte.</small>
+        </div>
+
+        <div class="mb-3">
           <label class="form-label">Describe tu negocio <span class="text-danger">*</span></label>
           <textarea name="descripcion" class="form-control" rows="3" placeholder="¿Qué ofreces? ¿Qué te hace diferente?" required>{{ old('descripcion') }}</textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Dirección <span class="text-danger">*</span></label>
+          <input type="text" name="direccion" class="form-control" value="{{ old('direccion') }}" placeholder="Ej. Calle Morelos #12, Col. Centro" required>
         </div>
 
         <div class="row">
@@ -364,6 +404,10 @@
         <div class="mb-3">
           <label class="form-label">Elige tu plan <span class="text-danger">*</span></label>
           <div class="plan-radio" id="planRadioGroup">
+            <label data-plan="basico">
+              <input type="radio" name="plan" value="basico">
+              <span>Básico · $29 (15 días)</span>
+            </label>
             <label class="seleccionado" data-plan="mensual">
               <input type="radio" name="plan" value="mensual" checked>
               <span>Mensual · $49</span>
@@ -373,12 +417,18 @@
               <span>Anual · $490 (2 meses gratis)</span>
             </label>
           </div>
+          <small class="text-muted">El plan Básico solo muestra tu imagen (sin eslogan). Mensual y Anual incluyen un pequeño eslogan debajo de tu imagen.</small>
+        </div>
+
+        <div class="mb-3" id="campoEslogan">
+          <label class="form-label">Eslogan (aparece debajo de tu imagen) <span class="text-danger">*</span></label>
+          <input type="text" name="eslogan" class="form-control" value="{{ old('eslogan') }}" placeholder="Ej. Los mejores tacos de la región" maxlength="150">
         </div>
 
         <div class="mb-4">
-          <label class="form-label">¿Ya tienes tu diseño del anuncio? (opcional)</label>
-          <input type="file" name="imagen_negocio" class="form-control" accept="image/*">
-          <small class="text-muted">Si no subes nada, te ayudamos a armar uno con tu descripción de arriba.</small>
+          <label class="form-label" id="labelImagen">¿Ya tienes tu diseño del anuncio? (opcional)</label>
+          <input type="file" name="imagen_negocio" id="campoImagen" class="form-control" accept="image/*">
+          <small class="text-muted" id="ayudaImagen">Si no subes nada, te contactaremos para coordinar el diseño antes de publicar.</small>
         </div>
 
         <button type="submit" class="btn-enviar-anuncio">
@@ -421,14 +471,40 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // Marca visualmente cuál plan está seleccionado (mensual/anual)
+    // Marca visualmente cuál plan está seleccionado (básico/mensual/anual),
+    // y ajusta si el eslogan/imagen son obligatorios según el plan.
+    const campoEslogan = document.getElementById('campoEslogan');
+    const campoImagen = document.getElementById('campoImagen');
+    const labelImagen = document.getElementById('labelImagen');
+    const ayudaImagen = document.getElementById('ayudaImagen');
+
+    function actualizarCamposPorPlan(plan) {
+      if (plan === 'basico') {
+        campoEslogan.style.display = 'none';
+        campoEslogan.querySelector('input').required = false;
+        campoImagen.required = true;
+        labelImagen.innerHTML = 'Sube la imagen de tu anuncio <span class="text-danger">*</span>';
+        ayudaImagen.textContent = 'El plan Básico solo muestra tu imagen, así que esta foto es obligatoria.';
+      } else {
+        campoEslogan.style.display = '';
+        campoEslogan.querySelector('input').required = true;
+        campoImagen.required = false;
+        labelImagen.textContent = '¿Ya tienes tu diseño del anuncio? (opcional)';
+        ayudaImagen.textContent = 'Si no subes nada, te contactaremos para coordinar el diseño antes de publicar.';
+      }
+    }
+
     document.querySelectorAll('#planRadioGroup label').forEach(label => {
       label.addEventListener('click', function () {
         document.querySelectorAll('#planRadioGroup label').forEach(l => l.classList.remove('seleccionado'));
         this.classList.add('seleccionado');
         this.querySelector('input[type="radio"]').checked = true;
+        actualizarCamposPorPlan(this.dataset.plan);
       });
     });
+
+    // Estado inicial (mensual, que es el que ya viene marcado por defecto)
+    actualizarCamposPorPlan('mensual');
   </script>
 </body>
 </html>
