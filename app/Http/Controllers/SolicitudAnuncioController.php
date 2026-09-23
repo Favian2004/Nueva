@@ -121,14 +121,15 @@ class SolicitudAnuncioController extends Controller
             'mp_preference_id' => $preference->id,
         ]);
 
-        // Con credenciales de PRUEBA, hay que usar sandbox_init_point.
-        // Con credenciales de producción, sería $preference->init_point.
-        $urlPago = str_starts_with(config('services.mercadopago.access_token'), 'TEST')
-            || str_contains(config('services.mercadopago.access_token'), 'APP_USR')
-                ? ($preference->sandbox_init_point ?? $preference->init_point)
-                : $preference->init_point;
-
-        return redirect($urlPago);
+        // Mercado Pago ya no distingue "sandbox_init_point" de forma
+        // confiable con credenciales de prueba (usar sandbox_init_point con
+        // credenciales de prueba es justo lo que provoca el error "Oh, no,
+        // algo anduvo mal"). Siempre usamos init_point: con las credenciales
+        // de una Cuenta de Prueba vendedora, ese init_point ya es un
+        // checkout de prueba (los pagos son ficticios), y hay que loguearse
+        // ahí con la Cuenta de Prueba compradora para pagar con tarjeta de
+        // prueba.
+        return redirect($preference->init_point);
     }
 
     // ===== Páginas a las que Mercado Pago regresa al usuario =====
