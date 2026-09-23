@@ -13,10 +13,13 @@ class AnuncioImagen extends Model
 
     const UPDATED_AT = null;
 
-    protected $fillable = [
+        protected $fillable = [
         'anuncio_id',
         'imagen',
         'orden',
+        'eslogan',
+        'link_externo',
+        'solicitud_anuncio_id',
     ];
 
     public function anuncio()

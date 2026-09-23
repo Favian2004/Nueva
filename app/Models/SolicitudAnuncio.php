@@ -27,4 +27,9 @@ class SolicitudAnuncio extends Model
         'estado',
         'notas_admin',
     ];
+
+    public function pagos()
+    {
+        return $this->hasMany(PagoAnuncio::class, 'solicitud_anuncio_id');
+    }
 }

@@ -11,14 +11,17 @@ class Anuncio extends Model
 
     protected $table = 'anuncios';
 
-    protected $fillable = [
+
+        protected $fillable = [
         'creado_por',
         'municipio_id',
         'posicion',
         'orden',
         'estado',
         'link_externo',
+        'eslogan',
     ];
+
 
     public function creador()
     {

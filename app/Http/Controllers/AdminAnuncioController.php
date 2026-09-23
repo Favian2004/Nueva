@@ -5,74 +5,61 @@ namespace App\Http\Controllers;
 use App\Models\Anuncio;
 use App\Models\AnuncioImagen;
 use App\Models\Municipio;
-use App\Models\SolicitudAnuncio;
 use Illuminate\Http\Request;
 
-class AdminSolicitudAnuncioController extends Controller
+class AdminAnuncioController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $estado = $request->input('estado');
-
-        $solicitudes = SolicitudAnuncio::with('pagos')
-            ->when($estado, fn($q) => $q->where('estado', $estado))
-            ->orderByRaw("FIELD(estado, 'pagado', 'pendiente_pago', 'pago_rechazado', 'aprobado', 'rechazado', 'pendiente')")
-            ->latest()
-            ->get();
-
         $municipios = Municipio::orderBy('nombre')->get();
 
-        $contadorPagadas = SolicitudAnuncio::where('estado', 'pagado')->count();
+        $anuncios = Anuncio::with('imagenes')
+            ->orderBy('posicion')
+            ->orderBy('orden')
+            ->get();
 
-        return view('admin.solicitudes-anuncio', [
-            'solicitudes' => $solicitudes,
+        return view('admin.anuncios', [
             'municipios' => $municipios,
-            'contadorPagadas' => $contadorPagadas,
-            'estado' => $estado,
+            'anuncios' => $anuncios,
         ]);
     }
 
-    // El paso final: convierte una solicitud PAGADA en un Anuncio real y visible.
-    public function activar(Request $request, $id)
+    public function toggle($id)
     {
-        $solicitud = SolicitudAnuncio::where('estado', 'pagado')->findOrFail($id);
+        $anuncio = Anuncio::findOrFail($id);
+        $anuncio->estado = $anuncio->estado === 'activo' ? 'inactivo' : 'activo';
+        $anuncio->save();
 
-        $request->validate([
-            'municipio_id' => 'required|exists:municipios,id',
-            'posicion' => 'required|in:izquierda,derecha',
-        ]);
+        return response()->json(['ok' => true]);
+    }
 
-        $anuncio = Anuncio::create([
-            'municipio_id' => $request->input('municipio_id'),
-            'posicion' => $request->input('posicion'),
-            'orden' => (Anuncio::where('posicion', $request->input('posicion'))->max('orden') ?? 0) + 1,
-            'estado' => 'activo',
-            'link_externo' => $solicitud->link_externo,
-            'eslogan' => $solicitud->eslogan,
-        ]);
+    public function storeImagen(Request $request, $id)
+    {
+        $anuncio = Anuncio::with('imagenes')->findOrFail($id);
 
-        // Si el negocio subió su propia imagen, la usamos como la primera del anuncio.
-        if ($solicitud->imagen_negocio) {
-            AnuncioImagen::create([
-                'anuncio_id' => $anuncio->id,
-                'imagen' => $solicitud->imagen_negocio,
-                'orden' => 1,
-            ]);
+        if ($anuncio->imagenes->count() >= 15) {
+            return response()->json(['ok' => false, 'error' => 'Este espacio ya tiene el máximo de 15 imágenes.'], 422);
         }
 
-        $solicitud->estado = 'aprobado';
-        $solicitud->save();
+        $request->validate([
+            'imagen' => 'required|image|max:4096',
+        ]);
 
-        return response()->json(['ok' => true, 'anuncio_id' => $anuncio->id]);
+        $ruta = $request->file('imagen')->store('anuncios', 'public');
+
+        $nuevaImagen = AnuncioImagen::create([
+            'anuncio_id' => $anuncio->id,
+            'imagen' => '/storage/' . $ruta,
+            'orden' => $anuncio->imagenes->count() + 1,
+        ]);
+
+        return response()->json(['ok' => true, 'imagen' => $nuevaImagen]);
     }
 
-    public function rechazar(Request $request, $id)
+    public function destroyImagen($id)
     {
-        $solicitud = SolicitudAnuncio::findOrFail($id);
-
-        $solicitud->estado = 'rechazado';
-        $solicitud->notas_admin = $request->input('motivo');
-        $solicitud->save();
+        $imagen = AnuncioImagen::findOrFail($id);
+        $imagen->delete();
 
         return response()->json(['ok' => true]);
     }
