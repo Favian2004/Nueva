@@ -53,6 +53,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/anuncios/{id}/imagenes', [App\Http\Controllers\AdminAnuncioController::class, 'storeImagen']);
     Route::delete('/admin/anuncio-imagenes/{id}', [App\Http\Controllers\AdminAnuncioController::class, 'destroyImagen']);
     Route::get('/admin/solicitudes-anuncio', [App\Http\Controllers\AdminSolicitudAnuncioController::class, 'index']);
+    Route::post('/admin/solicitudes-anuncio/crear-directo', [App\Http\Controllers\AdminSolicitudAnuncioController::class, 'crearDirecto']);
     Route::post('/admin/solicitudes-anuncio/{id}/activar', [App\Http\Controllers\AdminSolicitudAnuncioController::class, 'activar']);
     Route::post('/admin/solicitudes-anuncio/{id}/rechazar', [App\Http\Controllers\AdminSolicitudAnuncioController::class, 'rechazar']);
     Route::get('/admin/categorias', [App\Http\Controllers\AdminCategoriaController::class, 'index']);

@@ -22,6 +22,36 @@
     .badge-pendiente { background:#f3f4f6; color:#6b7280; }
     .solicitud-thumb { width:70px; height:70px; object-fit:cover; border-radius:8px; }
     .fila-pagado { background:#f0fdf4; }
+
+    #modal-crear-directo.modal.is-active {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    #modal-crear-directo .modal-card {
+      max-height: 85vh !important;
+      height: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+    #modal-crear-directo .modal-card-head,
+    #modal-crear-directo .modal-card-foot {
+      flex: 0 0 auto !important;
+    }
+    #modal-crear-directo form {
+      display: flex !important;
+      flex-direction: column !important;
+      min-height: 0 !important;
+      flex: 1 1 auto !important;
+      overflow: hidden !important;
+    }
+    #modal-crear-directo .modal-card-body {
+      overflow-y: auto !important;
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+    }
   </style>
 </head>
 <body>
@@ -102,9 +132,31 @@
 
   <section class="section is-main-section">
 
+    @if (session('exito'))
+      <div class="notification is-success is-light">
+        <span class="icon"><i class="mdi mdi-check-circle"></i></span>
+        {{ session('exito') }}
+      </div>
+    @endif
+    @if ($errors->any())
+      <div class="notification is-danger is-light">
+        <span class="icon"><i class="mdi mdi-alert-circle"></i></span>
+        @foreach ($errors->all() as $error)
+          {{ $error }}<br>
+        @endforeach
+      </div>
+    @endif
+
     <div class="notification is-info is-light">
       <span class="icon"><i class="mdi mdi-information"></i></span>
       Cuando un negocio paga con Mercado Pago, su solicitud aparece aquí marcada como <b>"Pagado"</b>. Revisa los datos, elige municipio y posición, y dale <b>"Activar"</b> para publicar el anuncio en el sitio.
+    </div>
+
+    <div class="mb-4">
+      <button class="button is-primary" onclick="document.getElementById('modal-crear-directo').classList.add('is-active')">
+        <span class="icon"><i class="mdi mdi-plus-circle"></i></span>
+        <span>Crear anuncio directo (sin Mercado Pago)</span>
+      </button>
     </div>
 
     <div class="field mb-4">
@@ -191,6 +243,103 @@
 
   </section>
 
+  <!-- MODAL: Crear anuncio directo (sin Mercado Pago) -->
+  <div id="modal-crear-directo" class="modal">
+    <div class="modal-background" onclick="document.getElementById('modal-crear-directo').classList.remove('is-active')"></div>
+    <div class="modal-card" style="width: 640px; max-width: 95vw;">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Crear anuncio directo</p>
+        <button class="delete" aria-label="close" onclick="document.getElementById('modal-crear-directo').classList.remove('is-active')"></button>
+      </header>
+      <form action="{{ url('/admin/solicitudes-anuncio/crear-directo') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <section class="modal-card-body">
+          <div class="notification is-warning is-light">
+            <span class="icon"><i class="mdi mdi-alert"></i></span>
+            Esto crea y publica el anuncio de inmediato, sin pasar por Mercado Pago — úsalo solo si el negocio ya pagó por otro medio, o para anuncios internos.
+          </div>
+
+          <div class="field">
+            <label class="label">Nombre del negocio</label>
+            <div class="control"><input type="text" name="nombre_negocio" class="input" value="{{ old('nombre_negocio') }}" required></div>
+          </div>
+
+          <div class="field">
+            <label class="label">Nombre de quien atiende / encargado</label>
+            <div class="control"><input type="text" name="nombre_encargado" class="input" value="{{ old('nombre_encargado') }}" required></div>
+          </div>
+
+          <div class="field">
+            <label class="label">Descripción del negocio</label>
+            <div class="control"><textarea name="descripcion" class="textarea" rows="2" required>{{ old('descripcion') }}</textarea></div>
+          </div>
+
+          <div class="field">
+            <label class="label">Dirección</label>
+            <div class="control"><input type="text" name="direccion" class="input" value="{{ old('direccion') }}" required></div>
+          </div>
+
+          <div class="field is-grouped is-grouped-multiline">
+            <div class="control is-expanded">
+              <label class="label">Teléfono</label>
+              <input type="text" name="telefono" class="input" value="{{ old('telefono') }}" required>
+            </div>
+            <div class="control is-expanded">
+              <label class="label">WhatsApp (opcional)</label>
+              <input type="text" name="whatsapp" class="input" value="{{ old('whatsapp') }}">
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">Correo (opcional)</label>
+            <div class="control"><input type="email" name="email" class="input" value="{{ old('email') }}" placeholder="Para avisarle cuando se publique"></div>
+          </div>
+
+          <div class="field">
+            <label class="label">Plan</label>
+            <div class="control">
+              <div class="select is-fullwidth">
+                <select name="plan" id="cd-plan" onchange="cdActualizarPlan()">
+                  <option value="basico">Básico · $29 · 15 días</option>
+                  <option value="mensual" selected>Mensual · $49 · 1 mes</option>
+                  <option value="anual">Anual · $490 · 1 año</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="field" id="cd-campo-eslogan">
+            <label class="label">Eslogan</label>
+            <div class="control"><input type="text" name="eslogan" class="input" value="{{ old('eslogan') }}" maxlength="150"></div>
+          </div>
+
+          <div class="field" id="cd-campo-link">
+            <label class="label">Link a página o red social (opcional)</label>
+            <div class="control"><input type="url" name="link_externo" class="input" value="{{ old('link_externo') }}" placeholder="https://facebook.com/tu-negocio"></div>
+          </div>
+
+          <div class="field" id="cd-campo-ubicacion">
+            <label class="label">Link de ubicación en Google Maps (opcional)</label>
+            <div class="control"><input type="url" name="link_ubicacion" class="input" value="{{ old('link_ubicacion') }}" placeholder="Pega aquí el link que copiaste de Google Maps"></div>
+          </div>
+
+          <div class="field">
+            <label class="label">Imagen del anuncio</label>
+            <div class="control"><input type="file" name="imagen_negocio" class="input" accept="image/*" required></div>
+            <p class="help">Recomendado 800x720 px (entre 400x360 y 1200x1200 px), máximo 4 MB.</p>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+          <button type="submit" class="button is-primary">
+            <span class="icon"><i class="mdi mdi-check"></i></span>
+            <span>Crear y publicar</span>
+          </button>
+          <button type="button" class="button" onclick="document.getElementById('modal-crear-directo').classList.remove('is-active')">Cancelar</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: Activar solicitud -->
   <div id="modal-activar" class="modal">
     <div class="modal-background" onclick="cerrarModalActivar()"></div>
@@ -238,6 +387,19 @@
   <script src="{{ asset('assets/admin/js/main.min.js') }}"></script>
   <script>
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    function cdActualizarPlan() {
+      const plan = document.getElementById('cd-plan').value;
+      const esBasico = plan === 'basico';
+      document.getElementById('cd-campo-eslogan').style.display = esBasico ? 'none' : '';
+      document.getElementById('cd-campo-link').style.display = esBasico ? 'none' : '';
+      document.getElementById('cd-campo-ubicacion').style.display = esBasico ? 'none' : '';
+    }
+    cdActualizarPlan();
+
+    @if ($errors->has('crear_directo') || $errors->has('nombre_negocio'))
+      document.getElementById('modal-crear-directo').classList.add('is-active');
+    @endif
 
     function abrirModalActivar(id, nombre) {
       document.getElementById('modal-solicitud-id').value = id;

@@ -9,10 +9,17 @@ use App\Models\Municipio;
 use App\Models\PagoAnuncio;
 use App\Models\SolicitudAnuncio;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class AdminSolicitudAnuncioController extends Controller
 {
+    const PRECIOS = [
+        'basico' => 29.00,
+        'mensual' => 49.00,
+        'anual' => 490.00,
+    ];
+
     public function index(Request $request)
     {
         $estado = $request->input('estado');
@@ -40,8 +47,78 @@ class AdminSolicitudAnuncioController extends Controller
     {
         $solicitud = SolicitudAnuncio::where('estado', 'pagado')->findOrFail($id);
 
+        $resultado = $this->activarSolicitudInterna($solicitud);
+
+        if (!$resultado['ok']) {
+            return response()->json(['error' => $resultado['error']], 422);
+        }
+
+        return response()->json(['ok' => true, 'espacio' => $resultado['anuncio']->orden]);
+    }
+
+    // Crea y activa un anuncio DIRECTO desde el panel de admin, sin pasar
+    // por Mercado Pago — para negocios que pagaron de otra forma, o
+    // anuncios internos de la plataforma.
+    public function crearDirecto(Request $request)
+    {
+        $request->validate([
+            'nombre_negocio' => 'required|string|max:150',
+            'nombre_encargado' => 'required|string|max:150',
+            'descripcion' => 'required|string|max:2000',
+            'direccion' => 'required|string|max:255',
+            'telefono' => 'required|string|max:20',
+            'whatsapp' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:150',
+            'link_externo' => 'nullable|url|max:255',
+            'link_ubicacion' => 'nullable|url|max:500',
+            'eslogan' => 'required_if:plan,mensual,anual|nullable|string|max:150',
+            'plan' => 'required|in:basico,mensual,anual',
+            'imagen_negocio' => 'required|image|max:4096',
+        ]);
+
+        $data = $request->only(['nombre_negocio', 'nombre_encargado', 'descripcion', 'direccion', 'telefono', 'whatsapp', 'email', 'link_externo', 'link_ubicacion', 'eslogan', 'plan']);
+        $data['imagen_negocio'] = '/storage/' . $request->file('imagen_negocio')->store('solicitudes-anuncio', 'public');
+        $data['estado'] = 'pagado'; // Directo a "pagado", como si Mercado Pago ya hubiera confirmado.
+
+        $solicitud = SolicitudAnuncio::create($data);
+
+        PagoAnuncio::create([
+            'solicitud_anuncio_id' => $solicitud->id,
+            'plan' => $solicitud->plan,
+            'monto' => self::PRECIOS[$solicitud->plan],
+            'moneda' => 'MXN',
+            'estado' => 'aprobado',
+            'mp_payment_id' => 'ADMIN-DIRECTO',
+            'fecha_pago' => now(),
+        ]);
+
+        $resultado = $this->activarSolicitudInterna($solicitud);
+
+        if (!$resultado['ok']) {
+            return back()->withErrors(['crear_directo' => $resultado['error']])->withInput();
+        }
+
+        return back()->with('exito', '¡Anuncio de "' . $solicitud->nombre_negocio . '" creado y publicado directamente!');
+    }
+
+    public function rechazar(Request $request, $id)
+    {
+        $solicitud = SolicitudAnuncio::findOrFail($id);
+
+        $solicitud->estado = 'rechazado';
+        $solicitud->notas_admin = $request->input('motivo');
+        $solicitud->save();
+
+        return response()->json(['ok' => true]);
+    }
+
+    // Lógica compartida: convierte una solicitud (ya marcada "pagado") en
+    // un Anuncio real visible en el sitio. La usan tanto activar() como
+    // crearDirecto().
+    private function activarSolicitudInterna(SolicitudAnuncio $solicitud)
+    {
         if (!$solicitud->imagen_negocio) {
-            return response()->json(['error' => 'Esta solicitud no tiene imagen.'], 422);
+            return ['ok' => false, 'error' => 'Esta solicitud no tiene imagen.'];
         }
 
         // Rotación: el espacio con menos anuncios pagados; si empatan, el de menor orden.
@@ -55,7 +132,7 @@ class AdminSolicitudAnuncioController extends Controller
             ->first();
 
         if (!$anuncio) {
-            return response()->json(['error' => 'No hay espacios activos en la columna derecha.'], 422);
+            return ['ok' => false, 'error' => 'No hay espacios activos en la columna derecha.'];
         }
 
         AnuncioImagen::create([
@@ -93,7 +170,7 @@ class AdminSolicitudAnuncioController extends Controller
         $solicitud->save();
 
         // Avisa por correo al negocio, si dejó uno.
-        \Illuminate\Support\Facades\Log::info('Activar: a punto de intentar correo', [
+        Log::info('Activar: a punto de intentar correo', [
             'solicitud_id' => $solicitud->id,
             'email' => $solicitud->email,
         ]);
@@ -101,29 +178,18 @@ class AdminSolicitudAnuncioController extends Controller
         if ($solicitud->email) {
             try {
                 Mail::to($solicitud->email)->send(new AnuncioActivado($solicitud, $fechaInicio, $fechaVencimiento));
-                \Illuminate\Support\Facades\Log::info('Activar: correo enviado sin excepción', ['solicitud_id' => $solicitud->id]);
+                Log::info('Activar: correo enviado sin excepción', ['solicitud_id' => $solicitud->id]);
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('No se pudo enviar el correo de anuncio activado: ' . $e->getMessage(), [
+                Log::error('No se pudo enviar el correo de anuncio activado: ' . $e->getMessage(), [
                     'solicitud_id' => $solicitud->id,
                     'linea' => $e->getLine(),
                     'archivo' => $e->getFile(),
                 ]);
             }
         } else {
-            \Illuminate\Support\Facades\Log::info('Activar: la solicitud no tiene email, no se manda correo', ['solicitud_id' => $solicitud->id]);
+            Log::info('Activar: la solicitud no tiene email, no se manda correo', ['solicitud_id' => $solicitud->id]);
         }
 
-        return response()->json(['ok' => true, 'espacio' => $anuncio->orden]);
-    }
-
-    public function rechazar(Request $request, $id)
-    {
-        $solicitud = SolicitudAnuncio::findOrFail($id);
-
-        $solicitud->estado = 'rechazado';
-        $solicitud->notas_admin = $request->input('motivo');
-        $solicitud->save();
-
-        return response()->json(['ok' => true]);
+        return ['ok' => true, 'anuncio' => $anuncio];
     }
 }
