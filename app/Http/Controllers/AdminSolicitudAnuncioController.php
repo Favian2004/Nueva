@@ -64,6 +64,7 @@ class AdminSolicitudAnuncioController extends Controller
             'orden' => (AnuncioImagen::where('anuncio_id', $anuncio->id)->max('orden') ?? 0) + 1,
             'eslogan' => $solicitud->eslogan,
             'link_externo' => $solicitud->link_externo,
+            'link_ubicacion' => $solicitud->link_ubicacion,
             'solicitud_anuncio_id' => $solicitud->id,
         ]);
 

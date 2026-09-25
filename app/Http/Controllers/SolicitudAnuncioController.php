@@ -36,12 +36,13 @@ class SolicitudAnuncioController extends Controller
             'whatsapp' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:150',
             'link_externo' => 'nullable|url|max:255',
+            'link_ubicacion' => 'nullable|url|max:500',
             'eslogan' => 'required_if:plan,mensual,anual|nullable|string|max:150',
             'plan' => 'required|in:basico,mensual,anual',
             'imagen_negocio' => 'required_if:plan,basico|nullable|image|max:4096',
         ]);
 
-        $data = $request->only(['nombre_negocio', 'nombre_encargado', 'descripcion', 'direccion', 'telefono', 'whatsapp', 'email', 'link_externo', 'eslogan', 'plan']);
+        $data = $request->only(['nombre_negocio', 'nombre_encargado', 'descripcion', 'direccion', 'telefono', 'whatsapp', 'email', 'link_externo', 'link_ubicacion', 'eslogan', 'plan']);
 
         if ($request->hasFile('imagen_negocio')) {
             $data['imagen_negocio'] = '/storage/' . $request->file('imagen_negocio')->store('solicitudes-anuncio', 'public');

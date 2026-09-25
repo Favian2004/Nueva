@@ -20,6 +20,7 @@ class SolicitudAnuncio extends Model
         'whatsapp',
         'email',
         'link_externo',
+        'link_ubicacion',
         'eslogan',
         'plan',
         'imagen_negocio',

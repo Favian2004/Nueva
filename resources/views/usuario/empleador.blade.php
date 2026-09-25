@@ -243,7 +243,7 @@
                         <div class="acciones-grid">
                             <a href="/usuario/publicar-vacante" class="accion-card" id="actionPublicar">
                                 <span class="icon"><i class="mdi mdi-plus-circle mdi-36px"></i></span>
-                                <span>Publicar trabajo</span>
+                                <span>Ofrecer trabajo</span>
                             </a>
                             <a href="/usuario/buscar-talento" class="accion-card" id="actionBuscar">
                                 <span class="icon"><i class="mdi mdi-magnify mdi-36px"></i></span>

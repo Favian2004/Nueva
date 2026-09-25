@@ -19,6 +19,7 @@ class AnuncioImagen extends Model
         'orden',
         'eslogan',
         'link_externo',
+        'link_ubicacion',
         'solicitud_anuncio_id',
     ];
 

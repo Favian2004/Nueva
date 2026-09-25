@@ -361,7 +361,7 @@
           <div class="acciones-grid">
             <a href="/usuario/publicarEmpleo" class="accion-card" id="actionPublicar">
               <span class="icon"><i class="mdi mdi-plus-circle mdi-36px"></i></span>
-              <span>Publicar Nuevo Empleo</span>
+              <span>Publicar servicio de trabajo</span>
             </a>
             <a href="/usuario/verEmpleos" class="accion-card" id="actionVer">
               <span class="icon"><i class="mdi mdi-magnify mdi-36px"></i></span>
