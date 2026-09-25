@@ -5,7 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inicio</title>
-  <meta name="description" content="¡SINTECZATE! Plataforma de servicios y empleos en Zacapoaxtla, Puebla. Ofrece tus servicios, encuentra profesionales o publica oportunidades de trabajo y conecta con personas de tu comunidad.">
+  <meta name="description" content="¡SINTECZATE! Plataforma de servicios y empleos en Zacapoaxtla, Puebla.
+  Ofrece tus servicios, encuentra profesionales o publica oportunidades de trabajo y conecta con personas de tu comunidad.">
   <!-- Font Awesome para iconos (alternativa a los iconos personalizados) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <!-- Estilos de bootstrap -->
@@ -1452,7 +1453,7 @@
               <h5 class="text-white mb-3">Contacto</h5>
               <p><i class="bi bi-telephone"></i> 2331442834</p>
               <p><i class="bi bi-geo-alt"></i> Zacapoaxtla, Puebla</p>
-              <p><i class="bi bi-envelope"></i> sinteczate1996@gmail.com</p>
+              <p><i class="bi bi-envelope"></i> sinteczate.oficial@gmail.com</p>
 
             </div>
 

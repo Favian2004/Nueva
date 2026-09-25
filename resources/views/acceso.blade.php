@@ -723,9 +723,9 @@
                     <!-- Contacto -->
                     <div class="col-md-4 text-center text-md-end">
                         <h5 class="text-white mb-3">Contacto</h5>
-                        <p><i class="bi bi-telephone"></i> 2331014306</p>
-                        <p><i class="bi bi-geo-alt"></i> Teziutlán, Puebla</p>
-                        <p><i class="bi bi-envelope"></i> contacto@conectaya.com</p>
+                        <p><i class="bi bi-telephone"></i> 2331442834</p>
+                        <p><i class="bi bi-geo-alt"></i> Zacapoaxtla, Puebla</p>
+                        <p><i class="bi bi-envelope"></i> sinteczate.oficial@gmail.com</p>
 
                     </div>
 

@@ -21,8 +21,9 @@ function showToast(message) {
 
 
 
-//RENDER INICIAL
-renderCart();
+// Nota: este archivo maneja FAVORITOS, no un carrito de compras — la
+// línea de renderCart() se quitó porque esa función nunca existió aquí
+// (era un sobrante de la plantilla original).
 
 
 // ELEMENTOS FAVORITOS DESKTOP ------------------------------------------------------------------------
@@ -147,6 +148,3 @@ if (clearFavoritesMobile) clearFavoritesMobile.addEventListener("click", () => {
   favoritos = [];
   renderFavorites();
 });
-
-
-

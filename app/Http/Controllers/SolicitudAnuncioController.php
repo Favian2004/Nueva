@@ -224,12 +224,10 @@ class SolicitudAnuncioController extends Controller
         if ($payment->status === 'approved') {
             $pago->estado = 'aprobado';
             $pago->fecha_pago = now();
-            $pago->fecha_inicio_anuncio = now()->toDateString();
-            $pago->fecha_vencimiento_anuncio = match ($solicitud->plan) {
-                'anual' => now()->addYear()->toDateString(),
-                'basico' => now()->addDays(15)->toDateString(),
-                default => now()->addMonth()->toDateString(),
-            };
+            // Las fechas de inicio/vencimiento del anuncio YA NO se calculan
+            // aquí — se calculan cuando el admin lo activa (ver
+            // AdminSolicitudAnuncioController::activar), para que el negocio
+            // reciba sus días completos sin importar cuánto tarde la revisión.
             $pago->save();
 
             $solicitud->estado = 'pagado';

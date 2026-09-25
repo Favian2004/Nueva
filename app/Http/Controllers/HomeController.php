@@ -173,4 +173,38 @@ class HomeController extends Controller
     {
         return view('terminos', $this->anunciosDelMunicipio());
     }
+
+    // Sirve archivos de storage directo (por si el hosting no sigue el
+    // enlace simbólico public_html/storage -> Laravel/storage/app/public).
+    // Reemplaza a la ruta de closure anterior, que impedía cachear rutas
+    // (php artisan route:cache no soporta closures).
+    public function servirStorage($path)
+    {
+        $rutaCompleta = storage_path('app/public/' . $path);
+
+        if (!file_exists($rutaCompleta)) {
+            abort(404);
+        }
+
+        return response()->file($rutaCompleta);
+    }
+
+    // TEMPORAL: solo para probar si el correo funciona. Bórrala después.
+    public function pruebaCorreo()
+    {
+        try {
+            $solicitud = \App\Models\SolicitudAnuncio::first();
+
+            if (!$solicitud) {
+                return 'No hay ninguna solicitud en la base de datos para probar con datos reales.';
+            }
+
+            \Illuminate\Support\Facades\Mail::to('sinteczatedemo@gmail.com')
+                ->send(new \App\Mail\AnuncioActivado($solicitud, now()->toDateString(), now()->addDays(15)->toDateString()));
+
+            return 'OK: el correo (con la plantilla AnuncioActivado) se mandó sin errores. Revisa sinteczatedemo@gmail.com.';
+        } catch (\Exception $e) {
+            return 'ERROR: ' . $e->getMessage() . ' — en el archivo ' . $e->getFile() . ' línea ' . $e->getLine();
+        }
+    }
 }
