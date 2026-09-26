@@ -354,25 +354,78 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      cursor: zoom-out;
     }
 
     .modal-anuncio-overlay.activo {
       display: flex;
     }
 
-    .modal-anuncio-overlay img {
-      max-width: 90%;
-      max-height: 85vh;
-      border-radius: 14px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-      cursor: default;
+    .modal-anuncio-card {
+      background: #fff;
+      border-radius: 18px;
+      max-width: 550px;
+      width: 100%;
+      overflow: hidden;
+      text-align: center;
       animation: modalAnuncioAparece 0.2s ease-out;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     }
 
     @keyframes modalAnuncioAparece {
       from { transform: scale(0.92); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-anuncio-img-box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #e5e0d8;
+      overflow: hidden;
+    }
+
+    .modal-anuncio-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-anuncio-body {
+      padding: 18px 20px 22px;
+    }
+
+    .modal-anuncio-body h6 {
+      font-weight: 800;
+      color: #1a1a2e;
+      margin: 0 0 4px;
+      font-size: 15px;
+    }
+
+    .modal-anuncio-body p {
+      font-size: 12.5px;
+      color: #777;
+      margin: 0 0 14px;
+    }
+
+    .modal-anuncio-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #6b1021;
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-decoration: none;
+      margin: 3px;
+    }
+
+    .modal-anuncio-btn.btn-ubicacion {
+      background: #fff;
+      color: #6b1021;
+      border: 1.5px solid #6b1021;
     }
 
     .modal-anuncio-cerrar {
@@ -407,7 +460,17 @@
   <!-- MODAL: Ver anuncio en grande -->
   <div id="modalAnuncio" class="modal-anuncio-overlay">
     <button type="button" class="modal-anuncio-cerrar" onclick="cerrarModalAnuncio()">&times;</button>
-    <img id="modalAnuncioImg" src="" alt="Anuncio">
+    <div class="modal-anuncio-card">
+      <div class="modal-anuncio-img-box">
+        <img id="modalAnuncioImg" src="" alt="Anuncio">
+      </div>
+      <div class="modal-anuncio-body">
+        <h6 id="modalAnuncioNombre"></h6>
+        <p id="modalAnuncioEslogan"></p>
+        <a href="#" id="modalAnuncioBotonLink" class="modal-anuncio-btn" style="display:none;" target="_blank">Visitar página</a>
+        <a href="#" id="modalAnuncioBotonUbicacion" class="modal-anuncio-btn btn-ubicacion" style="display:none;" target="_blank">Cómo llegar</a>
+      </div>
+    </div>
   </div>
 
   <!-- ========================= -->
@@ -435,7 +498,11 @@
                 <div class="carousel-inner">
                   @foreach ($anuncio->imagenes as $index => $img)
                     <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="6000">
-                      <img src="{{ $img->imagen }}">
+                      <img src="{{ $img->imagen }}"
+                        data-nombre="{{ $img->solicitud->nombre_negocio ?? '' }}"
+                        data-eslogan="{{ $img->eslogan }}"
+                        data-link="{{ $img->link_externo }}"
+                        data-ubicacion="{{ $img->link_ubicacion }}">
                     </div>
                   @endforeach
                 </div>
@@ -890,6 +957,33 @@
       document.querySelectorAll('.ad-box img, .ad-box-mobile img').forEach(function (img) {
         img.addEventListener('click', function () {
           modalImg.src = this.src;
+
+          const nombreEl = document.getElementById('modalAnuncioNombre');
+          const nombre = this.dataset.nombre || '';
+          nombreEl.textContent = nombre;
+          nombreEl.style.display = nombre ? 'block' : 'none';
+
+          const esloganEl = document.getElementById('modalAnuncioEslogan');
+          const eslogan = this.dataset.eslogan || '';
+          esloganEl.textContent = eslogan;
+          esloganEl.style.display = eslogan ? 'block' : 'none';
+
+          const botonLink = document.getElementById('modalAnuncioBotonLink');
+          if (this.dataset.link) {
+            botonLink.href = this.dataset.link;
+            botonLink.style.display = 'inline-flex';
+          } else {
+            botonLink.style.display = 'none';
+          }
+
+          const botonUbicacion = document.getElementById('modalAnuncioBotonUbicacion');
+          if (this.dataset.ubicacion) {
+            botonUbicacion.href = this.dataset.ubicacion;
+            botonUbicacion.style.display = 'inline-flex';
+          } else {
+            botonUbicacion.style.display = 'none';
+          }
+
           modal.classList.add('activo');
         });
       });

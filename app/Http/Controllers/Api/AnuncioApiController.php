@@ -14,7 +14,7 @@ class AnuncioApiController extends Controller
         // usuario logueado en vez de dejarlo fijo en Zacapoaxtla (id 1).
         $municipioId = $request->input('municipio_id', 1);
 
-        $anuncios = Anuncio::with('imagenes')
+        $anuncios = Anuncio::with('imagenes.solicitud')
             ->where('municipio_id', $municipioId)
             ->where('estado', 'activo')
             ->orderBy('posicion')
@@ -26,7 +26,13 @@ class AnuncioApiController extends Controller
                 'id' => $a->id,
                 'posicion' => $a->posicion,
                 'orden' => $a->orden,
-                'imagenes' => $a->imagenes->map(fn($img) => ['imagen' => $img->imagen])->values(),
+                'imagenes' => $a->imagenes->map(fn($img) => [
+                'imagen' => $img->imagen,
+                'nombre_negocio' => $img->solicitud->nombre_negocio ?? null,
+                'eslogan' => $img->eslogan,
+                'link_externo' => $img->link_externo,
+                'link_ubicacion' => $img->link_ubicacion,
+            ])->values(),
             ]);
 
         return response()->json($anuncios);

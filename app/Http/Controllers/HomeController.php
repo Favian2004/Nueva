@@ -15,7 +15,7 @@ class HomeController extends Controller
     // ubicación del visitante en vez de estar fijo en Zacapoaxtla (id 1).
     private function anunciosDelMunicipio()
     {
-        $anuncios = Anuncio::with('imagenes')
+        $anuncios = Anuncio::with('imagenes.solicitud')
             ->where('municipio_id', 1)
             ->where('estado', 'activo')
             ->orderBy('orden')

@@ -27,4 +27,9 @@ class AnuncioImagen extends Model
     {
         return $this->belongsTo(Anuncio::class);
     }
+
+    public function solicitud()
+    {
+        return $this->belongsTo(SolicitudAnuncio::class, 'solicitud_anuncio_id');
+    }
 }

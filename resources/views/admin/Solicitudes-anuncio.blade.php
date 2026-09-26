@@ -52,6 +52,122 @@
       min-height: 0 !important;
       max-height: none !important;
     }
+
+    /* --- Preview en vivo del anuncio (igual que en /anunciar) --- */
+    .cd-preview-wrap { display: flex; gap: 24px; align-items: flex-start; }
+    .cd-preview-form { flex: 1 1 auto; min-width: 0; }
+    .cd-preview-panel { flex: 0 0 220px; position: sticky; top: 0; text-align: center; }
+    .cd-preview-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: #9ca3af; font-weight: 700; margin-bottom: 10px; }
+    #cd-preview-box {
+      width: 190px;
+      height: 171px;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #e5e0d8;
+      box-shadow: 0 4px 15px rgba(0,0,0,.15);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform .15s;
+    }
+    #cd-preview-box:hover { transform: scale(1.03); }
+    #cd-preview-box img { display: none; width: 100%; height: 100%; object-fit: cover; }
+    #cd-preview-box .cd-click-hint {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: .15s;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+    #cd-preview-box:hover .cd-click-hint { background: rgba(0,0,0,.35); opacity: 1; }
+    #cd-preview-img-placeholder { color: #fff; font-size: 2rem; opacity: .6; }
+    #cd-preview-eslogan {
+      display: none;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin: 8px auto 0;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #333;
+      max-width: 190px;
+    }
+    #cd-preview-nombre { font-weight: 700; font-size: .82rem; color: #111827; margin: 8px 0 0; }
+
+    /* Lightbox del admin (igual estilo que el público) */
+    .cd-lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,10,10,.82);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .cd-lightbox-overlay.activo { display: flex; }
+    .cd-lightbox-card {
+      background: #fff;
+      border-radius: 18px;
+      max-width: 380px;
+      width: 100%;
+      overflow: hidden;
+      text-align: center;
+      position: relative;
+    }
+    .cd-lightbox-img-box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #e5e0d8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .cd-lightbox-img-box img { width: 100%; height: 100%; object-fit: cover; }
+    .cd-lightbox-body { padding: 18px 20px 22px; }
+    .cd-lightbox-body h6 { font-weight: 800; color: #1a1a2e; margin-bottom: 4px; font-size: 15px; }
+    .cd-lightbox-body p { font-size: 12.5px; color: #777; margin-bottom: 14px; }
+    .cd-lightbox-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #6b1021;
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-decoration: none;
+      margin: 3px;
+    }
+    .cd-lightbox-btn.cd-btn-ubicacion { background: #fff; color: #6b1021; border: 1.5px solid #6b1021; }
+    .cd-lightbox-cerrar {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      color: #fff;
+      font-size: 26px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    @media (max-width: 720px) {
+      .cd-preview-wrap { flex-direction: column; }
+      .cd-preview-panel { flex: 1 1 auto; width: 100%; position: static; }
+    }
   </style>
 </head>
 <body>
@@ -153,7 +269,7 @@
     </div>
 
     <div class="mb-4">
-      <button class="button is-primary" onclick="document.getElementById('modal-crear-directo').classList.add('is-active')">
+      <button class="button is-primary" onclick="document.getElementById('modal-crear-directo').classList.add('is-active'); cdActualizarPreview();">
         <span class="icon"><i class="mdi mdi-plus-circle"></i></span>
         <span>Crear anuncio directo (sin Mercado Pago)</span>
       </button>
@@ -246,7 +362,7 @@
   <!-- MODAL: Crear anuncio directo (sin Mercado Pago) -->
   <div id="modal-crear-directo" class="modal">
     <div class="modal-background" onclick="document.getElementById('modal-crear-directo').classList.remove('is-active')"></div>
-    <div class="modal-card" style="width: 640px; max-width: 95vw;">
+    <div class="modal-card" style="width: 900px; max-width: 95vw;">
       <header class="modal-card-head">
         <p class="modal-card-title">Crear anuncio directo</p>
         <button class="delete" aria-label="close" onclick="document.getElementById('modal-crear-directo').classList.remove('is-active')"></button>
@@ -254,79 +370,94 @@
       <form action="{{ url('/admin/solicitudes-anuncio/crear-directo') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <section class="modal-card-body">
-          <div class="notification is-warning is-light">
-            <span class="icon"><i class="mdi mdi-alert"></i></span>
-            Esto crea y publica el anuncio de inmediato, sin pasar por Mercado Pago — úsalo solo si el negocio ya pagó por otro medio, o para anuncios internos.
-          </div>
+          <div class="cd-preview-wrap">
+            <div class="cd-preview-form">
+              <div class="notification is-warning is-light">
+                <span class="icon"><i class="mdi mdi-alert"></i></span>
+                Esto crea y publica el anuncio de inmediato, sin pasar por Mercado Pago — úsalo solo si el negocio ya pagó por otro medio, o para anuncios internos.
+              </div>
 
-          <div class="field">
-            <label class="label">Nombre del negocio</label>
-            <div class="control"><input type="text" name="nombre_negocio" class="input" value="{{ old('nombre_negocio') }}" required></div>
-          </div>
+              <div class="field">
+                <label class="label">Nombre del negocio</label>
+                <div class="control"><input type="text" name="nombre_negocio" id="cd-nombre" class="input" value="{{ old('nombre_negocio') }}" required></div>
+              </div>
 
-          <div class="field">
-            <label class="label">Nombre de quien atiende / encargado</label>
-            <div class="control"><input type="text" name="nombre_encargado" class="input" value="{{ old('nombre_encargado') }}" required></div>
-          </div>
+              <div class="field">
+                <label class="label">Nombre de quien atiende / encargado</label>
+                <div class="control"><input type="text" name="nombre_encargado" class="input" value="{{ old('nombre_encargado') }}" required></div>
+              </div>
 
-          <div class="field">
-            <label class="label">Descripción del negocio</label>
-            <div class="control"><textarea name="descripcion" class="textarea" rows="2" required>{{ old('descripcion') }}</textarea></div>
-          </div>
+              <div class="field">
+                <label class="label">Descripción del negocio</label>
+                <div class="control"><textarea name="descripcion" class="textarea" rows="2" required>{{ old('descripcion') }}</textarea></div>
+              </div>
 
-          <div class="field">
-            <label class="label">Dirección</label>
-            <div class="control"><input type="text" name="direccion" class="input" value="{{ old('direccion') }}" required></div>
-          </div>
+              <div class="field">
+                <label class="label">Dirección</label>
+                <div class="control"><input type="text" name="direccion" class="input" value="{{ old('direccion') }}" required></div>
+              </div>
 
-          <div class="field is-grouped is-grouped-multiline">
-            <div class="control is-expanded">
-              <label class="label">Teléfono</label>
-              <input type="text" name="telefono" class="input" value="{{ old('telefono') }}" required>
-            </div>
-            <div class="control is-expanded">
-              <label class="label">WhatsApp (opcional)</label>
-              <input type="text" name="whatsapp" class="input" value="{{ old('whatsapp') }}">
-            </div>
-          </div>
+              <div class="field is-grouped is-grouped-multiline">
+                <div class="control is-expanded">
+                  <label class="label">Teléfono</label>
+                  <input type="text" name="telefono" class="input" value="{{ old('telefono') }}" required>
+                </div>
+                <div class="control is-expanded">
+                  <label class="label">WhatsApp (opcional)</label>
+                  <input type="text" name="whatsapp" class="input" value="{{ old('whatsapp') }}">
+                </div>
+              </div>
 
-          <div class="field">
-            <label class="label">Correo (opcional)</label>
-            <div class="control"><input type="email" name="email" class="input" value="{{ old('email') }}" placeholder="Para avisarle cuando se publique"></div>
-          </div>
+              <div class="field">
+                <label class="label">Correo (opcional)</label>
+                <div class="control"><input type="email" name="email" class="input" value="{{ old('email') }}" placeholder="Para avisarle cuando se publique"></div>
+              </div>
 
-          <div class="field">
-            <label class="label">Plan</label>
-            <div class="control">
-              <div class="select is-fullwidth">
-                <select name="plan" id="cd-plan" onchange="cdActualizarPlan()">
-                  <option value="basico">Básico · $29 · 15 días</option>
-                  <option value="mensual" selected>Mensual · $49 · 1 mes</option>
-                  <option value="anual">Anual · $490 · 1 año</option>
-                </select>
+              <div class="field">
+                <label class="label">Plan</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select name="plan" id="cd-plan" onchange="cdActualizarPlan()">
+                      <option value="basico">Básico · $29 · 15 días</option>
+                      <option value="mensual" selected>Mensual · $49 · 1 mes</option>
+                      <option value="anual">Anual · $490 · 1 año</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field" id="cd-campo-eslogan">
+                <label class="label">Eslogan</label>
+                <div class="control"><input type="text" name="eslogan" id="cd-eslogan" class="input" value="{{ old('eslogan') }}" maxlength="150"></div>
+              </div>
+
+              <div class="field" id="cd-campo-link">
+                <label class="label">Link a página o red social (opcional)</label>
+                <div class="control"><input type="url" name="link_externo" id="cd-link-externo" class="input" value="{{ old('link_externo') }}" placeholder="https://facebook.com/tu-negocio"></div>
+              </div>
+
+              <div class="field" id="cd-campo-ubicacion">
+                <label class="label">Link de ubicación en Google Maps (opcional)</label>
+                <div class="control"><input type="url" name="link_ubicacion" id="cd-link-ubicacion" class="input" value="{{ old('link_ubicacion') }}" placeholder="Pega aquí el link que copiaste de Google Maps"></div>
+              </div>
+
+              <div class="field">
+                <label class="label">Imagen del anuncio</label>
+                <div class="control"><input type="file" name="imagen_negocio" id="cd-imagen" class="input" accept="image/*" required></div>
+                <p class="help">Recomendado 800x720 px (entre 400x360 y 1200x1200 px), máximo 4 MB.</p>
               </div>
             </div>
-          </div>
 
-          <div class="field" id="cd-campo-eslogan">
-            <label class="label">Eslogan</label>
-            <div class="control"><input type="text" name="eslogan" class="input" value="{{ old('eslogan') }}" maxlength="150"></div>
-          </div>
-
-          <div class="field" id="cd-campo-link">
-            <label class="label">Link a página o red social (opcional)</label>
-            <div class="control"><input type="url" name="link_externo" class="input" value="{{ old('link_externo') }}" placeholder="https://facebook.com/tu-negocio"></div>
-          </div>
-
-          <div class="field" id="cd-campo-ubicacion">
-            <label class="label">Link de ubicación en Google Maps (opcional)</label>
-            <div class="control"><input type="url" name="link_ubicacion" class="input" value="{{ old('link_ubicacion') }}" placeholder="Pega aquí el link que copiaste de Google Maps"></div>
-          </div>
-
-          <div class="field">
-            <label class="label">Imagen del anuncio</label>
-            <div class="control"><input type="file" name="imagen_negocio" class="input" accept="image/*" required></div>
-            <p class="help">Recomendado 800x720 px (entre 400x360 y 1200x1200 px), máximo 4 MB.</p>
+            <div class="cd-preview-panel">
+              <p class="cd-preview-label">Así se ve en la columna de anuncios</p>
+              <div id="cd-preview-box" onclick="cdAbrirLightbox()">
+                <img id="cd-preview-img" alt="Vista previa">
+                <i class="mdi mdi-image-outline" id="cd-preview-img-placeholder"></i>
+                <div class="cd-click-hint"><i class="mdi mdi-arrow-expand-all"></i><br>Ver en grande</div>
+              </div>
+              <div id="cd-preview-eslogan"></div>
+              <p id="cd-preview-nombre">Nombre del negocio</p>
+            </div>
           </div>
         </section>
         <footer class="modal-card-foot">
@@ -337,6 +468,26 @@
           <button type="button" class="button" onclick="document.getElementById('modal-crear-directo').classList.remove('is-active')">Cancelar</button>
         </footer>
       </form>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX del admin: cómo se ve al darle clic, igual que en /anunciar -->
+  <div class="cd-lightbox-overlay" id="cd-lightbox-overlay">
+    <span class="cd-lightbox-cerrar" onclick="document.getElementById('cd-lightbox-overlay').classList.remove('activo')">&times;</span>
+    <div class="cd-lightbox-card">
+      <div class="cd-lightbox-img-box">
+        <img id="cd-lightbox-img" alt="Anuncio en grande">
+      </div>
+      <div class="cd-lightbox-body">
+        <h6 id="cd-lightbox-nombre">Tu negocio</h6>
+        <p id="cd-lightbox-eslogan">Tu eslogan aparecería aquí</p>
+        <a href="#" id="cd-lightbox-boton-link" class="cd-lightbox-btn" style="display:none;" target="_blank">
+          <i class="mdi mdi-open-in-new"></i> Visitar página
+        </a>
+        <a href="#" id="cd-lightbox-boton-ubicacion" class="cd-lightbox-btn cd-btn-ubicacion" style="display:none;" target="_blank">
+          <i class="mdi mdi-map-marker"></i> Cómo llegar
+        </a>
+      </div>
     </div>
   </div>
 
@@ -394,12 +545,103 @@
       document.getElementById('cd-campo-eslogan').style.display = esBasico ? 'none' : '';
       document.getElementById('cd-campo-link').style.display = esBasico ? 'none' : '';
       document.getElementById('cd-campo-ubicacion').style.display = esBasico ? 'none' : '';
+      cdActualizarPreview();
     }
-    cdActualizarPlan();
 
     @if ($errors->has('crear_directo') || $errors->has('nombre_negocio'))
       document.getElementById('modal-crear-directo').classList.add('is-active');
     @endif
+
+    /* --- Preview en vivo del anuncio (igual que en /anunciar) --- */
+    const cdNombreInput = document.getElementById('cd-nombre');
+    const cdEsloganInput = document.getElementById('cd-eslogan');
+    const cdLinkInput = document.getElementById('cd-link-externo');
+    const cdUbicacionInput = document.getElementById('cd-link-ubicacion');
+    const cdImgInput = document.getElementById('cd-imagen');
+    const cdPreviewImg = document.getElementById('cd-preview-img');
+    const cdPreviewPlaceholder = document.getElementById('cd-preview-img-placeholder');
+    const cdPreviewEslogan = document.getElementById('cd-preview-eslogan');
+    const cdPreviewNombreTxt = document.getElementById('cd-preview-nombre');
+    let cdImagenCargada = false;
+
+    function cdActualizarPreview() {
+      cdPreviewNombreTxt.textContent = cdNombreInput.value.trim() || 'Nombre del negocio';
+
+      const esBasico = document.getElementById('cd-plan').value === 'basico';
+      const eslogan = cdEsloganInput.value.trim();
+      if (!esBasico && eslogan) {
+        cdPreviewEslogan.textContent = eslogan;
+        cdPreviewEslogan.style.display = 'block';
+      } else {
+        cdPreviewEslogan.style.display = 'none';
+      }
+    }
+
+    function cdPreviewImagen() {
+      const file = cdImgInput.files[0];
+      if (!file) {
+        cdPreviewImg.style.display = 'none';
+        cdPreviewPlaceholder.style.display = 'block';
+        cdImagenCargada = false;
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        cdPreviewImg.src = e.target.result;
+        cdPreviewImg.style.display = 'block';
+        cdPreviewPlaceholder.style.display = 'none';
+        cdImagenCargada = true;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    cdNombreInput.addEventListener('input', cdActualizarPreview);
+    cdEsloganInput.addEventListener('input', cdActualizarPreview);
+    cdLinkInput.addEventListener('input', cdActualizarPreview);
+    cdImgInput.addEventListener('change', cdPreviewImagen);
+
+    /* --- Lightbox: "así se ve al darle clic" --- */
+    function cdAbrirLightbox() {
+      if (!cdImagenCargada) {
+        alert('Primero sube una imagen para ver cómo se vería en grande.');
+        return;
+      }
+      document.getElementById('cd-lightbox-img').src = cdPreviewImg.src;
+      document.getElementById('cd-lightbox-nombre').textContent = cdNombreInput.value.trim() || 'Tu negocio';
+
+      const esBasico = document.getElementById('cd-plan').value === 'basico';
+      const esloganEl = document.getElementById('cd-lightbox-eslogan');
+      if (!esBasico) {
+        esloganEl.textContent = cdEsloganInput.value.trim() || 'Tu eslogan aparecería aquí';
+        esloganEl.style.display = 'block';
+      } else {
+        esloganEl.style.display = 'none';
+      }
+
+      const botonLink = document.getElementById('cd-lightbox-boton-link');
+      const link = !esBasico ? cdLinkInput.value.trim() : '';
+      if (link) {
+        botonLink.style.display = 'inline-flex';
+        botonLink.href = link;
+      } else {
+        botonLink.style.display = 'none';
+      }
+
+      const botonUbicacion = document.getElementById('cd-lightbox-boton-ubicacion');
+      const ubicacion = !esBasico ? cdUbicacionInput.value.trim() : '';
+      if (ubicacion) {
+        botonUbicacion.style.display = 'inline-flex';
+        botonUbicacion.href = ubicacion;
+      } else {
+        botonUbicacion.style.display = 'none';
+      }
+
+      document.getElementById('cd-lightbox-overlay').classList.add('activo');
+    }
+
+    document.getElementById('cd-lightbox-overlay').addEventListener('click', function (e) {
+      if (e.target === this) this.classList.remove('activo');
+    });
 
     function abrirModalActivar(id, nombre) {
       document.getElementById('modal-solicitud-id').value = id;
@@ -468,6 +710,11 @@
           .finally(() => { window.location.href = '/'; });
       });
     });
+
+    // Estado inicial del formulario de "crear directo" — va HASTA el final
+    // del script, porque necesita que todo lo demás (constantes, event
+    // listeners) ya esté definido primero.
+    cdActualizarPlan();
   </script>
 </body>
 </html>
