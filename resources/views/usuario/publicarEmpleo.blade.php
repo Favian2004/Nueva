@@ -215,6 +215,28 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   }
 }
+
+/* Toasts flotantes: aparecen deslizándose desde la derecha y se ocultan solas (ver JS). */
+#successToast, #errorToast {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 320px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: toastSlideIn 0.35s ease-out;
+}
+
+@keyframes toastSlideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Botón deshabilitado mientras se está publicando (evita doble clic = doble publicación). */
+.btn-publicar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
   </style>
 </head>
 
@@ -418,7 +440,7 @@
               </div>
             @endif
 
-            <button type="submit" class="btn-publicar"><i class="mdi mdi-send"></i> {{ $servicio ? 'Guardar Cambios' : 'Publicar empleo' }}</button>
+            <button type="submit" class="btn-publicar" id="btnPublicar"><i class="mdi mdi-send"></i> {{ $servicio ? 'Guardar Cambios' : 'Publicar empleo' }}</button>
           </form>
         </div>
       </div>
@@ -549,6 +571,8 @@
     const successToast = document.getElementById('successToast');
     const errorToast = document.getElementById('errorToast');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const btnPublicar = document.getElementById('btnPublicar');
+    const textoOriginalBoton = btnPublicar.innerHTML;
 
     function subirCvDesdeFormulario(input) {
       const file = input.files[0];
@@ -582,6 +606,9 @@
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+
+      // Evita doble clic: si ya se está mandando la publicación, ignora clics/Enter extra.
+      if (btnPublicar.disabled) return;
 
       const titulo = document.getElementById('titulo').value.trim();
       const categoria = catSelect.value;
@@ -624,6 +651,11 @@
         formData.append('_method', 'PATCH');
       @endif
 
+      // Ya pasó la validación: bloqueamos el botón para que un doble clic (o Enter
+      // repetido) mientras se revisa/guarda no publique lo mismo dos veces.
+      btnPublicar.disabled = true;
+      btnPublicar.innerHTML = 'Publicando...';
+
       fetch(url, {
         method: 'POST',
         headers: {
@@ -642,10 +674,14 @@
             errorToast.textContent = '❌ ' + msg;
             errorToast.style.display = 'block';
             successToast.style.display = 'none';
+            setTimeout(() => { errorToast.style.display = 'none'; }, 5000);
+            btnPublicar.disabled = false;
+            btnPublicar.innerHTML = textoOriginalBoton;
             return;
           }
           successToast.style.display = 'block';
           errorToast.style.display = 'none';
+          // El botón se queda deshabilitado: ya vamos a navegar a otra página.
           // Si es un servicio nuevo, lo mandamos directo a editarlo (ahí ya puede
           // agregarle su CV/Solicitud, porque ya existe el ID). Si ya existía
           // (edición), lo mandamos de vuelta a la lista, como antes.
@@ -656,6 +692,9 @@
           console.error('Error al guardar el servicio:', err);
           errorToast.textContent = '❌ Ocurrió un error de conexión. Intenta de nuevo.';
           errorToast.style.display = 'block';
+          setTimeout(() => { errorToast.style.display = 'none'; }, 5000);
+          btnPublicar.disabled = false;
+          btnPublicar.innerHTML = textoOriginalBoton;
         });
     });
   </script>

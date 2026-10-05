@@ -46,4 +46,11 @@ return [
         'access_token' => env('MERCADOPAGO_ACCESS_TOKEN'),
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        // Apaga el moderador automático sin tener que borrar código,
+        // por si algún día hay que desactivarlo rápido en producción.
+        'moderacion_activa' => env('OPENAI_MODERACION_ACTIVA', true),
+    ],
+
 ];

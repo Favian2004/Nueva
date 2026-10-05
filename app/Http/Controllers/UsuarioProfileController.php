@@ -8,6 +8,7 @@ use App\Models\DocumentoVerificacion;
 use App\Models\Localidad;
 use App\Models\Servicio;
 use App\Models\Usuario;
+use App\Services\ModeracionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -52,7 +53,7 @@ class UsuarioProfileController extends Controller
         ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, ModeracionService $moderacion)
     {
         $usuario = Usuario::findOrFail(Auth::id());
 
@@ -64,6 +65,14 @@ class UsuarioProfileController extends Controller
             'localidad_id' => 'required|exists:localidades,id',
             'foto' => 'nullable|image|max:4096',
         ]);
+
+        $revision = $moderacion->revisar(
+            $request->input('nombre') . "\n" . $request->input('descripcion'),
+            $request->file('foto')
+        );
+        if ($revision['flagged']) {
+            return response()->json(['ok' => false, 'message' => $revision['mensaje']], 422);
+        }
 
         $usuario->nombre = $request->input('nombre');
         $usuario->email = $request->input('email');
@@ -105,7 +114,7 @@ class UsuarioProfileController extends Controller
         return response()->json(['ok' => true, 'creada' => !$tieneContrasenaYa]);
     }
 
-    public function uploadDocumento(Request $request, $tipo)
+    public function uploadDocumento(Request $request, $tipo, ModeracionService $moderacion)
     {
         $request->validate([
             'archivo' => 'required|image|max:4096',
@@ -113,6 +122,11 @@ class UsuarioProfileController extends Controller
 
         if (!in_array($tipo, ['ine', 'selfie'])) {
             return response()->json(['ok' => false, 'error' => 'Tipo de documento inválido.'], 422);
+        }
+
+        $revision = $moderacion->revisar(null, $request->file('archivo'));
+        if ($revision['flagged']) {
+            return response()->json(['ok' => false, 'message' => $revision['mensaje']], 422);
         }
 
         $ruta = '/storage/' . $request->file('archivo')->store('documentos', 'public');

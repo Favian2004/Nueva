@@ -350,6 +350,7 @@ background-size: 16px, 10px;
       padding: 10px 10px;
     }
   }
+
 /* -----------------------------------------------------------------------------------------------*/
       /* Estilos personalizados para la página acerca de */
       .bg-custom {
@@ -1036,7 +1037,7 @@ ESTILOS NUEVOS PARA TERMINOS Y CONDICIONES
 }
 
 .footer-pro .social:hover {
-    background: #0d6efd;
+    background: #ffffff;
     transform: scale(1.1);
 }
 
@@ -1302,6 +1303,24 @@ product img {
 .btn-buscar:active {
     transform: translateY(0);
 }
+
+
+
+.ad-box img {
+      width: 100%;
+      height: 210px;
+      object-fit: cover;
+      transform: scale(1.10);
+      cursor: zoom-in;
+    }
+
+    .ad-box-mobile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.08);
+      cursor: zoom-in;
+    }
 
 
 

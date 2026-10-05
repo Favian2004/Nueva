@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Postulacion;
 use App\Models\Vacante;
+use App\Services\ModeracionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -36,7 +37,7 @@ class UsuarioVacanteController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ModeracionService $moderacion)
     {
         $request->validate([
             'titulo' => 'required|string|max:255',
@@ -57,6 +58,14 @@ class UsuarioVacanteController extends Controller
             'beneficios' => 'nullable|array',
             'beneficios.*' => 'string|max:100',
         ]);
+
+        $revision = $moderacion->revisar(
+            $request->input('titulo') . "\n" . $request->input('descripcion'),
+            $request->file('imagen')
+        );
+        if ($revision['flagged']) {
+            return response()->json(['ok' => false, 'message' => $revision['mensaje']], 422);
+        }
 
         $rutaImagen = null;
         if ($request->hasFile('imagen')) {
@@ -103,7 +112,7 @@ class UsuarioVacanteController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, ModeracionService $moderacion)
     {
         $vacante = Vacante::where('empleador_id', Auth::id())->findOrFail($id);
 
@@ -135,6 +144,14 @@ class UsuarioVacanteController extends Controller
         }
 
         $request->validate($reglas);
+
+        $revision = $moderacion->revisar(
+            $request->input('titulo') . "\n" . $request->input('descripcion'),
+            $request->file('imagen')
+        );
+        if ($revision['flagged']) {
+            return response()->json(['ok' => false, 'message' => $revision['mensaje']], 422);
+        }
 
         $rutaImagen = $vacante->imagen;
         if ($request->hasFile('imagen')) {

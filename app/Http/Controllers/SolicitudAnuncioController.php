@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PagoAnuncio;
 use App\Models\SolicitudAnuncio;
+use App\Services\ModeracionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use MercadoPago\Client\Payment\PaymentClient;
@@ -25,7 +26,7 @@ class SolicitudAnuncioController extends Controller
         return view('anunciar');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ModeracionService $moderacion)
     {
         $request->validate([
             'nombre_negocio' => 'required|string|max:150',
@@ -41,6 +42,18 @@ class SolicitudAnuncioController extends Controller
             'plan' => 'required|in:basico,mensual,anual',
             'imagen_negocio' => 'required_if:plan,basico|nullable|image|max:4096',
         ]);
+
+        $textoARevisar = implode("\n", array_filter([
+            $request->input('nombre_negocio'),
+            $request->input('nombre_encargado'),
+            $request->input('descripcion'),
+            $request->input('eslogan'),
+        ]));
+
+        $revision = $moderacion->revisar($textoARevisar, $request->file('imagen_negocio'));
+        if ($revision['flagged']) {
+            return response()->json(['ok' => false, 'message' => $revision['mensaje']], 422);
+        }
 
         $data = $request->only(['nombre_negocio', 'nombre_encargado', 'descripcion', 'direccion', 'telefono', 'whatsapp', 'email', 'link_externo', 'link_ubicacion', 'eslogan', 'plan']);
 
@@ -125,7 +138,10 @@ class SolicitudAnuncioController extends Controller
                 'content' => $e->getApiResponse()?->getContent(),
             ]);
 
-            return back()->withErrors(['mercadopago' => 'No se pudo conectar con Mercado Pago. Código: ' . $e->getApiResponse()?->getStatusCode() . ' — Revisa storage/logs/laravel.log para más detalle.']);
+            return response()->json([
+                'ok' => false,
+                'message' => 'No se pudo conectar con Mercado Pago. Código: ' . $e->getApiResponse()?->getStatusCode() . ' — Revisa storage/logs/laravel.log para más detalle.',
+            ], 500);
         }
 
         // Guarda el intento de pago, en estado "pendiente" hasta que el
@@ -147,7 +163,7 @@ class SolicitudAnuncioController extends Controller
         // checkout de prueba (los pagos son ficticios), y hay que loguearse
         // ahí con la Cuenta de Prueba compradora para pagar con tarjeta de
         // prueba.
-        return redirect($preference->init_point);
+        return response()->json(['ok' => true, 'redirectUrl' => $preference->init_point]);
     }
 
     // ===== Páginas a las que Mercado Pago regresa al usuario =====

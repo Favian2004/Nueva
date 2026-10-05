@@ -166,6 +166,22 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
+    /* Los toasts aparecen deslizándose desde la derecha (se ocultan solos, ver JS). */
+    .success-toast, .error-toast {
+      animation: toastSlideIn 0.35s ease-out;
+    }
+
+    @keyframes toastSlideIn {
+      from { transform: translateX(120%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Botón deshabilitado mientras se está publicando (evita doble clic = doble publicación). */
+    .btn-publicar:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     /* Checkbox de beneficios */
     .beneficios-grid {
       display: grid;
@@ -635,7 +651,7 @@
 
               <div class="form-hint"><span class="required">*</span> Campos obligatorios</div>
 
-              <button type="submit" class="btn-publicar">
+              <button type="submit" class="btn-publicar" id="btnPublicar">
                 <i class="mdi mdi-send"></i> {{ $vacante ? 'Guardar Cambios' : 'Publicar Vacante' }}
               </button>
             </form>
@@ -746,9 +762,14 @@
       const successToast = document.getElementById('successToast');
       const errorToast = document.getElementById('errorToast');
       const form = document.getElementById('vacanteForm');
+      const btnPublicar = document.getElementById('btnPublicar');
+      const textoOriginalBoton = btnPublicar.innerHTML;
 
       form.addEventListener('submit', function(e) {
         e.preventDefault();
+
+        // Evita doble clic: si ya se está mandando la publicación, ignora clics/Enter extra.
+        if (btnPublicar.disabled) return;
 
         const formData = new FormData(form);
 
@@ -759,6 +780,9 @@
           // Lo mandamos como POST con _method=PATCH para que Laravel lo trate como PATCH.
           formData.append('_method', 'PATCH');
         @endif
+
+        btnPublicar.disabled = true;
+        btnPublicar.innerHTML = 'Publicando...';
 
         fetch(url, {
           method: 'POST',
@@ -778,10 +802,14 @@
               document.getElementById('errorToastText').textContent = msg;
               errorToast.style.display = 'block';
               successToast.style.display = 'none';
+              setTimeout(() => { errorToast.style.display = 'none'; }, 5000);
+              btnPublicar.disabled = false;
+              btnPublicar.innerHTML = textoOriginalBoton;
               return;
             }
             successToast.style.display = 'block';
             errorToast.style.display = 'none';
+            // El botón se queda deshabilitado: ya vamos a navegar a otra página.
             setTimeout(() => {
               window.location.href = '/usuario/mis-vacantes';
             }, 2000);
@@ -790,6 +818,9 @@
             console.error('Error al guardar la vacante:', err);
             document.getElementById('errorToastText').textContent = 'Ocurrió un error de conexión. Intenta de nuevo.';
             errorToast.style.display = 'block';
+            setTimeout(() => { errorToast.style.display = 'none'; }, 5000);
+            btnPublicar.disabled = false;
+            btnPublicar.innerHTML = textoOriginalBoton;
           });
       });
 

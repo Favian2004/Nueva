@@ -55,6 +55,7 @@
       width: 100%;
       height: 210px;
       object-fit: cover;
+      transform: scale(1.10);
       cursor: zoom-in;
     }
 
@@ -106,6 +107,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transform: scale(1.08);
       cursor: zoom-in;
     }
 
@@ -835,6 +837,7 @@
           justify-content: center;
         }
       }
+
 
 
   </style>

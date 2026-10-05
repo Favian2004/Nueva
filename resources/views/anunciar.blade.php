@@ -539,6 +539,23 @@
       cursor: pointer;
       text-decoration: underline;
     }
+    #toastFormularioAnuncio, #toastAjaxAnuncio {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      max-width: 360px;
+      z-index: 1050;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: toastSlideInAnuncio 0.35s ease-out;
+    }
+    @keyframes toastSlideInAnuncio {
+      from { transform: translateX(120%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @media (max-width: 480px) {
+      #toastFormularioAnuncio, #toastAjaxAnuncio { left: 16px; right: 16px; max-width: none; }
+    }
+    .btn-enviar-anuncio:disabled { opacity: 0.6; cursor: not-allowed; }
   </style>
 </head>
 
@@ -606,14 +623,14 @@
       </p>
     </div>
 
-    <!-- MENSAJE DE ÉXITO O ERROR -->
+    <!-- MENSAJE DE ÉXITO O ERROR (flotante, se oculta solo) -->
     @if (session('exito'))
-      <div class="alert alert-success text-center" style="max-width:700px; margin:0 auto 24px;">
+      <div id="toastFormularioAnuncio" class="alert alert-success" role="alert">
         <i class="bi bi-check-circle-fill"></i> {{ session('exito') }}
       </div>
     @endif
     @if ($errors->any())
-      <div class="alert alert-danger" style="max-width:700px; margin:0 auto 24px;">
+      <div id="toastFormularioAnuncio" class="alert alert-danger" role="alert">
         <ul class="mb-0">
           @foreach ($errors->all() as $error)
             <li>{{ $error }}</li>
@@ -621,6 +638,17 @@
         </ul>
       </div>
     @endif
+    @if (session('exito') || $errors->any())
+      <script>
+        setTimeout(function () {
+          const toast = document.getElementById('toastFormularioAnuncio');
+          if (toast) toast.style.display = 'none';
+        }, 6000);
+      </script>
+    @endif
+
+    <!-- Toast para errores/mensajes que llegan por AJAX al enviar el formulario (no recarga la página, así nunca se pierde la imagen ya seleccionada) -->
+    <div id="toastAjaxAnuncio" class="alert" role="alert" style="display:none;"></div>
 
     <!-- POR QUÉ ANUNCIARTE -->
     <div class="section-title">
@@ -1159,14 +1187,65 @@
       if (e.target === lightboxOverlay) lightboxOverlay.classList.remove('activo');
     });
 
-    if (formAnunciar) {
+    function mostrarToastAjax(msg, tipo) {
+      const toast = document.getElementById('toastAjaxAnuncio');
+      if (!toast) { alert(msg); return; }
+      toast.textContent = msg;
+      toast.className = 'alert ' + (tipo === 'error' ? 'alert-danger' : 'alert-success');
+      toast.style.display = 'block';
+      // Reinicia la animación aunque ya estuviera visible.
+      toast.style.animation = 'none';
+      toast.offsetHeight; // fuerza el reflow
+      toast.style.animation = null;
+      setTimeout(() => { toast.style.display = 'none'; }, 6000);
+    }
+
+    if (formAnunciar && btnPagar) {
+      const textoOriginalBoton = btnPagar.innerHTML;
+
       formAnunciar.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (btnPagar.disabled) return; // evita doble envío
+
         if (!imagenValida) {
-          e.preventDefault();
           avisoTamano.style.display = 'block';
           avisoTamano.scrollIntoView({ behavior: 'smooth', block: 'center' });
           alert('❌ El tamaño de tu imagen no es válido. Debe estar entre ' + ANCHO_MIN + 'x' + ALTO_MIN + ' px y ' + ANCHO_MAX + 'x' + ALTO_MAX + ' px antes de continuar al pago.');
+          return;
         }
+
+        const formData = new FormData(formAnunciar);
+        btnPagar.disabled = true;
+        btnPagar.innerHTML = 'Enviando...';
+
+        fetch(formAnunciar.action, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: formData,
+        })
+          .then(res => res.json().then(data => ({ status: res.status, data })))
+          .then(({ status, data }) => {
+            if (status >= 200 && status < 300 && data.ok) {
+              // Éxito: mandamos a pagar a Mercado Pago. Dejamos el botón
+              // deshabilitado porque ya nos vamos de la página.
+              window.location.href = data.redirectUrl;
+              return;
+            }
+
+            let msg = data.message || 'Ocurrió un error al enviar tu solicitud. Inténtalo de nuevo.';
+            if (data.errors) {
+              msg = Object.values(data.errors).flat().join(' ');
+            }
+            mostrarToastAjax('❌ ' + msg, 'error');
+            btnPagar.disabled = false;
+            btnPagar.innerHTML = textoOriginalBoton;
+          })
+          .catch(() => {
+            mostrarToastAjax('❌ No se pudo conectar con el servidor. Revisa tu internet e inténtalo de nuevo.', 'error');
+            btnPagar.disabled = false;
+            btnPagar.innerHTML = textoOriginalBoton;
+          });
       });
     }
 

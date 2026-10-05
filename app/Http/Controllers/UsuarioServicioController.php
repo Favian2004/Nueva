@@ -6,6 +6,7 @@ use App\Models\Categoria;
 use App\Models\Contratacion;
 use App\Models\Servicio;
 use App\Models\Usuario;
+use App\Services\ModeracionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,7 +25,7 @@ class UsuarioServicioController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ModeracionService $moderacion)
     {
         $request->validate([
             'titulo' => 'required|string|max:255',
@@ -37,6 +38,14 @@ class UsuarioServicioController extends Controller
             'precio' => 'required|numeric|min:0',
             'imagen' => 'nullable|image|max:4096',
         ]);
+
+        $revision = $moderacion->revisar(
+            $request->input('titulo') . "\n" . $request->input('descripcion'),
+            $request->file('imagen')
+        );
+        if ($revision['flagged']) {
+            return response()->json(['ok' => false, 'message' => $revision['mensaje']], 422);
+        }
 
         $rutaImagen = null;
         if ($request->hasFile('imagen')) {
@@ -80,7 +89,7 @@ class UsuarioServicioController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, ModeracionService $moderacion)
     {
         $servicio = Servicio::where('usuario_id', Auth::id())->findOrFail($id);
 
@@ -104,6 +113,14 @@ class UsuarioServicioController extends Controller
         }
 
         $request->validate($reglas);
+
+        $revision = $moderacion->revisar(
+            $request->input('titulo') . "\n" . $request->input('descripcion'),
+            $request->file('imagen')
+        );
+        if ($revision['flagged']) {
+            return response()->json(['ok' => false, 'message' => $revision['mensaje']], 422);
+        }
 
         $rutaImagen = $servicio->imagen;
         if ($request->hasFile('imagen')) {

@@ -556,8 +556,16 @@
       headers: { 'X-CSRF-TOKEN': csrfToken },
       body: formData,
     })
-      .then(res => {
-        if (!res.ok) throw new Error();
+      .then(res => res.json().then(data => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok || !data.ok) {
+          let msg = data.message || 'Ocurrió un error al subir el documento.';
+          if (data.errors) {
+            msg = Object.values(data.errors).flat().join(' ');
+          }
+          mostrarToast('❌ ' + msg, 'is-danger');
+          return;
+        }
         mostrarToast('📄 Documento subido, en espera de revisión.', 'is-success');
         setTimeout(() => location.reload(), 1200);
       })
