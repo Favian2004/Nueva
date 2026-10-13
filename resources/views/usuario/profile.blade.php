@@ -19,67 +19,7 @@
 
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/ads-widget.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/theme-conectaya.css') }}">
-
-  <style>
-    /* ===== BANNER "¿TIENES UN NEGOCIO?" ===== */
-    .banner-negocio {
-      width: 100%;
-      background: linear-gradient(90deg, #6b1021, #8f1d2f, #b12d25);
-      border-radius: 12px;
-      padding: 8px 25px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: white;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, .15);
-    }
-    .banner-texto h2 {
-      font-size: 24px;
-      margin: 0;
-    }
-    .banner-texto p {
-      margin: 0;
-      font-size: 14px;
-    }
-    .banner-destaca h2 {
-      margin: 0;
-      font-size: 22px;
-    }
-    .banner-destaca h1 {
-      margin: 0;
-      font-size: 32px;
-      color: #ffcf33;
-      font-weight: bold;
-    }
-    .banner-icono img {
-      width: 70px;
-    }
-    .btn-anunciar {
-      background: #ffc107;
-      color: #000;
-      text-decoration: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: bold;
-      display: inline-block;
-    }
-    .banner-boton small {
-      display: block;
-      text-align: center;
-      margin-top: 3px;
-      color: #fff;
-    }
-    .banner-persona {
-      height: 90px;
-    }
-    .banner-persona img {
-      height: 90px;
-      width: auto;
-      object-fit: cover;
-      border-radius: 999px;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ asset('css/anuncio-negocio.css') }}">
 </head>
 <body>
 <div id="app">

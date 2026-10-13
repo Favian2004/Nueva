@@ -21,214 +21,30 @@
 
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/ads-widget.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/theme-conectaya.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/anuncio-negocio.css') }}">
 
   <style>
-    /* ===== BANNER "¿TIENES UN NEGOCIO?" ===== */
-    .banner-negocio {
-      width: 100%;
-      background: linear-gradient(90deg, #6b1021, #8f1d2f, #b12d25);
-      border-radius: 12px;
-      padding: 8px 25px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: white;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, .15);
-
-    }
-    .banner-texto h2 {
-      font-size: 24px;
-      margin: 0;
-    }
-    .banner-texto p {
-      margin: 0;
-      font-size: 14px;
-    }
-    .banner-destaca h2 {
-      margin: 0;
-      font-size: 22px;
-    }
-    .banner-destaca h1 {
-      margin: 0;
-      font-size: 32px;
-      color: #ffcf33;
-      font-weight: bold;
-    }
-    .banner-icono img {
-      width: 70px;
-    }
-    .btn-anunciar {
-      background: #ffc107;
-      color: #000;
-      text-decoration: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: bold;
-      display: inline-block;
-    }
-    .banner-boton small {
-      display: block;
-      text-align: center;
-      margin-top: 3px;
-      color: #fff;
-    }
-    .banner-persona {
-      height: 90px;
-    }
-    .banner-persona img {
-      height: 90px;
-      width: auto;
-      object-fit: cover;
-      border-radius: 999px;
-    }
-
-    /* ===== BANNER "¿TIENES UN NEGOCIO?" - RESPONSIVO ===== */
-@media (max-width: 767px) {
-  .banner-negocio {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 30px 22px 26px;
-    gap: 10px;
-    position: relative;
-    overflow: visible;
-  }
-
-  /* Ícono de la tienda en un circulito destacado, arriba de todo */
-  .banner-icono {
-    order: -3;
-    background: rgba(255, 255, 255, 0.16);
-    border: 1.5px solid rgba(255, 207, 51, 0.4);
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 4px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-  }
-
-  .banner-icono img {
-    width: 38px;
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
-  }
-
-  /* Título principal */
-  .banner-texto {
-    order: -2;
-  }
-
-  .banner-texto h2 {
-    font-size: 19px;
-    font-weight: 800;
-    letter-spacing: 0.3px;
-    margin-bottom: 4px;
-  }
-
-  .banner-texto p {
-    font-size: 12.5px;
-    opacity: 0.88;
-    max-width: 260px;
-    margin: 0 auto;
-    line-height: 1.45;
-  }
-
-  /* Línea divisoria decorativa */
-  .banner-destaca {
-    order: -1;
-    margin-top: 10px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
-    width: 100%;
-  }
-
-  .banner-destaca h2 {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    opacity: 0.75;
-    margin-bottom: 2px;
-  }
-
-  .banner-destaca h1 {
-    font-size: 25px;
-    font-weight: 800;
-    text-shadow: 0 2px 8px rgba(255, 207, 51, 0.35);
-  }
-
-  /* Botón, con más presencia */
-  .banner-boton {
-    width: 100%;
-    margin-top: 6px;
-  }
-
-  .btn-anunciar {
-    display: block;
-    width: 100%;
-    padding: 13px;
-    font-size: 14.5px;
-    letter-spacing: 0.3px;
-    border-radius: 30px;
-    text-align: center;
-    box-shadow: 0 6px 16px rgba(255, 193, 7, 0.35);
-    transition: transform 0.15s;
-  }
-
-  .btn-anunciar:active {
-    transform: scale(0.97);
-  }
-
-  .banner-boton small {
-    display: block;
-    margin-top: 8px;
-    font-size: 11px;
-    opacity: 0.7;
-  }
-
-  /* Foto de la persona: chiquita, como un detalle final, no la quitamos */
-  .banner-persona {
-    order: 1;
-    margin-top: 14px;
-    height: auto;
-  }
-
-  .banner-persona img {
-    height: 54px;
-    width: 54px;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  }
-}
-
-.logo-header {
-  height: 170px !important;
-  width: 200px !important;        /* Ajusta según el tamaño que quieras */
-  display: block;
-    margin-left: -50px;
-}
-
-
+    /* ===== LOGO (barra de título) - solo en esta página.
+   En computadora se queda como lo dejaste (200x170, se ve bien).
+   En celular se reduce a la mitad, guardando la misma proporción
+   (200:170), para que no se vea enorme ni se encime con el título. ===== */
 @media (min-width: 768px) {
   .logo-header {
-    height: 150px !important;
+    height: 170px !important;
     width: 200px !important;
     display: block;
-    margin-left: -70px !important;
+    margin-left: -50px !important;
   }
 }
 
 @media (max-width: 767px) {
   .logo-header {
-    height: 85px !important;
-    width: 150px !important;
+    height: 60px !important;
+    width: 70px !important;
     display: block;
-    margin-left: -90px !important;
+    margin-left: -10px !important;
   }
 }
-
   </style>
 </head>
 
@@ -451,6 +267,13 @@
           </div>
         </section>
 
+        <!-- ========================= -->
+        <!-- ANUNCIOS INFERIOR -->
+        <!-- ========================= -->
+        <div class="my-4">
+          @include('partials.anuncio-negocio')
+        </div>
+
       </div>
     </section>
 
@@ -492,43 +315,6 @@
           <div id="modalContactos"></div>
         </section>
       </div>
-    </div>
-
-    <!-- ========================= -->
-    <!-- ANUNCIOS INFERIOR -->
-    <!-- ========================= -->
-
-    <div class="container my-4" style="margin-left: 20px; margin-right: 20px;" >
-
-      <div class="banner-negocio">
-
-        <div class="banner-texto">
-          <h2>¿TIENES UN NEGOCIO?</h2>
-          <p>Promociona tu negocio y llega a más clientes en tu municipio</p>
-        </div>
-
-        <div class="banner-icono">
-          <img src="{{ asset('img/anuncios/tienda.png') }}" alt="Tienda">
-        </div>
-
-        <div class="banner-destaca">
-          <h2>DESTACA TU NEGOCIO</h2>
-          <h1>EN ¡SINTECZATE!</h1>
-        </div>
-
-        <div class="banner-boton">
-          <a href="/anunciar" class="btn-anunciar">
-            ¡ANÚNCIATE AQUÍ!
-          </a>
-          <small>Más información →</small>
-        </div>
-
-        <div class="banner-persona">
-          <img src="{{ asset('img/anuncios/persona.png') }}" alt="Anunciante">
-        </div>
-
-      </div>
-
     </div>
 
     <footer class="footer">

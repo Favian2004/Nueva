@@ -466,10 +466,12 @@
     margin-bottom: 8px;
 }
 
-.logo-header {
-  height: 70px !important;        /* Ajusta según el tamaño que quieras */
-  width: auto;
-  display: block;
+@media (min-width: 769px) {
+  .logo-header {
+    height: 115px !important;        /* Ajusta según el tamaño que quieras */
+    width: auto;
+    display: block;
+  }
 }
 
 /* Opcional: centrar verticalmente si el texto tiene altura diferente */
@@ -562,8 +564,9 @@
     }
 
     .logo-header{
-        width: 100px; /* logo más pequeño */
-           margin-left: -10px;
+        width: 120px !important;
+        height: 120px !important; /* logo cuadrado, un poco más grande que antes */
+        margin-left: -10px !important;
     }
 
     .custom-bar{
@@ -582,9 +585,11 @@
     max-width: 75%;
 }
 
-.logo-header{
-    width: 100px !important;
-    margin-left: -50px;
+@media (min-width: 769px) {
+    .logo-header{
+        width: 165px !important;
+        margin-left: -50px;
+    }
 }
 
 /* estadisticas en ****************************************************************************************************/
@@ -1061,5 +1066,3 @@
     transform:rotate(10deg) scale(1.1);
     transition:.35s;
 }
-
-

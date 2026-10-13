@@ -599,9 +599,9 @@
 
   <!-- BOTÓN REGRESAR -->
   <div class="container mt-3">
-    <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/'" class="back-button">
+    <a href="/" class="back-button">
       <i class="bi bi-arrow-left"></i> Regresar
-    </button>
+    </a>
   </div>
 
   <!-- HERO -->

@@ -43,6 +43,8 @@ class SolicitudAnuncioController extends Controller
             'imagen_negocio' => 'required_if:plan,basico|nullable|image|max:4096',
         ]);
 
+        // No incluimos link_externo ni link_ubicacion aquí a propósito: son
+        // datos de contacto/ubicación, no texto libre del anuncio.
         $textoARevisar = implode("\n", array_filter([
             $request->input('nombre_negocio'),
             $request->input('nombre_encargado'),
