@@ -682,7 +682,7 @@
         <!-- ANUNCIOS INFERIOR -->
         <!-- ========================= -->
 
-        <div class="container my-4 d-none d-md-block">
+        <div class="container my-4" style="margin-left: 20px; margin-right: 20px;" >
 
             <div class="banner-negocio">
 

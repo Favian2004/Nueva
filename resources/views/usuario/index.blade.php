@@ -35,6 +35,7 @@
       color: white;
       overflow: hidden;
       box-shadow: 0 4px 10px rgba(0, 0, 0, .15);
+
     }
     .banner-texto h2 {
       font-size: 24px;
@@ -201,6 +202,33 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   }
 }
+
+.logo-header {
+  height: 170px !important;
+  width: 200px !important;        /* Ajusta según el tamaño que quieras */
+  display: block;
+    margin-left: -50px;
+}
+
+
+@media (min-width: 768px) {
+  .logo-header {
+    height: 150px !important;
+    width: 200px !important;
+    display: block;
+    margin-left: -70px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .logo-header {
+    height: 85px !important;
+    width: 150px !important;
+    display: block;
+    margin-left: -90px !important;
+  }
+}
+
   </style>
 </head>
 
@@ -470,7 +498,7 @@
     <!-- ANUNCIOS INFERIOR -->
     <!-- ========================= -->
 
-    <div class="container my-4 ">
+    <div class="container my-4" style="margin-left: 20px; margin-right: 20px;" >
 
       <div class="banner-negocio">
 
@@ -485,7 +513,7 @@
 
         <div class="banner-destaca">
           <h2>DESTACA TU NEGOCIO</h2>
-          <h1>EN ¡CONECTAYA!</h1>
+          <h1>EN ¡SINTECZATE!</h1>
         </div>
 
         <div class="banner-boton">

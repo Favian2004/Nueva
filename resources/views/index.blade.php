@@ -55,7 +55,6 @@
       width: 100%;
       height: 210px;
       object-fit: cover;
-      transform: scale(1.10);
       cursor: zoom-in;
     }
 
@@ -107,7 +106,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: scale(1.08);
       cursor: zoom-in;
     }
 
@@ -147,6 +145,17 @@
 
       .anuncios-mobile {
         display: block;
+      }
+    }
+
+    /* Carrusel principal mas "anchito" (menos delgado) en celular:
+       las imagenes son horizontales y se ven muy bajitas si solo usan
+       su alto natural, asi que les damos una altura fija y recortamos
+       con object-fit para que se vea como un banner, no una tira fina. */
+    @media (max-width: 576px) {
+      #carouselExampleDark .carousel-item img {
+        height: 200px;
+        object-fit: cover;
       }
     }
 
@@ -811,7 +820,7 @@
         color: #fff;
         text-decoration: none;
         font-weight: 700;
-        font-size: 12.5px;
+        font-size: 17px;
         padding: 7px 18px;
         border-radius: 999px;
         white-space: nowrap;

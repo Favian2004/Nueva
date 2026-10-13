@@ -446,11 +446,11 @@
       </div>
     </section>
 
-    <!-- ========================= -->
+     <!-- ========================= -->
     <!-- ANUNCIOS INFERIOR -->
     <!-- ========================= -->
 
-    <div class="container my-4 d-none d-md-block">
+    <div class="container my-4" style="margin-left: 20px; margin-right: 20px;" >
 
       <div class="banner-negocio">
 
@@ -465,7 +465,7 @@
 
         <div class="banner-destaca">
           <h2>DESTACA TU NEGOCIO</h2>
-          <h1>EN ¡CONECTAYA!</h1>
+          <h1>EN ¡SINTECZATE!</h1>
         </div>
 
         <div class="banner-boton">

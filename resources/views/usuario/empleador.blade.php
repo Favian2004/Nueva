@@ -21,6 +21,28 @@
     <link rel="stylesheet" href="{{ asset('assets/usuario/css/theme-conectaya.css') }}">
 
     <style>
+        /* Solo en esta página (Inicio del empleador): punto medio entre el
+           margen normal de ads-widget.css (185/205/230) y el acercamiento
+           que quedó muy cerrado (130/165/175). Las demás páginas del
+           dashboard no se tocan. */
+        @media (min-width: 1301px) and (max-width: 1450px) {
+            #app {
+                margin-left: 155px;
+            }
+        }
+
+        @media (min-width: 1451px) and (max-width: 1650px) {
+            #app {
+                margin-left: 185px;
+            }
+        }
+
+        @media (min-width: 1651px) {
+            #app {
+                margin-left: 200px;
+            }
+        }
+
         .banner-negocio {
             width: 100%;
             background: linear-gradient(90deg, #6b1021, #8f1d2f, #b12d25);
