@@ -727,28 +727,42 @@
             }
         </style>
 
-        <div class="container my-4 d-none d-md-block">
-            <div class="banner-negocio">
-                <div class="banner-texto">
-                    <h2>¿TIENES UN NEGOCIO?</h2>
-                    <p>Promociona tu negocio y llega a más clientes en tu municipio</p>
-                </div>
-                <div class="banner-icono">
-                    <img src="{{ asset('img/anuncios/tienda.png') }}" alt="Tienda">
-                </div>
-                <div class="banner-destaca">
-                    <h2>DESTACA TU NEGOCIO</h2>
-                    <h1>EN ¡CONECTAYA!</h1>
-                </div>
-                <div class="banner-boton">
-                    <a href="/anunciar" class="btn-anunciar">¡ANÚNCIATE AQUÍ!</a>
-                    <small>Más información →</small>
-                </div>
-                <div class="banner-persona">
-                    <img src="{{ asset('img/anuncios/persona.png') }}" alt="Anunciante">
-                </div>
-            </div>
+        <!-- ========================= -->
+    <!-- ANUNCIOS INFERIOR -->
+    <!-- ========================= -->
+
+    <div class="container my-4" style="margin-left: 20px; margin-right: 20px;" >
+
+      <div class="banner-negocio">
+
+        <div class="banner-texto">
+          <h2>¿TIENES UN NEGOCIO?</h2>
+          <p>Promociona tu negocio y llega a más clientes en tu municipio</p>
         </div>
+
+        <div class="banner-icono">
+          <img src="{{ asset('img/anuncios/tienda.png') }}" alt="Tienda">
+        </div>
+
+        <div class="banner-destaca">
+          <h2>DESTACA TU NEGOCIO</h2>
+          <h1>EN ¡SINTECZATE!</h1>
+        </div>
+
+        <div class="banner-boton">
+          <a href="/anunciar" class="btn-anunciar">
+            ¡ANÚNCIATE AQUÍ!
+          </a>
+          <small>Más información →</small>
+        </div>
+
+        <div class="banner-persona">
+          <img src="{{ asset('img/anuncios/persona.png') }}" alt="Anunciante">
+        </div>
+
+      </div>
+
+    </div>
 
         <!-- FOOTER -->
         <footer class="footer">

@@ -979,7 +979,7 @@
                         </div>
                         <div class="banner-destaca">
                             <h2>DESTACA TU NEGOCIO</h2>
-                            <h1>EN ¡CONECTAYA!</h1>
+                            <h1>EN ¡SINTECZATE!</h1>
                         </div>
                         <div class="banner-boton">
                             <a href="/anunciar" class="btn-anunciar">¡ANÚNCIATE AQUÍ!</a>
