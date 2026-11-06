@@ -163,6 +163,26 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
 }
 
+/* ---------------------------------------------------------------------
+   PANEL (páginas de trabajador y de empleador, las que tienen el menú
+   lateral): el banner se ve IGUAL en todas, como en el Inicio de
+   trabajador.
+
+   En el Inicio el banner va dentro de la sección principal, que le da
+   1.5rem de margen a cada lado. En las demás páginas va debajo de la
+   sección, dentro de un .container sin ese margen, y por eso se veía más
+   ancho, pegado al borde derecho y encimado en el lado izquierdo. Aquí
+   se le devuelve ese mismo margen, sin tener que tocar cada página.
+   Solo aplica al panel (html.has-aside-left); las páginas públicas no
+   cambian.
+   --------------------------------------------------------------------- */
+html.has-aside-left .container:has(> .banner-negocio) {
+  box-sizing: border-box;
+  max-width: calc(1344px + 3rem);
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
 /* ===== Responsivo ===== */
 
 /* En tablets ya no hay espacio para los separadores verticales */

@@ -405,5 +405,7 @@
 
 @endif
 
+<script src="{{ asset('assets/usuario/js/asistente-voz.js') }}" defer></script>
+
 </body>
 </html>

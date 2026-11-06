@@ -622,7 +622,7 @@
         color: #fff;
         text-decoration: none;
         font-weight: 700;
-        font-size: 17px;
+        font-size: 15px;
         padding: 7px 18px;
         border-radius: 999px;
         white-space: nowrap;
@@ -651,11 +651,194 @@
 
 
 
+
+    /* ===== PRESENTACIÓN: ¿QUÉ ES SINTECZATE? (lo primero que ve el visitante) ===== */
+    .intro-hero {
+      position: relative;
+      overflow: hidden;
+      max-width: 1300px;
+      margin: 12px auto 16px;
+      padding: 30px 28px;
+      border-radius: 16px;
+      color: #fff;
+      background: linear-gradient(120deg, #6b1021 0%, #8f1d2f 55%, #b12d25 100%);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, .14);
+    }
+
+    .intro-hero::before {
+      content: "";
+      position: absolute;
+      right: -120px;
+      top: -140px;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 70%);
+      pointer-events: none;
+    }
+
+    .intro-hero-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .intro-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      color: #ffd9a8;
+      margin-bottom: 10px;
+    }
+
+    .intro-hero h1 {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin: 0 0 12px;
+    }
+
+    .intro-hero .intro-sub {
+      font-size: clamp(.95rem, 1.2vw, 1.05rem);
+      line-height: 1.55;
+      color: #f6e3e3;
+      margin: 0 0 20px;
+      max-width: 560px;
+    }
+
+    .intro-acciones {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 18px;
+    }
+
+    .intro-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: #6b1021;
+      font-weight: 800;
+      font-size: 15px;
+      text-decoration: none;
+      padding: 11px 24px;
+      border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .20);
+      transition: .2s;
+    }
+
+    .intro-btn:hover {
+      color: #6b1021;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, .28);
+    }
+
+    .intro-link {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      opacity: .92;
+    }
+
+    .intro-link:hover {
+      color: #fff;
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    .intro-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .intro-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      color: #fff;
+      text-decoration: none;
+      background: rgba(255, 255, 255, .10);
+      border: 1px solid rgba(255, 255, 255, .20);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      transition: .2s;
+    }
+
+    .intro-card:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, .18);
+      border-color: rgba(255, 255, 255, .40);
+      transform: translateY(-2px);
+    }
+
+    .intro-card-icono {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      color: #ffd36b;
+      background: rgba(255, 255, 255, .14);
+    }
+
+    .intro-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0 0 2px;
+    }
+
+    .intro-card p {
+      font-size: 12.5px;
+      line-height: 1.4;
+      color: #f0d5d5;
+      margin: 0;
+    }
+
+    .intro-card .intro-card-flecha {
+      margin-left: auto;
+      font-size: 16px;
+      opacity: .7;
+    }
+
+    @media (max-width: 991px) {
+      .intro-hero-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .intro-hero {
+        padding: 22px 16px;
+        border-radius: 14px;
+      }
+      .intro-hero .intro-sub { margin-bottom: 16px; }
+      .intro-btn { width: 100%; justify-content: center; }
+      .intro-acciones { flex-direction: column; align-items: stretch; text-align: center; }
+      .intro-card { padding: 10px 12px; gap: 12px; }
+      .intro-card-icono { width: 38px; height: 38px; font-size: 18px; }
+    }
+
   </style>
 
 </head>
 
 <body>
+
 
 <!-- MODAL: Ver anuncio en grande -->
   <div id="modalAnuncio" class="modal-anuncio-overlay">
@@ -857,15 +1040,58 @@
       ];
     @endphp
 
-    <div class="cta-cuenta">
-      <div class="cta-cuenta-texto">
-        <h3>¡Crea tu cuenta y disfruta de todos los beneficios!</h3>
-        <p>Es gratis, toma menos de un minuto, y ya puedes empezar a contactar o publicar.</p>
+    <!--=====================================
+    PRESENTACIÓN: qué es SINTECZATE y para quién es
+======================================-->
+    <section class="intro-hero" aria-labelledby="introTitulo">
+      <div class="intro-hero-grid">
+
+        <div>
+          <span class="intro-eyebrow"><i class="bi bi-geo-alt-fill"></i> Zacapoaxtla, Puebla</span>
+          <h1 id="introTitulo">Servicios y empleos de tu comunidad, en un solo lugar</h1>
+          <p class="intro-sub">
+            ¡SINTECZATE! es una plataforma digital gratuita que conecta a las personas
+            de Zacapoaxtla y sus alrededores. Aquí puedes ofrecer y encontrar servicios
+            y oficios, consultar oportunidades de empleo, publicar vacantes y postularte
+            a ellas. Explora opciones, conoce las calificaciones de otros usuarios y
+            contacta directamente para generar nuevas oportunidades.
+         </p>
+          <div class="intro-acciones">
+            <a href="/acceso?modo=registro" class="intro-btn"><i class="bi bi-person-plus-fill"></i> Crear mi cuenta gratis</a>
+            <a href="/acceso?modo=login" class="intro-link">¿Ya tienes cuenta? Inicia sesión</a>
+            <a href="#comoFunciona" class="intro-link"><i class="bi bi-arrow-down-circle"></i> ¿Cómo funciona?</a>
+          </div>
+        </div>
+
+        <div class="intro-cards">
+          <a href="#listProducts" class="intro-card">
+            <span class="intro-card-icono"><i class="bi bi-search"></i></span>
+            <div>
+              <h3>Busco un servicio</h3>
+              <p>Encuentra a la persona que necesitas, cerca de tu comunidad.</p>
+            </div>
+            <i class="bi bi-chevron-right intro-card-flecha"></i>
+          </a>
+          <a href="#listVacantes" class="intro-card">
+            <span class="intro-card-icono"><i class="bi bi-briefcase-fill"></i></span>
+            <div>
+              <h3>Busco trabajo</h3>
+              <p>Revisa las vacantes publicadas y postúlate.</p>
+            </div>
+            <i class="bi bi-chevron-right intro-card-flecha"></i>
+          </a>
+          <a href="/acceso?modo=registro" class="intro-card">
+            <span class="intro-card-icono"><i class="bi bi-megaphone-fill"></i></span>
+            <div>
+              <h3>Ofrezco servicios o contrato</h3>
+              <p>Crea tu cuenta y publica tu servicio o una vacante.</p>
+            </div>
+            <i class="bi bi-chevron-right intro-card-flecha"></i>
+          </a>
+        </div>
+
       </div>
-      <a href="/acceso" class="cta-cuenta-boton">
-        <i class="bi bi-box-arrow-in-right"></i> Acceder
-      </a>
-    </div>
+    </section>
 
       <!-- Agrega data-bs-ride="carousel" para que sea automático -->
     <div id="carouselExampleDark" class="carousel carousel-dark slide" data-bs-ride="carousel">
@@ -964,7 +1190,7 @@
     <!--=====================================
     CÓMO FUNCIONA
 ======================================-->
-    <div class="como-funciona-section">
+    <div class="como-funciona-section" id="comoFunciona">
       <div class="container">
         <h2 class="como-funciona-titulo">¿Cómo funciona?</h2>
         <p class="como-funciona-subtitulo">En 4 pasos sencillos, sin complicaciones</p>
@@ -1317,7 +1543,7 @@
             <div class="col-md-4 text-center text-md-start">
               <h4 class="fw-bold text-white">¡SINTECZATE!</h4>
               <p class="text-light">
-                Conectamos personas que ofrecen y buscan servicios de forma rápida y segura.
+                Conectamos personas que ofrecen y buscan servicios de forma rápida y segura aqui en Zacapoaxtla.
               </p>
 
               <!-- Redes -->
@@ -1438,6 +1664,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
       crossorigin="anonymous"></script>
+
+    <script src="{{ asset('assets/usuario/js/asistente-voz.js') }}" defer></script>
 </body>
 
 </html>

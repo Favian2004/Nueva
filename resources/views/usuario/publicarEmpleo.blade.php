@@ -155,11 +155,19 @@
           <div id="errorToast" class="success-toast" style="display: none; background:#ffe0e0; color:#c62828;">❌ Error:
             completa todos los campos obligatorios.</div>
 
-          <form id="formPublicar">
+          @php
+            // Teléfonos: solo 10 dígitos (si el que está guardado trae lada, espacios o guiones, se limpia).
+            $soloTel = function ($v) {
+              $d = preg_replace('/\D/', '', (string) $v);
+              return strlen($d) > 10 ? substr($d, -10) : $d;
+            };
+          @endphp
+
+          <form id="formPublicar" novalidate>
             <!-- Título -->
             <div class="form-group">
               <label>Título del empleo o servicio *</label>
-              <input type="text" id="titulo" name="titulo" value="{{ $servicio->titulo ?? '' }}" placeholder="Ej. Plomero profesional, Diseñador gráfico..." required>
+              <input type="text" id="titulo" name="titulo" value="{{ $servicio->titulo ?? '' }}" placeholder="Ej. Plomero profesional, Diseñador gráfico..." maxlength="100" autocomplete="off" required>
             </div>
 
             <!-- Categoría y Subcategoría (dinámico, con datos reales de tu base de datos) -->
@@ -188,22 +196,20 @@
             <div class="form-group">
               <label>Descripción *</label>
               <textarea id="descripcion" name="descripcion" rows="5" placeholder="Describe el trabajo, requisitos, horarios, beneficios..."
-                required>{{ $servicio->descripcion ?? '' }}</textarea>
+                maxlength="2000" required>{{ $servicio->descripcion ?? '' }}</textarea>
             </div>
 
             <!-- Precio -->
             <div class="form-group">
               <label>Precio (MXN) *</label>
-              <input type="number" id="precio" name="precio" value="{{ $servicio->precio ?? '' }}" step="0.01" min="0" placeholder="Ej. 200.00" required
-                onkeydown="if (event.key === '-' || event.key === 'e') event.preventDefault();"
-                oninput="if (this.value < 0) this.value = 0;">
-              <p class="form-hint">Ingresa el costo del servicio o sueldo ofrecido</p>
+              <input type="text" id="precio" name="precio" value="{{ $servicio->precio ?? '' }}" placeholder="Ej. 200.00" inputmode="decimal" maxlength="10" autocomplete="off" required>
+              <p class="form-hint">Ingresa el costo del servicio o sueldo ofrecido. Solo números, hasta 2 decimales (de $1 a $999,999.99).</p>
             </div>
 
             <!-- Imagen (opcional, ya se sube de verdad) -->
             <div class="form-group">
               <label>Imagen del servicio (opcional)</label>
-              @if ($servicio && $servicio->imagen)
+              @if ($servicio && $servicio->tiene_imagen_propia)
                 <div class="mb-2"><img src="{{ $servicio->imagen }}" style="max-width:120px; border-radius:10px;"></div>
                 <p class="form-hint">Imagen actual. Sube una nueva solo si quieres reemplazarla.</p>
               @endif
@@ -216,18 +222,20 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Ubicación *</label>
-                <input type="text" id="ubicacion" name="ubicacion" value="{{ $servicio->ubicacion ?? ($usuario->localidad->nombre ?? '') }}" placeholder="Ej. Zacapoaxtla, Puebla" required>
+                <input type="text" id="ubicacion" name="ubicacion" value="{{ $servicio->ubicacion ?? ($usuario->localidad->nombre ?? '') }}" placeholder="Ej. Zacapoaxtla, Puebla" maxlength="150" autocomplete="off" required>
                 <p class="form-hint">Autocompletado de tu perfil. Cámbialo si el servicio es en otro lugar.</p>
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Teléfono de contacto</label>
-                <input type="tel" id="telefono" name="telefono" value="{{ $servicio->telefono ?? $usuario->telefono }}" placeholder="Ej. 222 123 4567">
+                <input type="tel" id="telefono" name="telefono" value="{{ $soloTel($servicio->telefono ?? $usuario->telefono) }}" placeholder="Ej. 2221234567" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="tel-national">
+                <p class="form-hint">10 dígitos, solo números.</p>
               </div>
               <div class="form-group">
                 <label>WhatsApp</label>
-                <input type="tel" id="whatsapp" name="whatsapp" value="{{ $servicio->whatsapp ?? $usuario->whatsapp }}" placeholder="Ej. 222 123 4567">
+                <input type="tel" id="whatsapp" name="whatsapp" value="{{ $soloTel($servicio->whatsapp ?? $usuario->whatsapp) }}" placeholder="Ej. 2221234567" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="off">
+                <p class="form-hint">10 dígitos, solo números.</p>
               </div>
             </div>
 
@@ -289,6 +297,7 @@
 
   <script src="{{ asset('assets/usuario/js/main.js') }}"></script>
   <script src="{{ asset('assets/usuario/js/interruptor.js') }}"></script>
+  <script src="{{ asset('assets/usuario/js/validaciones.js') }}"></script>
   <script>
     // ==================== DATOS REALES (vienen del Controller, ya no son inventados) ====================
     const categorias = @json($categorias);
@@ -347,7 +356,7 @@
     imagenInput.addEventListener('change', function (e) {
       previewContainer.innerHTML = '';
       const file = e.target.files[0];
-      if (file && (file.type.startsWith('image/'))) {
+      if (file && ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) && file.size <= 4 * 1024 * 1024) {
         const reader = new FileReader();
         reader.onload = function (ev) {
           const img = document.createElement('img');
@@ -397,40 +406,41 @@
         .catch(() => alert('❌ Ocurrió un error de conexión.'));
     }
 
+    // ===== Validaciones del formulario (ver validaciones.js) =====
+    const V = window.Validaciones;
+    V.filtroTexto(document.getElementById('titulo'));
+    V.filtroTexto(document.getElementById('ubicacion'));
+    V.filtroTextoLargo(document.getElementById('descripcion'));
+    ['titulo', 'descripcion'].forEach(id => V.contador(document.getElementById(id)));
+    V.decimal(document.getElementById('precio'), { maxEnteros: 6, decimales: 2 });
+    V.soloDigitos(document.getElementById('telefono'), 10);
+    V.soloDigitos(document.getElementById('whatsapp'), 10);
+    V.vigilarImagen(document.getElementById('imagen'));
+
+    const reglasServicio = [
+      { campo: 'titulo', nombre: 'Título', tipo: 'texto', requerido: true, min: 3, max: 100 },
+      { campo: 'categoria_id', nombre: 'Categoría', tipo: 'seleccion', requerido: true },
+      { campo: 'subcategoria_id', nombre: 'Subcategoría', tipo: 'seleccion', requerido: true },
+      { campo: 'descripcion', nombre: 'Descripción', tipo: 'largo', requerido: true, min: 20, max: 2000 },
+      { campo: 'precio', nombre: 'Precio', tipo: 'decimal', requerido: true, min: 1, max: 999999.99 },
+      { campo: 'ubicacion', nombre: 'Ubicación', tipo: 'texto', requerido: true, min: 3, max: 150 },
+      { campo: 'telefono', nombre: 'Teléfono de contacto', tipo: 'telefono', requerido: false },
+      { campo: 'whatsapp', nombre: 'WhatsApp', tipo: 'telefono', requerido: false },
+      { campo: 'imagen', nombre: 'Imagen', tipo: 'imagen', requerido: false }
+    ];
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
 
       // Evita doble clic: si ya se está mandando la publicación, ignora clics/Enter extra.
       if (btnPublicar.disabled) return;
 
-      const titulo = document.getElementById('titulo').value.trim();
-      const categoria = catSelect.value;
-      const subcategoria = subcatSelect.value;
-      const descripcion = document.getElementById('descripcion').value.trim();
-      const precio = document.getElementById('precio').value;
-      const ubicacion = document.getElementById('ubicacion').value.trim();
-
-      const faltantes = [];
-      if (!titulo) faltantes.push('Título');
-      if (!categoria) faltantes.push('Categoría');
-      if (!subcategoria) faltantes.push('Subcategoría');
-      if (!descripcion) faltantes.push('Descripción');
-      if (!precio) faltantes.push('Precio');
-      if (!ubicacion) faltantes.push('Ubicación');
-
-      if (faltantes.length > 0) {
-        errorToast.textContent = '❌ Falta llenar: ' + faltantes.join(', ') + '.';
+      // Revisa todos los campos; si algo está mal, lo marca en rojo y no manda nada.
+      if (!V.validar(form, reglasServicio)) {
+        errorToast.textContent = '❌ Revisa los campos marcados en rojo.';
         errorToast.style.display = 'block';
         successToast.style.display = 'none';
         setTimeout(() => errorToast.style.display = 'none', 4000);
-        return;
-      }
-
-      if (parseFloat(precio) < 0) {
-        errorToast.textContent = '❌ El precio no puede ser negativo.';
-        errorToast.style.display = 'block';
-        successToast.style.display = 'none';
-        setTimeout(() => errorToast.style.display = 'none', 3000);
         return;
       }
 
@@ -463,6 +473,7 @@
             let msg = data.message || 'Ocurrió un error al publicar.';
             if (data.errors) {
               msg = Object.values(data.errors).flat().join(' ');
+              V.errorServidor(form, data.errors);
             }
             errorToast.textContent = '❌ ' + msg;
             errorToast.style.display = 'block';

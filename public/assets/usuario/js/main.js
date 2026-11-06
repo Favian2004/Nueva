@@ -1,5 +1,29 @@
 "use strict";
 
+// ====== CAMPANA DE NOTIFICACIONES (menú de arriba) ======
+// Carga notificaciones.js (está junto a este archivo). Va al inicio para que
+// funcione aunque más abajo algo falle en alguna página.
+(function () {
+  if (document.querySelector('script[data-notificaciones]')) return;
+  var actual = document.currentScript && document.currentScript.src;
+  var s = document.createElement('script');
+  s.src = actual ? actual.replace(/main\.js(\?.*)?$/, 'notificaciones.js$1') : '/assets/usuario/js/notificaciones.js';
+  s.defer = true;
+  s.setAttribute('data-notificaciones', '1');
+  (document.body || document.documentElement).appendChild(s);
+})();
+
+// ====== ASISTENTE DE VOZ (botón flotante del micrófono) ======
+(function () {
+  if (document.querySelector('script[data-asistente-voz]')) return;
+  var actual = document.currentScript && document.currentScript.src;
+  var s = document.createElement('script');
+  s.src = actual ? actual.replace(/main\.js(\?.*)?$/, 'asistente-voz.js$1') : '/assets/usuario/js/asistente-voz.js';
+  s.defer = true;
+  s.setAttribute('data-asistente-voz', '1');
+  (document.body || document.documentElement).appendChild(s);
+})();
+
 // ====== SIDEBAR TOGGLE ======
 Array.from(document.getElementsByClassName("jb-aside-mobile-toggle")).forEach(function(e) {
   e.addEventListener("click", function(e) {
@@ -175,4 +199,3 @@ if(searchInput){
 // Init
 renderCart();
 renderFavs();
-

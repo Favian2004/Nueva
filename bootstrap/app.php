@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // como el inicio de sesión con Google).
         $middleware->trustProxies(at: '*');
 
+        // Que el botón «atrás» no muestre páginas con sesión después de cerrarla
+        $middleware->appendToGroup('web', \App\Http\Middleware\SinCacheConSesion::class);
+
         // El webhook de Mercado Pago llega directo desde sus servidores,
         // sin pasar por ningún formulario nuestro, así que nunca va a traer
         // el token de seguridad (_token) — lo excluimos para que no le dé

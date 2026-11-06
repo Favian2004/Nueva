@@ -6,6 +6,7 @@ use App\Models\Anuncio;
 use App\Models\Servicio;
 use App\Models\Vacante;
 use App\Models\Localidad;
+use App\Services\BusquedaTolerante;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -39,21 +40,18 @@ class HomeController extends Controller
         return DB::table('visitas_contador')->where('id', 1)->value('total') ?? 0;
     }
 
-    // Busca por palabras sueltas (no la frase completa exacta) y sin
-    // importar mayúsculas/minúsculas, en los campos indicados.
+    // Busca por palabras sueltas (no la frase completa exacta), sin importar
+    // mayúsculas ni acentos, y perdonando faltas de ortografía de quien publicó
+    // ("Plomerro", "Electrisista"...). Revisa los campos indicados.
     private function aplicarBusqueda($query, string $texto, array $campos)
     {
-        $palabras = array_filter(explode(' ', trim($texto)));
+        $modelo = $query->getModel();
+        $candidatos = $modelo->newQuery()->get(array_merge(['id'], $campos));
 
-        return $query->where(function ($principal) use ($palabras, $campos) {
-            foreach ($palabras as $palabra) {
-                $principal->where(function ($grupo) use ($palabra, $campos) {
-                    foreach ($campos as $campo) {
-                        $grupo->orWhereRaw("LOWER({$campo}) LIKE ?", ['%' . mb_strtolower($palabra) . '%']);
-                    }
-                });
-            }
-        });
+        return $query->whereIn(
+            $modelo->getTable() . '.id',
+            BusquedaTolerante::ids($candidatos, $texto, $campos)
+        );
     }
 
     public function index(Request $request)
@@ -85,7 +83,7 @@ class HomeController extends Controller
             ->take($hayFiltros ? 50 : 8)
             ->get();
 
-        $vacantes = Vacante::where('estado', 'activa')
+        $vacantes = Vacante::abiertas()
             ->when($qVacante, fn($query) => $this->aplicarBusqueda($query, $qVacante, ['titulo', 'descripcion', 'ubicacion']))
             ->when($localidadVacanteId, function ($query) use ($localidadVacanteId, $localidades) {
                 $nombreLocalidad = optional($localidades->firstWhere('id', $localidadVacanteId))->nombre;
@@ -138,7 +136,7 @@ class HomeController extends Controller
     // Igual que arriba, pero para una vacante.
     public function verVacantePublica($id)
     {
-        $vacante = Vacante::where('estado', 'activa')->findOrFail($id);
+        $vacante = Vacante::abiertas()->findOrFail($id);
 
         return view('vacante_publica', array_merge($this->anunciosDelMunicipio(), [
             'vacante' => $vacante,

@@ -639,6 +639,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="/usuario/pronostico" class="has-icon">
+                            <span class="icon"><i class="mdi mdi-chart-line"></i></span>
+                            <span class="menu-item-label">Pronóstico</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="/usuario/profile" class="has-icon">
                             <span class="icon"><i class="mdi mdi-account-circle"></i></span>
                             <span class="menu-item-label">Perfil</span>

@@ -193,6 +193,7 @@
         <li><a href="/usuario/mis-vacantes" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Mis vacantes</span></a></li>
         <li><a href="/usuario/postulantes" class="has-icon"><span class="icon"><i class="mdi mdi-account-group"></i></span><span class="menu-item-label">Postulantes</span></a></li>
         <li><a href="/usuario/publicar-vacante" class="has-icon"><span class="icon"><i class="mdi mdi-plus-circle"></i></span><span class="menu-item-label">Publicar vacante</span></a></li>
+        <li><a href="/usuario/pronostico" class="has-icon"><span class="icon"><i class="mdi mdi-chart-line"></i></span><span class="menu-item-label">Pronóstico</span></a></li>
         <li><a href="/usuario/profile" class="has-icon"><span class="icon"><i class="mdi mdi-account-circle"></i></span><span class="menu-item-label">Perfil</span></a></li>
       </ul>
     </div>

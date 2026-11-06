@@ -212,8 +212,11 @@
           <label class="label">Teléfono</label>
           <div class="control">
             <input type="tel" id="inputPhone" name="telefono" class="input perfil-input"
-              value="{{ $usuario->telefono }}">
+              value="{{ $usuario->telefono }}" placeholder="Ej. 2221234567"
+              inputmode="numeric" pattern="[0-9]{10}"
+              title="Escribe exactamente 10 números, sin espacios.">
           </div>
+          <p class="help">10 dígitos, solo números.</p>
         </div>
 
         <div class="field">
@@ -275,16 +278,190 @@
         </div>
       </div>
 
-      <!-- PANEL 2: Estadísticas / Actividad reciente (todavía sin sistema de reseñas real) -->
+      <!-- PANEL 2: Estadísticas (reseñas, actividad reciente, solicitudes por mes y, si publicas vacantes, cómo van) -->
       <div id="tab-stats" class="tab-content" style="display: none;">
-        <div class="card">
-          <div class="card-content">
-            <h3 class="title is-5"><i class="mdi mdi-chart-timeline-variant"></i> Actividad reciente</h3>
-            <div class="notification is-warning is-light">
-              <i class="mdi mdi-information"></i> Esta sección todavía es solo de muestra — tu base de datos aún no tiene un sistema de reseñas ni bitácora de actividad. La conectamos cuando construyamos esa parte.
+        @php
+          $est = $estadisticas;
+          $tar = $est['tarjetas'];
+          $res = $est['resenas'];
+          $emp = $est['empleador'];
+          $estrellas = fn($n) => str_repeat('★', (int) $n) . str_repeat('☆', max(0, 5 - (int) $n));
+        @endphp
+
+        <style>
+          .est-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 18px 0; }
+          #tab-stats .card .title.is-5 { margin-bottom: 14px; }
+          .est-tile { background: #fff; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.06); padding: 16px 18px; display: flex; gap: 14px; align-items: center; }
+          .est-ico { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex: none; }
+          .est-o { background: #fff1e3; color: #ff7a18; } .est-g { background: #e3f7ec; color: #1b9a59; }
+          .est-b { background: #e6efff; color: #2b6fe0; } .est-y { background: #fff7d6; color: #d99a00; }
+          .est-num { font-size: 28px; font-weight: 800; line-height: 1; color: #363636; }
+          .est-lab { font-size: 13.5px; color: #7a7a7a; margin-top: 4px; }
+          .est-sub { font-size: 12px; color: #1b9a59; font-weight: 700; margin-top: 2px; }
+          .est-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; align-items: start; }
+          .est-cols .card, .est-bloque { height: 100%; }
+          .est-bloque { margin-bottom: 16px; }
+          .est-vacio { color: #8a8a8a; font-size: 14px; background: #fafafa; border-radius: 10px; padding: 14px 16px; }
+          .est-prom { display: flex; gap: 22px; align-items: center; margin-bottom: 8px; }
+          .est-big { font-size: 44px; font-weight: 800; line-height: 1; }
+          .est-stars { color: #f5a623; letter-spacing: 1px; }
+          .est-small { font-size: 12.5px; color: #8a8a8a; }
+          .est-bar { display: flex; align-items: center; gap: 9px; font-size: 13px; margin: 5px 0; color: #666; }
+          .est-bar .t { flex: 1; height: 9px; background: #f0f0f0; border-radius: 6px; overflow: hidden; }
+          .est-bar .t span { display: block; height: 100%; background: linear-gradient(90deg, #ff7a18, #ffb347); border-radius: 6px; }
+          .est-bar b { width: 22px; text-align: right; color: #444; }
+          .est-rev { border-top: 1px solid #eee; padding: 11px 0 2px; margin-top: 10px; }
+          .est-rev .quien { font-weight: 700; font-size: 14px; }
+          .est-rev p { margin: 3px 0 0; font-size: 13.5px; color: #555; word-break: break-word; }
+          .est-tl { position: relative; margin-left: 4px; }
+          .est-tl:before { content: ""; position: absolute; left: 15px; top: 8px; bottom: 8px; width: 2px; background: #f0e3d6; }
+          .est-it { display: flex; gap: 13px; align-items: flex-start; margin-bottom: 15px; position: relative; }
+          .est-it:last-child { margin-bottom: 0; }
+          .est-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex: none; border: 3px solid #fff; }
+          .est-it .t1 { font-size: 14px; font-weight: 700; word-break: break-word; }
+          .est-it .t2 { font-size: 12.5px; color: #8a8a8a; margin-top: 1px; }
+          .est-chart { display: flex; align-items: flex-end; gap: 14px; height: 150px; padding: 6px 10px 0; }
+          .est-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; font-size: 12px; color: #777; gap: 5px; }
+          .est-col .v { font-size: 12.5px; font-weight: 800; color: #444; }
+          .est-col .p { width: 100%; max-width: 54px; border-radius: 8px 8px 0 0; background: linear-gradient(180deg, #ffb347, #ff7a18); }
+          .est-col .p.s { background: linear-gradient(180deg, #d8dde6, #bcc4d1); }
+          .est-nota { margin-top: 12px; font-size: 13px; color: #666; text-align: center; }
+          .est-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+          .est-chip { background: #fafafa; border: 1px solid #eee; border-radius: 12px; padding: 8px 14px; min-width: 110px; }
+          .est-chip b { display: block; font-size: 22px; line-height: 1.1; }
+          .est-chip span { font-size: 12.5px; color: #7a7a7a; }
+          .est-venc { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; background: #fff4e5; border: 1px solid #f5c38a; margin-top: 8px; font-size: 13.5px; color: #9a4a00; }
+          .est-venc a { color: #ff7a18; font-weight: 700; white-space: nowrap; }
+          @media (max-width: 980px) { .est-tiles { grid-template-columns: repeat(2, 1fr); } .est-cols { grid-template-columns: 1fr; } }
+          @media (max-width: 480px) { .est-tiles { grid-template-columns: 1fr; } .est-chart { gap: 8px; padding: 6px 0 0; } }
+        </style>
+
+        <!-- Resumen -->
+        <div class="est-tiles">
+          <div class="est-tile">
+            <div class="est-ico est-o"><i class="mdi mdi-inbox-arrow-down"></i></div>
+            <div><div class="est-num">{{ $tar['solicitudes'] }}</div><div class="est-lab">Solicitudes recibidas</div>
+              @if ($tar['solicitudes_mes'] > 0)<div class="est-sub">▲ {{ $tar['solicitudes_mes'] }} este mes</div>@endif</div>
+          </div>
+          <div class="est-tile">
+            <div class="est-ico est-g"><i class="mdi mdi-check-decagram"></i></div>
+            <div><div class="est-num">{{ $tar['terminados'] }}</div><div class="est-lab">Trabajos terminados</div></div>
+          </div>
+          <div class="est-tile">
+            <div class="est-ico est-b"><i class="mdi mdi-send"></i></div>
+            <div><div class="est-num">{{ $tar['postulaciones'] }}</div><div class="est-lab">Postulaciones enviadas</div>
+              @if ($tar['contrataron'] > 0)<div class="est-sub">{{ $tar['contrataron'] }} {{ $tar['contrataron'] === 1 ? 'te contrató' : 'te contrataron' }}</div>@endif</div>
+          </div>
+          @if ($emp)
+            <div class="est-tile">
+              <div class="est-ico est-y"><i class="mdi mdi-briefcase"></i></div>
+              <div><div class="est-num">{{ $emp['abiertas'] }}</div><div class="est-lab">{{ $emp['abiertas'] === 1 ? 'Vacante abierta' : 'Vacantes abiertas' }}</div>
+                <div class="est-sub">{{ $emp['postulantes'] }} {{ $emp['postulantes'] === 1 ? 'postulante' : 'postulantes' }}</div></div>
+            </div>
+          @else
+            <div class="est-tile">
+              <div class="est-ico est-y"><i class="mdi mdi-star"></i></div>
+              <div><div class="est-num">{{ $res['total'] }}</div><div class="est-lab">{{ $res['total'] === 1 ? 'Reseña recibida' : 'Reseñas recibidas' }}</div></div>
+            </div>
+          @endif
+        </div>
+
+        <div class="est-cols">
+          <!-- Reseñas -->
+          <div class="card">
+            <div class="card-content">
+              <h3 class="title is-5"><i class="mdi mdi-star-circle"></i> Reseñas</h3>
+              @if ($res['total'])
+                <div class="est-prom">
+                  <div>
+                    <div class="est-big">{{ $res['promedio'] }}</div>
+                    <div class="est-stars" style="font-size:19px;">{{ $estrellas(round($res['promedio'])) }}</div>
+                    <div class="est-small">{{ $res['total'] }} {{ $res['total'] === 1 ? 'reseña' : 'reseñas' }}</div>
+                  </div>
+                  <div style="flex:1">
+                    @foreach ($res['desglose'] as $n => $cuantas)
+                      <div class="est-bar">{{ $n }}★<div class="t"><span style="width: {{ $res['total'] ? round($cuantas / $res['total'] * 100) : 0 }}%"></span></div><b>{{ $cuantas }}</b></div>
+                    @endforeach
+                  </div>
+                </div>
+                @foreach ($res['recientes'] as $r)
+                  <div class="est-rev">
+                    <div class="quien">{{ $r->usuario->nombre ?? 'Alguien' }} <span class="est-stars" style="font-size:14px;">{{ $estrellas($r->estrellas) }}</span>
+                      <span class="est-small">· {{ $r->created_at?->locale('es')->diffForHumans() }}@if ($r->servicio) · {{ $r->servicio->titulo }}@endif</span></div>
+                    @if ($r->comentario)<p>“{{ $r->comentario }}”</p>@endif
+                  </div>
+                @endforeach
+              @else
+                <p class="est-vacio">Todavía no tienes reseñas. Cuando alguien califique alguno de tus servicios, aquí verás tu promedio y lo que opinan de tu trabajo.</p>
+              @endif
+            </div>
+          </div>
+
+          <!-- Actividad reciente -->
+          <div class="card">
+            <div class="card-content">
+              <h3 class="title is-5"><i class="mdi mdi-chart-timeline-variant"></i> Actividad reciente</h3>
+              @if (count($est['actividad']))
+                <div class="est-tl">
+                  @foreach ($est['actividad'] as $ev)
+                    <div class="est-it">
+                      <div class="est-dot est-{{ $ev['color'] }}"><i class="mdi {{ $ev['icono'] }}"></i></div>
+                      <div>
+                        <div class="t1">{{ $ev['texto'] }}</div>
+                        <div class="t2" title="{{ $ev['fecha']->format('d/m/Y H:i') }}">{{ $ev['fecha']->locale('es')->diffForHumans() }}</div>
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+              @else
+                <p class="est-vacio">Todavía no hay actividad. Cuando te soliciten un servicio, te califiquen o te postules a una vacante, aparecerá aquí.</p>
+              @endif
             </div>
           </div>
         </div>
+
+        <!-- Solicitudes por mes -->
+        <div class="card est-bloque">
+          <div class="card-content">
+            <h3 class="title is-5"><i class="mdi mdi-chart-bar"></i> Solicitudes por mes</h3>
+            <div class="est-chart">
+              @foreach ($est['meses'] as $m)
+                <div class="est-col"><div class="v">{{ $m['total'] }}</div><div class="p {{ $m['total'] ? '' : 's' }}" style="height: {{ $m['altura'] }}%"></div>{{ $m['nombre'] }}</div>
+              @endforeach
+            </div>
+            @if ($est['mas_solicitado'])
+              <p class="est-nota"><i class="mdi mdi-trophy-outline" style="color:#ff7a18"></i> Tu servicio más solicitado: <strong>«{{ $est['mas_solicitado']['titulo'] }}»</strong> ({{ $est['mas_solicitado']['total'] }} {{ $est['mas_solicitado']['total'] === 1 ? 'solicitud' : 'solicitudes' }})</p>
+            @else
+              <p class="est-nota">Aún no te han solicitado ningún servicio.</p>
+            @endif
+          </div>
+        </div>
+
+        @if ($emp)
+          <!-- Como empleador -->
+          <div class="card est-bloque">
+            <div class="card-content">
+              <h3 class="title is-5"><i class="mdi mdi-briefcase-outline"></i> Tus vacantes</h3>
+              <div class="est-chips">
+                <div class="est-chip"><b>{{ $emp['abiertas'] }}</b><span>Abiertas</span></div>
+                <div class="est-chip"><b>{{ $emp['vencidas'] }}</b><span>Vencidas</span></div>
+                <div class="est-chip"><b>{{ $emp['cerradas'] }}</b><span>Cerradas</span></div>
+                <div class="est-chip"><b>{{ $emp['postulantes'] }}</b><span>Postulantes recibidos</span></div>
+                <div class="est-chip"><b>{{ $emp['pendientes'] }}</b><span>Por revisar</span></div>
+                <div class="est-chip"><b>{{ $emp['contratados'] }}</b><span>Contratados</span></div>
+              </div>
+              @forelse ($emp['por_vencer'] as $v)
+                <div class="est-venc">
+                  <span><i class="mdi mdi-clock-alert-outline"></i> «{{ $v['titulo'] }}» {{ $v['dias'] <= 0 ? 'vence hoy' : ($v['dias'] === 1 ? 'vence mañana' : 'vence en ' . $v['dias'] . ' días') }} ({{ $v['limite']->format('d/m/Y') }})</span>
+                  <a href="/usuario/mis-vacantes/{{ $v['id'] }}/editar">Renovar</a>
+                </div>
+              @empty
+                <p class="est-nota" style="text-align:left;margin-top:0;">Ninguna de tus vacantes vence en los próximos 3 días.</p>
+              @endforelse
+              <p class="est-nota" style="text-align:left;"><a href="/usuario/mis-vacantes" style="color:#ff7a18;font-weight:700;">Ver mis vacantes →</a></p>
+            </div>
+          </div>
+        @endif
       </div>
 
       <!-- PANEL 3: Documentos de verificación (ahora reales) -->
@@ -379,8 +556,26 @@
   const formPerfil = document.getElementById('formPerfil');
   let fotoPendiente = null;
 
+  // Teléfono: solo números y máximo 10 dígitos.
+  const inputPhone = document.getElementById('inputPhone');
+  function soloNumeros(max) {
+    const limpio = inputPhone.value.replace(/\D+/g, '').slice(0, max);
+    if (limpio !== inputPhone.value) inputPhone.value = limpio;
+  }
+  inputPhone.addEventListener('input', () => soloNumeros(10));
+  // Si ya traía espacios o guiones guardados, se muestran solo los números.
+  soloNumeros(Infinity);
+
   formPerfil.addEventListener('submit', (e) => {
     e.preventDefault();
+
+    // Teléfono: si escribió algo, deben ser exactamente 10 números.
+    const telefono = inputPhone.value.trim();
+    if (telefono !== '' && !/^\d{10}$/.test(telefono)) {
+      mostrarToast('❌ El teléfono debe tener exactamente 10 números.', 'is-danger');
+      inputPhone.focus();
+      return;
+    }
 
     const formData = new FormData(formPerfil);
     if (fotoPendiente) formData.append('foto', fotoPendiente);

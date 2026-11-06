@@ -8,6 +8,7 @@ use App\Models\DocumentoVerificacion;
 use App\Models\Localidad;
 use App\Models\Servicio;
 use App\Models\Usuario;
+use App\Services\EstadisticasPerfilService;
 use App\Services\ModeracionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Hash;
 
 class UsuarioProfileController extends Controller
 {
-    public function index()
+    public function index(EstadisticasPerfilService $estadisticasPerfil)
     {
         $usuario = Usuario::with(['localidad.municipio', 'documentosVerificacion'])
             ->findOrFail(Auth::id());
@@ -50,6 +51,7 @@ class UsuarioProfileController extends Controller
             'docIne' => $docIne,
             'docSelfie' => $docSelfie,
             'localidades' => $localidades,
+            'estadisticas' => $estadisticasPerfil->para($usuario),
         ]);
     }
 
@@ -60,10 +62,12 @@ class UsuarioProfileController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:150',
             'email' => 'required|email|max:150|unique:usuarios,email,' . $usuario->id,
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'nullable|digits:10',
             'descripcion' => 'nullable|string',
             'localidad_id' => 'required|exists:localidades,id',
             'foto' => 'nullable|image|max:4096',
+        ], [
+            'telefono.digits' => 'El teléfono debe tener exactamente 10 números (solo números, sin espacios).',
         ]);
 
         $revision = $moderacion->revisar(

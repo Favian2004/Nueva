@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GuardarServicioRequest;
 use App\Models\Categoria;
 use App\Models\Contratacion;
 use App\Models\Servicio;
@@ -25,22 +26,14 @@ class UsuarioServicioController extends Controller
         ]);
     }
 
-    public function store(Request $request, ModeracionService $moderacion)
+    public function store(GuardarServicioRequest $request, ModeracionService $moderacion)
     {
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'categoria_id' => 'required|exists:categorias,id',
-            'subcategoria_id' => 'required|exists:subcategorias,id',
-            'descripcion' => 'required|string',
-            'ubicacion' => 'required|string|max:255',
-            'telefono' => 'nullable|string|max:20',
-            'whatsapp' => 'nullable|string|max:20',
-            'precio' => 'required|numeric|min:0',
-            'imagen' => 'nullable|image|max:4096',
-        ]);
+        // Las reglas (tipos de dato, largos, teléfono de 10 dígitos, precio...)
+        // viven en GuardarServicioRequest.
+        $datos = $request->datosParaGuardar();
 
         $revision = $moderacion->revisar(
-            $request->input('titulo') . "\n" . $request->input('descripcion'),
+            $datos['titulo'] . "\n" . $datos['descripcion'],
             $request->file('imagen')
         );
         if ($revision['flagged']) {
@@ -52,16 +45,8 @@ class UsuarioServicioController extends Controller
             $rutaImagen = '/storage/' . $request->file('imagen')->store('servicios', 'public');
         }
 
-        $servicio = Servicio::create([
+        $servicio = Servicio::create($datos + [
             'usuario_id' => Auth::id(),
-            'categoria_id' => $request->input('categoria_id'),
-            'subcategoria_id' => $request->input('subcategoria_id'),
-            'titulo' => $request->input('titulo'),
-            'descripcion' => $request->input('descripcion'),
-            'ubicacion' => $request->input('ubicacion'),
-            'telefono' => $request->input('telefono'),
-            'whatsapp' => $request->input('whatsapp'),
-            'precio' => $request->input('precio'),
             'imagen' => $rutaImagen,
             'estado' => 'activo',
         ]);
@@ -89,61 +74,35 @@ class UsuarioServicioController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id, ModeracionService $moderacion)
+    public function update(GuardarServicioRequest $request, $id, ModeracionService $moderacion)
     {
         $servicio = Servicio::where('usuario_id', Auth::id())->findOrFail($id);
 
         $categoriaBloqueada = $servicio->contrataciones()->exists() || $servicio->calificaciones()->exists();
 
-        $reglas = [
-            'titulo' => 'required|string|max:255',
-            'descripcion' => 'required|string',
-            'ubicacion' => 'required|string|max:255',
-            'telefono' => 'nullable|string|max:20',
-            'whatsapp' => 'nullable|string|max:20',
-            'precio' => 'required|numeric|min:0',
-            'imagen' => 'nullable|image|max:4096',
-        ];
+        // Las reglas viven en GuardarServicioRequest (si el servicio ya tiene
+        // contrataciones o calificaciones, ahí mismo se deja de pedir la
+        // categoría y subcategoría).
+        $datos = $request->datosParaGuardar();
 
-        // Solo se valida/permite cambiar categoría y subcategoría si el
-        // servicio todavía no tiene ninguna contratación ni calificación.
-        if (!$categoriaBloqueada) {
-            $reglas['categoria_id'] = 'required|exists:categorias,id';
-            $reglas['subcategoria_id'] = 'required|exists:subcategorias,id';
+        // Si SÍ está bloqueada, se ignora cualquier intento de cambiar la
+        // categoría/subcategoría (se queda con la que ya tenía), sin importar
+        // qué se haya mandado en la petición.
+        if ($categoriaBloqueada) {
+            unset($datos['categoria_id'], $datos['subcategoria_id']);
         }
 
-        $request->validate($reglas);
-
         $revision = $moderacion->revisar(
-            $request->input('titulo') . "\n" . $request->input('descripcion'),
+            $datos['titulo'] . "\n" . $datos['descripcion'],
             $request->file('imagen')
         );
         if ($revision['flagged']) {
             return response()->json(['ok' => false, 'message' => $revision['mensaje']], 422);
         }
 
-        $rutaImagen = $servicio->imagen;
+        $datos['imagen'] = $servicio->imagen;
         if ($request->hasFile('imagen')) {
-            $rutaImagen = '/storage/' . $request->file('imagen')->store('servicios', 'public');
-        }
-
-        $datos = [
-            'titulo' => $request->input('titulo'),
-            'descripcion' => $request->input('descripcion'),
-            'ubicacion' => $request->input('ubicacion'),
-            'telefono' => $request->input('telefono'),
-            'whatsapp' => $request->input('whatsapp'),
-            'precio' => $request->input('precio'),
-            'imagen' => $rutaImagen,
-        ];
-
-        // Si NO está bloqueada, sí se actualiza la categoría/subcategoría
-        // con lo que mande el formulario. Si SÍ está bloqueada, se ignora
-        // cualquier intento de cambiarla (se queda con la que ya tenía),
-        // sin importar qué se haya mandado en la petición.
-        if (!$categoriaBloqueada) {
-            $datos['categoria_id'] = $request->input('categoria_id');
-            $datos['subcategoria_id'] = $request->input('subcategoria_id');
+            $datos['imagen'] = '/storage/' . $request->file('imagen')->store('servicios', 'public');
         }
 
         $servicio->update($datos);

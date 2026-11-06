@@ -26,6 +26,31 @@ class Servicio extends Model
         'estado',
     ];
 
+    // ------------------------------------------------------------------
+    // Imagen: si quien publica no sube ninguna, se muestra la de por defecto
+    // (imagen «Trabajadores · Servicios»). En la base de datos la columna sigue quedando vacía,
+    // así que si algún día se cambia la imagen por defecto se cambia en todos lados.
+    // ------------------------------------------------------------------
+
+    public const IMAGEN_POR_DEFECTO = '/assets/usuario/img/servicio-sin-imagen.webp';
+
+    public function getImagenAttribute($valor)
+    {
+        return $valor ?: self::IMAGEN_POR_DEFECTO;
+    }
+
+    public function setImagenAttribute($valor): void
+    {
+        // Si llega la imagen por defecto (por ejemplo al editar sin cambiar la imagen), no se guarda
+        $this->attributes['imagen'] = ($valor === self::IMAGEN_POR_DEFECTO || $valor === '') ? null : $valor;
+    }
+
+    // ¿Subió su propia imagen? (para mostrar «Imagen actual» solo cuando de verdad es suya)
+    public function getTieneImagenPropiaAttribute(): bool
+    {
+        return !empty($this->attributes['imagen']);
+    }
+
     public function usuario()
     {
         return $this->belongsTo(Usuario::class);

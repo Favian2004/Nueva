@@ -10,6 +10,7 @@ Route::get('/servicio/{id}', [App\Http\Controllers\HomeController::class, 'verSe
 Route::get('/vacante/{id}', [App\Http\Controllers\HomeController::class, 'verVacantePublica']);
 
 Route::get('/acceso', [App\Http\Controllers\HomeController::class, 'acceso']);
+Route::get('/asistente/datos', [App\Http\Controllers\AsistenteController::class, 'datos']);
 Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
 Route::post('/register', [App\Http\Controllers\AuthController::class, 'register']);
 Route::post('/forgot-password', [App\Http\Controllers\AuthController::class, 'sendResetLink']);
@@ -153,4 +154,8 @@ Route::middleware(['auth', 'verified', 'not-admin'])->group(function () {
     Route::post('/usuario/calificaciones/{servicioId}', [App\Http\Controllers\UsuarioCalificacionController::class, 'store']);
     Route::delete('/usuario/calificaciones/{id}', [App\Http\Controllers\UsuarioCalificacionController::class, 'destroy']);
     Route::post('/usuario/testimonios', [App\Http\Controllers\UsuarioTestimonioController::class, 'store']);
+    Route::get('/usuario/pronostico', [App\Http\Controllers\UsuarioPronosticoController::class, 'index']);
+    Route::get('/usuario/notificaciones', [App\Http\Controllers\UsuarioNotificacionController::class, 'index']);
+    Route::post('/usuario/notificaciones/leer-todas', [App\Http\Controllers\UsuarioNotificacionController::class, 'leerTodas']);
+    Route::post('/usuario/notificaciones/{id}/leer', [App\Http\Controllers\UsuarioNotificacionController::class, 'leer']);
 });

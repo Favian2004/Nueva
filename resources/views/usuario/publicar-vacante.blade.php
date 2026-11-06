@@ -111,6 +111,21 @@
       margin-top: 4px;
     }
 
+    .form-group .form-hint {
+      display: block;
+    }
+
+    /* Duración del trabajo: el número y la unidad, uno junto al otro */
+    .duracion-fila {
+      display: flex;
+      gap: 10px;
+    }
+
+    .duracion-fila select {
+      flex: 1;
+      min-width: 0;
+    }
+
     .btn-publicar {
       width: 100%;
       padding: 13px;
@@ -326,6 +341,12 @@
             </a>
           </li>
           <li>
+              <a href="/usuario/pronostico" class="has-icon">
+                  <span class="icon"><i class="mdi mdi-chart-line"></i></span>
+                  <span class="menu-item-label">Pronóstico</span>
+              </a>
+          </li>
+          <li>
             <a href="/usuario/profile" class="has-icon">
               <span class="icon"><i class="mdi mdi-account-circle"></i></span>
               <span class="menu-item-label">Perfil</span>
@@ -353,7 +374,47 @@
               <i class="mdi mdi-alert-circle"></i> <span id="errorToastText">Ocurrió un error.</span>
             </div>
 
-            <form id="vacanteForm">
+            @php
+              // Fechas: el calendario solo deja elegir de mañana en adelante (máximo 2 años).
+              $manana = now()->addDay()->toDateString();
+              $tope = now()->addYears(2)->toDateString();
+              $trabajoIso = $vacante ? ($vacante->fecha_trabajo_iso ?? '') : '';
+              $trabajoAntes = ($vacante && $vacante->fecha_trabajo && !$trabajoIso) ? $vacante->fecha_trabajo : null;
+              $limiteIso = $vacante && $vacante->fecha_limite ? $vacante->fecha_limite->format('Y-m-d') : '';
+              $estaVencida = $vacante && $vacante->esta_vencida;
+
+              // Duración: "3 días" -> número 3 + unidad días (se arma con dos combos).
+              $duracionTexto = $vacante->duracion ?? '';
+              $duracionValida = (bool) preg_match('/^(\d{1,2}) (día|días|semana|semanas|mes|meses|año|años)$/u', $duracionTexto);
+              $duracionAntes = ($duracionTexto !== '' && !$duracionValida) ? $duracionTexto : null;
+
+              // Salario: solo el monto ("$250" -> 250).
+              $salarioTexto = trim($vacante->salario ?? '');
+              $salarioValor = '';
+              if (preg_match('/^\$?\s*(\d{1,3}(?:,\d{3})+|\d+)(\.\d{1,2})?$/', $salarioTexto, $ms)) {
+                $salarioValor = str_replace(',', '', $ms[1]) . ($ms[2] ?? '');
+              }
+              $salarioAntes = ($salarioTexto !== '' && $salarioTexto !== 'A convenir' && $salarioValor === '') ? $salarioTexto : null;
+
+              // Teléfonos: solo 10 dígitos.
+              $soloTel = function ($v) {
+                $d = preg_replace('/\D/', '', (string) $v);
+                return strlen($d) > 10 ? substr($d, -10) : $d;
+              };
+            @endphp
+
+            <form id="vacanteForm" novalidate
+                  data-manana="{{ $manana }}" data-tope="{{ $tope }}"
+                  data-trabajo-original="{{ $trabajoIso }}" data-limite-original="{{ $limiteIso }}"
+                  data-vencida="{{ $estaVencida ? '1' : '' }}"
+                  data-duracion="{{ $duracionValida ? $duracionTexto : '' }}">
+
+              @if ($estaVencida)
+                <div class="form-group" id="avisoVencida" style="background:#fff4e5; border:1px solid #f5c38a; border-radius:8px; padding:12px 14px; margin-bottom:14px; font-size:13.5px; color:#9a4a00; line-height:1.5;">
+                  <strong><i class="mdi mdi-alert-outline"></i> Esta vacante ya venció{{ $vacante->fecha_limite ? ' (su límite para postular fue el ' . $vacante->fecha_limite->format('d/m/Y') . ')' : '' }} y no se está mostrando a los trabajadores.</strong><br>
+                  Para volver a publicarla, elige un <strong>nuevo «Día del trabajo»</strong> y un <strong>nuevo «Límite para postular»</strong> (desde mañana). Si solo guardas otros cambios sin mover las fechas, seguirá vencida.
+                </div>
+              @endif
 
               @if ($tituloDescripcionBloqueada)
                 <div class="form-group" style="background:#fef7e0; border:1px solid #f5d78e; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:#8a6d1f;">
@@ -365,19 +426,44 @@
               <!-- TÍTULO -->
               <div class="form-group">
                 <label for="titulo">Título de la Vacante <span class="required">*</span></label>
-                <input type="text" id="titulo" name="titulo" value="{{ $vacante->titulo ?? '' }}" placeholder="Ej: Electricista Industrial" required {{ $tituloDescripcionBloqueada ? 'disabled' : '' }}>
+                <input type="text" id="titulo" name="titulo" value="{{ $vacante->titulo ?? '' }}" placeholder="Ej: Electricista Industrial" maxlength="100" autocomplete="off" required {{ $tituloDescripcionBloqueada ? 'disabled' : '' }}>
               </div>
+
+              <!-- CATEGORÍA Y SUBCATEGORÍA -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="categoria_id">Categoría <span class="required">*</span></label>
+                  <select id="categoria_id" name="categoria_id" required>
+                    <option value="">Selecciona una categoría</option>
+                    @foreach ($categorias as $categoria)
+                      <option value="{{ $categoria->id }}" {{ (int) ($vacante->categoria_id ?? 0) === (int) $categoria->id ? 'selected' : '' }}>{{ $categoria->nombre }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="subcategoria_id">Subcategoría <span class="required">*</span></label>
+                  <select id="subcategoria_id" name="subcategoria_id" required disabled>
+                    <option value="">Primero elige una categoría</option>
+                  </select>
+                </div>
+              </div>
+              <span class="form-hint" style="display:block; margin:-6px 0 14px;">
+                Sirve para mostrarte en qué días y meses hay más demanda de este tipo de trabajo.
+                <a id="verPronostico" href="/usuario/pronostico" target="_blank" rel="noopener" style="display:none; font-weight:700; color:#e8590c;">
+                  <i class="mdi mdi-chart-line"></i> Ver pronóstico de esta categoría
+                </a>
+              </span>
 
               <!-- PUBLICANTE Y UBICACIÓN -->
               <div class="form-row">
                 <div class="form-group">
                   <label for="publicante">Nombre del publicante <span class="required">*</span></label>
-                  <input type="text" id="publicante" name="publicante" value="{{ $vacante->publicante ?? $usuario->nombre }}" placeholder="Ej: Juan Méndez" required>
+                  <input type="text" id="publicante" name="publicante" value="{{ $vacante->publicante ?? $usuario->nombre }}" placeholder="Ej: Juan Méndez" maxlength="100" autocomplete="off" required>
                   <span class="form-hint">Autocompletado de tu perfil. Cámbialo si publicas a nombre de un negocio.</span>
                 </div>
                 <div class="form-group">
                   <label for="ubicacion">Ubicación <span class="required">*</span></label>
-                  <input type="text" id="ubicacion" name="ubicacion" value="{{ $vacante->ubicacion ?? ($usuario->localidad->nombre ?? '') }}" placeholder="Ej: Las Lomas, Zacapoaxtla" required>
+                  <input type="text" id="ubicacion" name="ubicacion" value="{{ $vacante->ubicacion ?? ($usuario->localidad->nombre ?? '') }}" placeholder="Ej: Las Lomas, Zacapoaxtla" maxlength="150" autocomplete="off" required>
                   <span class="form-hint">Autocompletado de tu perfil. Cámbialo si el trabajo es en otro lugar.</span>
                 </div>
               </div>
@@ -386,7 +472,8 @@
               <div class="form-row-3">
                 <div class="form-group">
                   <label for="trabajadores">Número de trabajadores <span class="required">*</span></label>
-                  <input type="number" id="trabajadores" name="trabajadores_requeridos" value="{{ $vacante->trabajadores_requeridos ?? '' }}" placeholder="Ej: 2" min="1" required>
+                  <input type="number" id="trabajadores" name="trabajadores_requeridos" value="{{ $vacante->trabajadores_requeridos ?? '' }}" placeholder="Ej: 2" min="1" max="100" step="1" inputmode="numeric" required>
+                  <span class="form-hint">De 1 a 100</span>
                 </div>
                 <div class="form-group">
                   <label for="tipo_pago">Tipo de pago <span class="required">*</span></label>
@@ -400,8 +487,12 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="salario">Salario</label>
-                  <input type="text" id="salario" name="salario" value="{{ $vacante->salario ?? '' }}" placeholder="Ej: $250/día o $350/día + bono">
+                  <label for="salario">Salario (MXN)</label>
+                  <input type="text" id="salario" name="salario" value="{{ $salarioValor }}" placeholder="Ej: 250" inputmode="decimal" maxlength="10" autocomplete="off">
+                  <span class="form-hint">Solo el monto, en pesos. Si lo dejas vacío dirá «A convenir».</span>
+                  @if ($salarioAntes)
+                    <span class="form-hint" style="color:#8a6d1f;">Antes decía: «{{ $salarioAntes }}». Escribe el monto si quieres mostrarlo.</span>
+                  @endif
                 </div>
               </div>
 
@@ -435,7 +526,7 @@
               <!-- DESCRIPCIÓN -->
               <div class="form-group">
                 <label for="descripcion">Descripción del trabajo <span class="required">*</span></label>
-                <textarea id="descripcion" name="descripcion" placeholder="Describe las responsabilidades y requisitos del puesto..." required {{ $tituloDescripcionBloqueada ? 'disabled' : '' }}>{{ $vacante->descripcion ?? '' }}</textarea>
+                <textarea id="descripcion" name="descripcion" placeholder="Describe las responsabilidades y requisitos del puesto..." maxlength="2000" required {{ $tituloDescripcionBloqueada ? 'disabled' : '' }}>{{ $vacante->descripcion ?? '' }}</textarea>
               </div>
 
               <!-- DOCUMENTOS QUE PIDES A QUIEN SE POSTULE -->
@@ -467,44 +558,56 @@
               <div class="form-row">
                 <div class="form-group">
                   <label for="fecha_trabajo">Día del trabajo <span class="required">*</span></label>
-                  <input type="text" id="fecha_trabajo" name="fecha_trabajo" value="{{ $vacante->fecha_trabajo ?? '' }}" placeholder="Ej: 08/07/2026 o 15 oct - 30 nov" required>
-                  <span class="form-hint">Puedes poner una fecha específica o un rango</span>
+                  <input type="date" id="fecha_trabajo" name="fecha_trabajo" value="{{ $trabajoIso }}" min="{{ $manana }}" max="{{ $tope }}" required>
+                  <span class="form-hint">Elígelo en el calendario (a partir de mañana).</span>
+                  @if ($trabajoAntes)
+                    <span class="form-hint" style="color:#8a6d1f;">Antes decía: «{{ $trabajoAntes }}». Elige la fecha en el calendario.</span>
+                  @endif
                 </div>
                 <div class="form-group">
-                  <label for="duracion">Duración de trabajo</label>
-                  <input type="text" id="duracion" name="duracion" value="{{ $vacante->duracion ?? '' }}" placeholder="Ej: 1 día, 2 meses, 3 semanas">
-                  <span class="form-hint">Ejemplo: 1 día, 2 meses, 3 semanas</span>
+                  <label for="duracion_num">Duración de trabajo</label>
+                  <div class="duracion-fila">
+                    <select id="duracion_num" aria-label="Número"></select>
+                    <select id="duracion_unidad" aria-label="Unidad"></select>
+                  </div>
+                  <input type="hidden" id="duracion" name="duracion" value="">
+                  <span class="form-hint">Opcional. Elige el número y si son días, semanas, meses o años.</span>
+                  @if ($duracionAntes)
+                    <span class="form-hint" style="color:#8a6d1f;">Antes decía: «{{ $duracionAntes }}». Elígela de nuevo con los selectores.</span>
+                  @endif
                 </div>
               </div>
 
               <div class="form-group">
                 <label for="fecha_limite">Límite para postular</label>
-                <input type="date" id="fecha_limite" name="fecha_limite" value="{{ $vacante && $vacante->fecha_limite ? $vacante->fecha_limite->format('Y-m-d') : '' }}">
-                <span class="form-hint">Fecha hasta la cual los trabajadores pueden postularse</span>
+                <input type="date" id="fecha_limite" name="fecha_limite" value="{{ $limiteIso }}" min="{{ $manana }}" max="{{ $trabajoIso && $trabajoIso < $tope ? $trabajoIso : $tope }}">
+                <span class="form-hint">Último día en que se puede postular (ese día todavía cuenta). Después la vacante deja de verse. Si lo dejas vacío, será el día del trabajo.</span>
+                <span class="form-hint" id="avisoLimite" style="display:none; color:#b45309; font-weight:600;"></span>
               </div>
 
               <!-- CONTACTO -->
               <div class="form-row">
                 <div class="form-group">
                   <label for="telefono">Teléfono de contacto <span class="required">*</span></label>
-                  <input type="tel" id="telefono" name="telefono" value="{{ $vacante->telefono ?? '' }}" placeholder="Ej: 55 1234 5678" required>
+                  <input type="tel" id="telefono" name="telefono" value="{{ $soloTel($vacante->telefono ?? '') }}" placeholder="Ej: 2221234567" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="tel-national" required>
+                  <span class="form-hint">10 dígitos, solo números.</span>
                 </div>
                 <div class="form-group">
                   <label for="whatsapp">WhatsApp</label>
-                  <input type="tel" id="whatsapp" name="whatsapp" value="{{ $vacante->whatsapp ?? '' }}" placeholder="Ej: 55 1234 5678">
-                  <span class="form-hint">Si es diferente al teléfono</span>
+                  <input type="tel" id="whatsapp" name="whatsapp" value="{{ $soloTel($vacante->whatsapp ?? '') }}" placeholder="Ej: 2221234567" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="off">
+                  <span class="form-hint">Si es diferente al teléfono. 10 dígitos, solo números.</span>
                 </div>
               </div>
 
               <!-- IMAGEN -->
               <div class="form-group">
                 <label for="imagen">Imagen de la vacante</label>
-                @if ($vacante && $vacante->imagen)
+                @if ($vacante && $vacante->tiene_imagen_propia)
                   <div class="mb-2"><img src="{{ $vacante->imagen }}" style="max-width:140px; border-radius:10px;"></div>
                   <span class="form-hint">Imagen actual. Sube una nueva solo si quieres reemplazarla.</span>
                 @endif
-                <input type="file" id="imagen" name="imagen" accept="image/*">
-                <span class="form-hint">Opcional. Se recomienda una imagen representativa del trabajo</span>
+                <input type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp">
+                <span class="form-hint">Opcional. JPG, PNG o WEBP, máximo 4 MB. Se recomienda una imagen representativa del trabajo.</span>
               </div>
 
               <div class="form-hint"><span class="required">*</span> Campos obligatorios</div>
@@ -538,7 +641,58 @@
   </div>
 
   <script src="{{ asset('assets/usuario/js/main.js') }}"></script>
+  <script src="{{ asset('assets/usuario/js/validaciones.js') }}"></script>
   <script>
+    // ===== Categoría -> Subcategoría (la subcategoría depende de la categoría) =====
+    (function () {
+      const categorias = @json($categorias);
+      const catSelect = document.getElementById('categoria_id');
+      const subSelect = document.getElementById('subcategoria_id');
+      const subGuardada = @json($vacante->subcategoria_id ?? null);
+
+      function cargarSubcategorias(catId, subSeleccionada) {
+        if (!catId) {
+          subSelect.disabled = true;
+          subSelect.innerHTML = '<option value="">Primero elige una categoría</option>';
+          return;
+        }
+        const categoria = categorias.find(c => Number(c.id) === Number(catId));
+        const subs = categoria ? categoria.subcategorias : [];
+        subSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
+        subs.forEach(sub => {
+          const opt = document.createElement('option');
+          opt.value = sub.id;
+          opt.textContent = sub.nombre;
+          subSelect.appendChild(opt);
+        });
+        subSelect.disabled = false;
+        if (subSeleccionada) subSelect.value = subSeleccionada;
+      }
+
+      // Enlace "Ver pronóstico de esta categoría": se abre en otra pestaña ya filtrado
+      const enlacePronostico = document.getElementById('verPronostico');
+      function actualizarEnlacePronostico() {
+        if (!catSelect.value) {
+          enlacePronostico.style.display = 'none';
+          return;
+        }
+        const params = new URLSearchParams({ categoria_id: catSelect.value });
+        if (subSelect.value) params.set('subcategoria_id', subSelect.value);
+        enlacePronostico.href = '/usuario/pronostico?' + params.toString();
+        enlacePronostico.style.display = 'inline';
+      }
+
+      catSelect.addEventListener('change', () => {
+        cargarSubcategorias(catSelect.value, null);
+        actualizarEnlacePronostico();
+      });
+      subSelect.addEventListener('change', actualizarEnlacePronostico);
+
+      // Al editar: la categoría ya viene seleccionada desde el servidor
+      if (catSelect.value) cargarSubcategorias(catSelect.value, subGuardada);
+      actualizarEnlacePronostico();
+    })();
+
     (function() {
       const labelWorker = document.getElementById('labelWorker');
       const labelEmployer = document.getElementById('labelEmployer');
@@ -604,11 +758,101 @@
       const btnPublicar = document.getElementById('btnPublicar');
       const textoOriginalBoton = btnPublicar.innerHTML;
 
+      // ===== Validaciones del formulario (ver validaciones.js) =====
+      const V = window.Validaciones;
+      const manana = form.dataset.manana;
+      const tope = form.dataset.tope;
+      const trabajoOriginal = form.dataset.trabajoOriginal;
+      const limiteOriginal = form.dataset.limiteOriginal;
+
+      V.filtroTexto(document.getElementById('titulo'));
+      V.filtroTexto(document.getElementById('publicante'));
+      V.filtroTexto(document.getElementById('ubicacion'));
+      V.filtroTextoLargo(document.getElementById('descripcion'));
+      ['titulo', 'descripcion'].forEach(id => V.contador(document.getElementById(id)));
+      V.entero(document.getElementById('trabajadores'), 100);
+      V.decimal(document.getElementById('salario'), { maxEnteros: 7, decimales: 2 });
+      V.soloDigitos(document.getElementById('telefono'), 10);
+      V.soloDigitos(document.getElementById('whatsapp'), 10);
+      V.vigilarImagen(document.getElementById('imagen'));
+      V.iniciarDuracion({ num: '#duracion_num', unidad: '#duracion_unidad', oculto: '#duracion', valorInicial: form.dataset.duracion });
+      V.iniciarFechas({ trabajo: '#fecha_trabajo', limite: '#fecha_limite', aviso: '#avisoLimite', manana: manana, tope: tope });
+
+      const reglasVacante = [
+        { campo: 'titulo', nombre: 'Título', tipo: 'texto', requerido: true, min: 3, max: 100 },
+        { campo: 'categoria_id', nombre: 'Categoría', tipo: 'seleccion', requerido: true },
+        { campo: 'subcategoria_id', nombre: 'Subcategoría', tipo: 'seleccion', requerido: true },
+        { campo: 'publicante', nombre: 'Nombre del publicante', tipo: 'texto', requerido: true, min: 3, max: 100 },
+        { campo: 'ubicacion', nombre: 'Ubicación', tipo: 'texto', requerido: true, min: 3, max: 150 },
+        { campo: 'trabajadores_requeridos', nombre: 'Número de trabajadores', tipo: 'entero', requerido: true, min: 1, max: 100 },
+        { campo: 'tipo_pago', nombre: 'Tipo de pago', tipo: 'seleccion', requerido: true },
+        { campo: 'salario', nombre: 'Salario', tipo: 'decimal', requerido: false, min: 1, max: 1000000 },
+        { campo: 'experiencia', nombre: 'Experiencia requerida', tipo: 'seleccion', requerido: true },
+        { campo: 'contrato', nombre: 'Tipo de contrato', tipo: 'seleccion', requerido: true },
+        { campo: 'descripcion', nombre: 'Descripción', tipo: 'largo', requerido: true, min: 20, max: 2000 },
+        {
+          campo: 'fecha_trabajo', nombre: 'Día del trabajo', requerido: true,
+          custom: V.reglaFecha({ nombre: 'Día del trabajo', minimo: manana, maximo: tope, original: trabajoOriginal })
+        },
+        {
+          campo: 'fecha_limite', nombre: 'Límite para postular', requerido: false,
+          custom: function (v) {
+            const msg = V.reglaFecha({ nombre: 'Límite para postular', minimo: manana, maximo: tope, original: limiteOriginal })(v);
+            if (msg) return msg;
+            const trabajo = document.getElementById('fecha_trabajo').value;
+            if (trabajo && V.fechaReal(trabajo) && (v !== limiteOriginal || trabajo !== trabajoOriginal) && v > trabajo) {
+              return 'El límite para postular no puede ser después del día del trabajo.';
+            }
+            return null;
+          }
+        },
+        {
+          campo: 'duracion', mostrarEn: 'duracion_num', nombre: 'Duración de trabajo', requerido: false,
+          custom: function () {
+            const n = document.getElementById('duracion_num').value;
+            const u = document.getElementById('duracion_unidad').value;
+            return (n && u === '') ? 'Elige si son días, semanas, meses o años.' : null;
+          }
+        },
+        { campo: 'telefono', nombre: 'Teléfono de contacto', tipo: 'telefono', requerido: true },
+        { campo: 'whatsapp', nombre: 'WhatsApp', tipo: 'telefono', requerido: false },
+        { campo: 'imagen', nombre: 'Imagen', tipo: 'imagen', requerido: false }
+      ];
+
+      function avisarError(texto) {
+        document.getElementById('errorToastText').textContent = texto;
+        errorToast.style.display = 'block';
+        successToast.style.display = 'none';
+        setTimeout(() => { errorToast.style.display = 'none'; }, 5000);
+      }
+
       form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         // Evita doble clic: si ya se está mandando la publicación, ignora clics/Enter extra.
         if (btnPublicar.disabled) return;
+
+        // Revisa todos los campos; si algo está mal, lo marca en rojo y no manda nada.
+        if (!V.validar(form, reglasVacante)) {
+          avisarError('Revisa los campos marcados en rojo.');
+          return;
+        }
+
+        // Si la vacante ya venció y con estas fechas va a SEGUIR vencida, se avisa
+        // antes de guardar (para que nadie piense que ya quedó publicada).
+        if (form.dataset.vencida === '1') {
+          const lim = document.getElementById('fecha_limite').value;
+          const trab = document.getElementById('fecha_trabajo').value;
+          const limiteFinal = lim || (trab && trab >= manana ? trab : limiteOriginal);
+          if (!limiteFinal || limiteFinal < manana) {
+            const seguir = confirm(
+              '⚠️ Esta vacante ya venció y, con estas fechas, SIGUE VENCIDA: no se va a publicar ni la van a ver los trabajadores.\n\n' +
+              'Para volver a publicarla cambia el «Día del trabajo» y el «Límite para postular» a una fecha desde mañana.\n\n' +
+              '¿Guardar los cambios de todas formas?'
+            );
+            if (!seguir) return;
+          }
+        }
 
         const formData = new FormData(form);
 
@@ -637,6 +881,7 @@
               let msg = data.message || 'Ocurrió un error al publicar.';
               if (data.errors) {
                 msg = Object.values(data.errors).flat().join(' ');
+                V.errorServidor(form, data.errors, { duracion: 'duracion_num', trabajadores_requeridos: 'trabajadores' });
               }
               document.getElementById('errorToastText').textContent = msg;
               errorToast.style.display = 'block';

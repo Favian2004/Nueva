@@ -17,91 +17,461 @@
   <link rel="icon" type="img/" href="{{ asset('assets/usuario/img/icono.png') }}">
 
   <style>
-    .buscar-talento-wrap {
+    /* =====================================================
+       BUSCAR TRABAJO (modo empleador): filtro y resultados
+       (estilos solo de esta página; todo empieza con "bt-")
+       ===================================================== */
+
+    /* ---------- Tarjeta del filtro ---------- */
+    .bt-card {
+      margin: 0 0 14px;
+      padding: 24px 28px 26px;
       background: #fff;
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
-      margin-bottom: 20px;
+      border: 1px solid #f1f1f1;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .07);
     }
 
-    .buscar-talento-wrap .search-box {
+    .bt-head h3 {
       display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .buscar-talento-wrap .search-box input {
-      flex: 1;
-      padding: 12px 16px;
-      border-radius: 12px;
-      border: 2px solid #e5e7eb;
-      font-size: 15px;
-      outline: none;
-      transition: 0.3s;
-    }
-
-    .buscar-talento-wrap .search-box input:focus {
-      border-color: #ff7a18;
-      box-shadow: 0 0 0 4px rgba(255, 122, 24, 0.12);
-    }
-
-    .buscar-talento-wrap .search-box button {
-      padding: 12px 28px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(45deg, #ff7a18, #ffb347);
-      color: #fff;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 4px;
+      font-size: 21px;
       font-weight: 700;
-      cursor: pointer;
-      transition: 0.3s;
+      color: #ff7a18;
     }
 
-    .buscar-talento-wrap .search-box button:hover {
-      opacity: 0.88;
-      transform: scale(1.02);
+    .bt-head p {
+      margin: 0 0 18px;
+      font-size: 14px;
+      color: #777;
     }
 
-    .filtros-talento {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .filtros-talento select,
-    .filtros-talento input {
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1.5px solid #e5e7eb;
+    .bt-label {
+      display: block;
+      margin: 0 0 6px;
       font-size: 13px;
+      font-weight: 700;
+      color: #444;
+    }
+
+    .bt-input,
+    .bt-select {
+      display: block;
+      width: 100%;
+      height: 46px;
+      padding: 0 14px;
+      font-size: 15px;
+      color: #333;
+      background-color: #fff;
+      border: 2px solid #f0f0f0;
+      border-radius: 12px;
+      box-shadow: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .bt-input:focus,
+    .bt-select:focus {
       outline: none;
-      background: #fff;
-    }
-
-    .filtros-talento select:focus,
-    .filtros-talento input:focus {
       border-color: #ff7a18;
-      box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.12);
+      box-shadow: 0 0 0 4px rgba(255, 122, 24, .15);
     }
 
-    @media (max-width: 992px) {
-      .filtros-talento {
-        grid-template-columns: repeat(2, 1fr);
+    .bt-input::placeholder {
+      color: #b5b5b5;
+    }
+
+    .bt-select {
+      -webkit-appearance: none;
+      appearance: none;
+      padding-right: 38px;
+      text-overflow: ellipsis;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23ff7a18' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      cursor: pointer;
+    }
+
+    .bt-icono-campo {
+      position: relative;
+    }
+
+    .bt-icono-campo>i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: #ff7a18;
+      pointer-events: none;
+    }
+
+    .bt-icono-campo .bt-input {
+      padding-left: 44px;
+    }
+
+    /* Fila de arriba: buscador + botones */
+    .bt-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-areas: "q buscar";
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    .bt-q {
+      grid-area: q;
+      min-width: 0;
+    }
+
+    .bt-btn-buscar {
+      grid-area: buscar;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 46px;
+      min-width: 140px;
+      padding: 0 22px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(45deg, #ff7a18, #ffb347);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: opacity .2s, transform .2s, box-shadow .2s;
+    }
+
+    .bt-btn-buscar:hover {
+      opacity: .92;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(255, 122, 0, .28);
+    }
+
+    .bt-btn-buscar i {
+      font-size: 19px;
+    }
+
+    .bt-toggle {
+      display: none;
+      grid-area: toggle;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 46px;
+      padding: 0 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #ff7a00;
+      background: #fff6ec;
+      border: 2px solid #ffd9b3;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+
+    .bt-toggle i {
+      font-size: 19px;
+    }
+
+    .bt-toggle .bt-flecha {
+      transition: transform .2s;
+    }
+
+    .bt-toggle[aria-expanded="true"] .bt-flecha {
+      transform: rotate(180deg);
+    }
+
+    .bt-badge {
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      font-size: 12px;
+      line-height: 20px;
+      text-align: center;
+      color: #fff;
+      background: #ff7a00;
+      border-radius: 10px;
+    }
+
+    /* Los demás filtros */
+    .bt-panel {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .bt-c3 {
+      grid-column: span 3;
+      min-width: 0;
+    }
+
+    .bt-c4 {
+      grid-column: span 4;
+      min-width: 0;
+    }
+
+    .bt-precios {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bt-guion {
+      font-weight: 700;
+      color: #aaa;
+    }
+
+    .bt-dinero {
+      position: relative;
+    }
+
+    .bt-dinero>b {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: 700;
+      color: #ff7a18;
+      pointer-events: none;
+    }
+
+    .bt-dinero .bt-input {
+      padding-left: 26px;
+      padding-right: 8px;
+      -moz-appearance: textfield;
+    }
+
+    .bt-dinero .bt-input::-webkit-outer-spin-button,
+    .bt-dinero .bt-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* ---------- Resultados, atajo y filtros activos ---------- */
+    .bt-resultados {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px 14px;
+      margin: 0 0 10px;
+      scroll-margin-top: 80px;
+    }
+
+    .bt-count {
+      margin: 0;
+      font-size: 15px;
+      color: #666;
+    }
+
+    .bt-count strong {
+      font-size: 18px;
+      color: #ff7a00;
+    }
+
+    .bt-cerca {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #ff7a00;
+      background: #fff;
+      border: 2px solid #ffd9b3;
+      border-radius: 999px;
+      transition: all .2s;
+    }
+
+    .bt-cerca:hover {
+      color: #e56700;
+      border-color: #ff7a00;
+    }
+
+    .bt-cerca.is-on {
+      color: #fff;
+      background: #ff7a00;
+      border-color: #ff7a00;
+    }
+
+    .bt-chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .bt-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      padding: 5px 6px 5px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #9a4a00;
+      background: #fff1e2;
+      border-radius: 999px;
+    }
+
+    .bt-chip span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bt-chip a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: 20px;
+      height: 20px;
+      font-size: 13px;
+      color: #9a4a00;
+      background: rgba(255, 122, 0, .18);
+      border-radius: 50%;
+    }
+
+    .bt-chip a:hover {
+      color: #fff;
+      background: #ff7a00;
+    }
+
+    .bt-limpiar {
+      font-size: 13px;
+      font-weight: 700;
+      color: #888;
+      text-decoration: underline;
+    }
+
+    .bt-aviso {
+      margin: 0 0 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #8a5a00;
+      background: #fff8e6;
+      border: 1px solid #ffe2a8;
+      border-radius: 12px;
+    }
+
+    .bt-aviso a {
+      font-weight: 700;
+      color: #e56700;
+      text-decoration: underline;
+    }
+
+    .bt-tag-cerca {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 9px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      background: #ff7a00;
+      border-radius: 999px;
+      vertical-align: middle;
+    }
+
+    .bt-vacio {
+      padding: 36px 18px;
+      text-align: center;
+      color: #777;
+      background: #fff;
+      border: 2px dashed #ffd9b3;
+      border-radius: 20px;
+    }
+
+    .bt-vacio i {
+      display: block;
+      font-size: 46px;
+      line-height: 1;
+      color: #ffb347;
+    }
+
+    .bt-vacio strong {
+      display: block;
+      margin: 8px 0 4px;
+      font-size: 17px;
+      color: #444;
+    }
+
+    .bt-vacio .bt-btn-vacio {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 9px 20px;
+      font-weight: 700;
+      color: #fff;
+      background: #ff7a00;
+      border-radius: 999px;
+    }
+
+    /* ---------- Pantallas medianas ---------- */
+    @media (max-width: 1100px) {
+      .bt-c3 {
+        grid-column: span 6;
       }
     }
 
+    /* ---------- Celular ---------- */
     @media (max-width: 768px) {
-      .buscar-talento-wrap {
-        padding: 16px;
+      .bt-card {
+        padding: 18px 16px 20px;
+        border-radius: 22px;
       }
 
-      .buscar-talento-wrap .search-box {
-        flex-direction: column;
+      .bt-head h3 {
+        justify-content: center;
+        font-size: 19px;
       }
 
-      .filtros-talento {
+      .bt-head p {
+        margin-bottom: 14px;
+        text-align: center;
+      }
+
+      .bt-top {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: "q q" "toggle buscar";
+        margin-bottom: 0;
+      }
+
+      .bt-toggle {
+        display: inline-flex;
+      }
+
+      .bt-btn-buscar {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .bt-panel {
+        display: none;
         grid-template-columns: 1fr;
+        margin-top: 16px;
+      }
+
+      .bt-panel.is-open {
+        display: grid;
+      }
+
+      .bt-c3,
+      .bt-c4 {
+        grid-column: auto;
+      }
+
+      .bt-resultados {
+        justify-content: center;
+        text-align: center;
+      }
+
+      .bt-chips {
+        justify-content: center;
       }
     }
 
@@ -204,6 +574,12 @@
             </a>
           </li>
           <li>
+              <a href="/usuario/pronostico" class="has-icon">
+                  <span class="icon"><i class="mdi mdi-chart-line"></i></span>
+                  <span class="menu-item-label">Pronóstico</span>
+              </a>
+          </li>
+          <li>
             <a href="/usuario/profile" class="has-icon">
               <span class="icon"><i class="mdi mdi-account-circle"></i></span>
               <span class="menu-item-label">Perfil</span>
@@ -231,55 +607,211 @@
       <div class="container">
 
 
-        <div class="buscar-talento-wrap">
-          <form method="GET" action="/usuario/buscar-talento">
-            <!-- BÚSQUEDA PRINCIPAL -->
-            <div class="search-box">
-              <input type="text" name="q" value="{{ $q }}" placeholder=" Buscar por título o ubicación...">
-              <button type="submit"><i class="mdi mdi-magnify"></i> Buscar</button>
+        @php
+          // Cuántos filtros están puestos (sin contar el orden "más recientes")
+          $numFiltros = count($chips);
+        @endphp
+        <form method="GET" action="/usuario/buscar-talento" id="btForm" novalidate>
+          <div class="bt-card">
+
+            <div class="bt-head">
+              <h3><i class="mdi mdi-briefcase-search"></i> Buscar trabajo</h3>
+              <p>Encuentra la vacante que más te convenga: por lugar, salario y más</p>
             </div>
 
-            <!-- FILTROS -->
-            <div class="filtros-talento">
-              <input type="text" name="ubicacion" value="{{ $ubicacion }}" placeholder="📍 Ubicación">
+            <div class="bt-top">
+              <!-- BÚSQUEDA PRINCIPAL -->
+              <div class="bt-q">
+                <label class="bt-label" for="btQ">¿Qué trabajo buscas?</label>
+                <div class="bt-icono-campo">
+                  <i class="mdi mdi-magnify"></i>
+                  <input class="bt-input" id="btQ" type="search" name="q" value="{{ $q }}" maxlength="100"
+                    enterkeyhint="search" autocomplete="off" placeholder="Buscar por título o ubicación...">
+                </div>
+              </div>
 
+              <!-- Solo en celular: abre y cierra los demás filtros -->
+              <button type="button" class="bt-toggle" id="btToggle" aria-expanded="false" aria-controls="btPanel">
+                <i class="mdi mdi-tune"></i> Filtros
+                @if ($numFiltros)
+                  <span class="bt-badge">{{ $numFiltros }}</span>
+                @endif
+                <i class="mdi mdi-chevron-down bt-flecha"></i>
+              </button>
 
-              <select name="experiencia" onchange="this.form.submit()">
-                <option value="">Experiencia</option>
-                <option value="Sin experiencia" {{ $experiencia === 'Sin experiencia' ? 'selected' : '' }}>Sin experiencia</option>
-                <option value="6 meses mínimo" {{ $experiencia === '6 meses mínimo' ? 'selected' : '' }}>6 meses mínimo</option>
-                <option value="1 año mínimo" {{ $experiencia === '1 año mínimo' ? 'selected' : '' }}>1 año mínimo</option>
-                <option value="2 años mínimo" {{ $experiencia === '2 años mínimo' ? 'selected' : '' }}>2 años mínimo</option>
-                <option value="3 años mínimo" {{ $experiencia === '3 años mínimo' ? 'selected' : '' }}>3 años mínimo</option>
-                <option value="5 años mínimo" {{ $experiencia === '5 años mínimo' ? 'selected' : '' }}>5 años mínimo</option>
-              </select>
-
-              <select name="contrato" onchange="this.form.submit()">
-                <option value="">Tipo de contrato</option>
-                <option value="Temporal" {{ $contrato === 'Temporal' ? 'selected' : '' }}>Temporal</option>
-                <option value="Temporada" {{ $contrato === 'Temporada' ? 'selected' : '' }}>Temporada</option>
-                <option value="Por obra" {{ $contrato === 'Por obra' ? 'selected' : '' }}>Por obra</option>
-                <option value="Fijo" {{ $contrato === 'Fijo' ? 'selected' : '' }}>Fijo</option>
-                <option value="Eventual" {{ $contrato === 'Eventual' ? 'selected' : '' }}>Eventual</option>
-              </select>
-
-              <select name="tipo_pago" onchange="this.form.submit()">
-                <option value="">Tipo de pago</option>
-                <option value="Pago al día" {{ $tipoPago === 'Pago al día' ? 'selected' : '' }}>Pago al día</option>
-                <option value="Pago por destajo" {{ $tipoPago === 'Pago por destajo' ? 'selected' : '' }}>Pago por destajo</option>
-                <option value="Pago semanal" {{ $tipoPago === 'Pago semanal' ? 'selected' : '' }}>Pago semanal</option>
-                <option value="Pago quincenal" {{ $tipoPago === 'Pago quincenal' ? 'selected' : '' }}>Pago quincenal</option>
-                <option value="Pago mensual" {{ $tipoPago === 'Pago mensual' ? 'selected' : '' }}>Pago mensual</option>
-              </select>
+              <button type="submit" class="bt-btn-buscar">
+                <i class="mdi mdi-magnify"></i> Buscar
+              </button>
             </div>
-          </form>
+
+            <div class="bt-panel" id="btPanel">
+
+              <!-- LOCALIDAD / CERCANÍA -->
+              <div class="bt-c3">
+                <label class="bt-label" for="btLocalidad">Localidad (cerca de ti)</label>
+                <select class="bt-select" id="btLocalidad" name="localidad_id" data-auto>
+                  <option value="">Todas las localidades</option>
+                  {{-- El 📍 marca tu localidad (la de tu perfil) --}}
+                  @foreach ($opcionesLocalidad as $l)
+                    @if ($l['id'] === $miLocalidadId)
+                      <option value="{{ $l['id'] }}" {{ $localidadId === $l['id'] ? 'selected' : '' }}>
+                        📍 {{ $l['nombre'] }} ({{ $l['total'] }})
+                      </option>
+                    @endif
+                  @endforeach
+                  @foreach ($opcionesLocalidad as $l)
+                    @if ($l['id'] !== $miLocalidadId)
+                      <option value="{{ $l['id'] }}" {{ $localidadId === $l['id'] ? 'selected' : '' }}>
+                        {{ $l['nombre'] }} ({{ $l['total'] }})
+                      </option>
+                    @endif
+                  @endforeach
+                </select>
+              </div>
+
+              <!-- UBICACIÓN (texto) -->
+              <div class="bt-c3">
+                <label class="bt-label" for="btUbicacion">Colonia, calle o lugar</label>
+                <div class="bt-icono-campo">
+                  <i class="mdi mdi-map-marker"></i>
+                  <input class="bt-input" id="btUbicacion" type="text" name="ubicacion" value="{{ $ubicacion }}" maxlength="100"
+                    autocomplete="off" placeholder="Ej. Centro, Barrio...">
+                </div>
+              </div>
+
+              <!-- SALARIO -->
+              <div class="bt-c3">
+                <label class="bt-label" for="btSalarioMin">Salario (MXN)</label>
+                <div class="bt-precios">
+                  <div class="bt-dinero">
+                    <b>$</b>
+                    <input class="bt-input" id="btSalarioMin" type="number" name="salario_min" value="{{ $salarioMin }}"
+                      min="0" max="9999999" step="1" inputmode="numeric" placeholder="Mín." aria-label="Salario mínimo">
+                  </div>
+                  <span class="bt-guion">–</span>
+                  <div class="bt-dinero">
+                    <b>$</b>
+                    <input class="bt-input" id="btSalarioMax" type="number" name="salario_max" value="{{ $salarioMax }}"
+                      min="0" max="9999999" step="1" inputmode="numeric" placeholder="Máx." aria-label="Salario máximo">
+                  </div>
+                </div>
+              </div>
+
+              <!-- ORDENAR -->
+              <div class="bt-c3">
+                <label class="bt-label" for="btOrden">Ordenar por</label>
+                <select class="bt-select" id="btOrden" name="orden" data-auto>
+                  <option value="recientes" {{ $orden === 'recientes' ? 'selected' : '' }}>Más recientes</option>
+                  <option value="cercania" {{ $orden === 'cercania' ? 'selected' : '' }} {{ $miLocalidadId ? '' : 'disabled' }}>
+                    {{ $miLocalidadId ? 'Más cercanos a mí' : 'Más cercanos (elige tu localidad en el perfil)' }}
+                  </option>
+                  <option value="salario_desc" {{ $orden === 'salario_desc' ? 'selected' : '' }}>Salario: mayor a menor</option>
+                  <option value="salario_asc" {{ $orden === 'salario_asc' ? 'selected' : '' }}>Salario: menor a mayor</option>
+                </select>
+              </div>
+
+              <!-- EXPERIENCIA -->
+              <div class="bt-c4">
+                <label class="bt-label" for="btExperiencia">Experiencia</label>
+                <select class="bt-select" id="btExperiencia" name="experiencia" data-auto>
+                  <option value="">Cualquiera</option>
+                  <option value="Sin experiencia" {{ $experiencia === 'Sin experiencia' ? 'selected' : '' }}>Sin experiencia</option>
+                  <option value="6 meses mínimo" {{ $experiencia === '6 meses mínimo' ? 'selected' : '' }}>6 meses mínimo</option>
+                  <option value="1 año mínimo" {{ $experiencia === '1 año mínimo' ? 'selected' : '' }}>1 año mínimo</option>
+                  <option value="2 años mínimo" {{ $experiencia === '2 años mínimo' ? 'selected' : '' }}>2 años mínimo</option>
+                  <option value="3 años mínimo" {{ $experiencia === '3 años mínimo' ? 'selected' : '' }}>3 años mínimo</option>
+                  <option value="5 años mínimo" {{ $experiencia === '5 años mínimo' ? 'selected' : '' }}>5 años mínimo</option>
+                </select>
+              </div>
+
+              <!-- CONTRATO -->
+              <div class="bt-c4">
+                <label class="bt-label" for="btContrato">Tipo de contrato</label>
+                <select class="bt-select" id="btContrato" name="contrato" data-auto>
+                  <option value="">Cualquiera</option>
+                  <option value="Temporal" {{ $contrato === 'Temporal' ? 'selected' : '' }}>Temporal</option>
+                  <option value="Temporada" {{ $contrato === 'Temporada' ? 'selected' : '' }}>Temporada</option>
+                  <option value="Por obra" {{ $contrato === 'Por obra' ? 'selected' : '' }}>Por obra</option>
+                  <option value="Fijo" {{ $contrato === 'Fijo' ? 'selected' : '' }}>Fijo</option>
+                  <option value="Eventual" {{ $contrato === 'Eventual' ? 'selected' : '' }}>Eventual</option>
+                </select>
+              </div>
+
+              <!-- TIPO DE PAGO -->
+              <div class="bt-c4">
+                <label class="bt-label" for="btTipoPago">Tipo de pago</label>
+                <select class="bt-select" id="btTipoPago" name="tipo_pago" data-auto>
+                  <option value="">Cualquiera</option>
+                  <option value="Pago al día" {{ $tipoPago === 'Pago al día' ? 'selected' : '' }}>Pago al día</option>
+                  <option value="Pago por destajo" {{ $tipoPago === 'Pago por destajo' ? 'selected' : '' }}>Pago por destajo</option>
+                  <option value="Pago semanal" {{ $tipoPago === 'Pago semanal' ? 'selected' : '' }}>Pago semanal</option>
+                  <option value="Pago quincenal" {{ $tipoPago === 'Pago quincenal' ? 'selected' : '' }}>Pago quincenal</option>
+                  <option value="Pago mensual" {{ $tipoPago === 'Pago mensual' ? 'selected' : '' }}>Pago mensual</option>
+                </select>
+              </div>
+
+            </div>
+          </div>
+        </form>
+
+        <!-- CUÁNTAS HAY, ATAJO "CERCA DE MÍ" Y FILTROS PUESTOS -->
+        <div class="bt-resultados" id="btResultados">
+          <p class="bt-count">
+            @if ($numFiltros)
+              Mostrando <strong>{{ $vacantes->count() }}</strong> de {{ $totalAbiertas }} {{ $totalAbiertas === 1 ? 'vacante abierta' : 'vacantes abiertas' }}
+            @else
+              <strong>{{ $vacantes->count() }}</strong> {{ $vacantes->count() === 1 ? 'vacante abierta' : 'vacantes abiertas' }}
+            @endif
+          </p>
+
+          @if ($miLocalidadId)
+            <a href="{{ $enlaceCerca }}" class="bt-cerca {{ $orden === 'cercania' ? 'is-on' : '' }}"
+              title="Muestra primero lo que está en tu localidad">
+              <i class="mdi mdi-map-marker"></i> Cerca de mí
+            </a>
+          @else
+            <a href="/usuario/profile" class="bt-cerca" title="Elige tu localidad en tu perfil para ver lo más cercano">
+              <i class="mdi mdi-map-marker"></i> Cerca de mí
+            </a>
+          @endif
         </div>
+
+        @if ($cercaSinLocalidad)
+          <p class="bt-aviso">
+            <i class="mdi mdi-information-outline"></i>
+            Para ver primero lo que está más cerca de ti, <a href="/usuario/profile">elige tu localidad en tu perfil</a>.
+          </p>
+        @endif
+
+        @if ($sinSalarioNumerico)
+          <p class="bt-aviso">
+            <i class="mdi mdi-information-outline"></i>
+            {{ $sinSalarioNumerico === 1 ? '1 vacante con salario «A convenir» no se muestra' : $sinSalarioNumerico . ' vacantes con salario «A convenir» no se muestran' }}
+            porque no se puede comparar con tu rango. <a href="{{ $enlaceSinSalario }}">Quitar filtro de salario</a>
+          </p>
+        @endif
+
+        @if ($numFiltros)
+          <div class="bt-chips">
+            @foreach ($chips as $chip)
+              <span class="bt-chip">
+                <i class="mdi {{ $chip['icono'] }}"></i>
+                <span>{{ $chip['texto'] }}</span>
+                <a href="{{ $chip['quitar'] }}" title="Quitar este filtro" aria-label="Quitar filtro {{ $chip['texto'] }}"><i class="mdi mdi-close"></i></a>
+              </span>
+            @endforeach
+            <a href="{{ $enlaceLimpiar }}" class="bt-limpiar">Limpiar todo</a>
+          </div>
+        @endif
 
         <!-- RESULTADOS -->
         <div class="products-list">
 
           @forelse ($vacantes as $v)
-            @php $yaPostulado = in_array($v->id, $misPostulacionesIds); @endphp
+            @php
+              $yaPostulado = in_array($v->id, $misPostulacionesIds);
+              $esMia = $miLocalidadId && ($localidadDeVacante[$v->id] ?? null) === $miLocalidadId;
+            @endphp
             <div class="product-row">
               <img class="product-img" src="{{ $v->imagen ?? asset('assets/usuario/img/services/frijol.jpg') }}" alt="{{ $v->titulo }}"
                 onerror="this.src='https://via.placeholder.com/120x120/ff7a18/fff?text=💼'">
@@ -289,6 +821,7 @@
 
                   <div class="job-publisher">
                     <i class="mdi mdi-account"></i> {{ $v->publicante }} · <i class="mdi mdi-map-marker"></i> {{ $v->ubicacion }}
+                    @if ($esMia)<span class="bt-tag-cerca">En tu localidad</span>@endif
                   </div>
 
                   <div class="job-details">
@@ -372,7 +905,12 @@
               </div>
             </div>
           @empty
-            <p class="has-text-grey has-text-centered">No se encontraron vacantes con esos filtros. <a href="/usuario/buscar-talento">Ver todas</a>.</p>
+            <div class="bt-vacio">
+              <i class="mdi mdi-magnify-close"></i>
+              <strong>No encontramos vacantes con esos filtros</strong>
+              <span>Prueba con otro rango de salario, otra localidad o una búsqueda más corta.</span><br>
+              <a href="{{ $enlaceLimpiar }}" class="bt-btn-vacio">Quitar filtros</a>
+            </div>
           @endforelse
 
         </div>
@@ -566,6 +1104,50 @@
   </div>
 
   <script src="{{ asset('assets/usuario/js/main.js') }}"></script>
+  <script>
+    // Filtros de "Buscar trabajo": abrir/cerrar en celular, URL limpia y bajar a los resultados
+    (function () {
+      var form = document.getElementById('btForm');
+      var panel = document.getElementById('btPanel');
+      var toggle = document.getElementById('btToggle');
+      if (!form) return;
+      var enCelular = function () { return window.matchMedia('(max-width: 768px)').matches; };
+
+      if (toggle && panel) {
+        toggle.addEventListener('click', function () {
+          var abierto = panel.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+        });
+      }
+
+      // En computadora, al elegir en un desplegable se filtra al momento (como antes).
+      // En celular no: así se pueden elegir varios filtros y luego tocar "Buscar".
+      Array.prototype.forEach.call(form.querySelectorAll('select[data-auto]'), function (sel) {
+        sel.addEventListener('change', function () {
+          if (!enCelular()) form.requestSubmit();
+        });
+      });
+
+      // Los campos vacíos (y el orden "más recientes", que es el normal)
+      // no se mandan, así el enlace queda corto y limpio.
+      form.addEventListener('submit', function () {
+        Array.prototype.forEach.call(form.elements, function (el) {
+          if (el.name && (el.value === '' || (el.name === 'orden' && el.value === 'recientes'))) el.disabled = true;
+        });
+      });
+
+      // Si la persona regresa con el botón "atrás", los campos vuelven a estar activos.
+      window.addEventListener('pageshow', function () {
+        Array.prototype.forEach.call(form.elements, function (el) { el.disabled = false; });
+      });
+
+      // En celular, al buscar o filtrar se baja directo a los resultados.
+      if (window.location.search && enCelular()) {
+        var res = document.getElementById('btResultados');
+        if (res) setTimeout(function () { res.scrollIntoView({ block: 'start' }); }, 60);
+      }
+    })();
+  </script>
   <script>
     (function () {
       const labelWorker = document.getElementById('labelWorker');

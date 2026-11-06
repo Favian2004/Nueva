@@ -43,6 +43,32 @@
             }
         }
 
+        /* El banner "¿Tienes un negocio?" de abajo NO se acerca: queda en el
+           mismo lugar y del mismo tamaño que en las demás páginas. Como
+           #app aquí tiene menos margen (30 / 20 / 30 px) que en las otras,
+           se le quita ese mismo espacio al banner: la mitad por el ancho y
+           la otra mitad corriéndolo a la derecha. */
+        @media (min-width: 1301px) and (max-width: 1450px) {
+            .container.banner-sin-acercar {
+                width: calc(100% - 30px);
+                left: 15px;
+            }
+        }
+
+        @media (min-width: 1451px) and (max-width: 1650px) {
+            .container.banner-sin-acercar {
+                width: calc(100% - 20px);
+                left: 10px;
+            }
+        }
+
+        @media (min-width: 1651px) {
+            .container.banner-sin-acercar {
+                width: calc(100% - 30px);
+                left: 15px;
+            }
+        }
+
     </style>
     <link rel="stylesheet" href="{{ asset('css/anuncio-negocio.css') }}">
 </head>
@@ -139,6 +165,12 @@
                         <a href="/usuario/publicar-vacante" class="has-icon">
                             <span class="icon"><i class="mdi mdi-plus-circle"></i></span>
                             <span class="menu-item-label">Publicar vacante</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/usuario/pronostico" class="has-icon">
+                            <span class="icon"><i class="mdi mdi-chart-line"></i></span>
+                            <span class="menu-item-label">Pronóstico</span>
                         </a>
                     </li>
                     <li>
@@ -540,7 +572,7 @@
 
         </style>
 
-        <div class="container my-4 d-none d-md-block">
+        <div class="container banner-sin-acercar my-4 d-none d-md-block">
             @include('partials.anuncio-negocio')
         </div>
 

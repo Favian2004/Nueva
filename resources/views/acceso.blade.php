@@ -254,6 +254,63 @@
             background: rgba(255, 255, 255, 0.3);
             transform: rotate(90deg);
         }
+
+        /* ===== Retoques visuales de Acceso (solo detalles; no cambia la estructura) ===== */
+        .login-container .auth-section.active {
+            animation: authAparece .35s ease both;
+        }
+
+        @keyframes authAparece {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        .login-container .auth-subtitulo {
+            text-align: center;
+            color: rgba(255, 255, 255, .85);
+            font-size: 14px;
+            margin: -12px 0 22px;
+        }
+
+        .login-container .auth-tab {
+            transition: background-color .25s ease, color .25s ease, box-shadow .25s ease;
+        }
+
+        .login-container .form-control {
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .login-container .form-control:focus {
+            box-shadow: 0 0 0 .22rem rgba(255, 255, 255, .28);
+        }
+
+        .login-container .btn-auth {
+            transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+        }
+
+        .login-container .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, .28);
+            filter: brightness(1.05);
+        }
+
+        .login-container .btn-auth:active {
+            transform: translateY(0);
+        }
+
+        .login-container .social-btn {
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .login-container .social-btn:hover:not([disabled]) {
+            transform: translateY(-2px);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .login-container .auth-section.active { animation: none; }
+            .login-container .btn-auth,
+            .login-container .social-btn { transition: none; }
+        }
     </style>
 
 </head>
@@ -434,6 +491,7 @@
                     <!-- SECCIÓN LOGIN -->
                     <div id="loginSection" class="auth-section active">
                         <h3 class="text-center mb-4" style="color: #ffffff;">¿Ya tienes una cuenta?</h3>
+                        <p class="auth-subtitulo">Ingresa para contactar, publicar o postularte.</p>
 
                         <form action="/login" method="POST">
                             @csrf
@@ -479,6 +537,7 @@
                     <!-- SECCIÓN REGISTER -->
                     <div id="registerSection" class="auth-section">
                         <h3 class="text-center mb-4" style="color: #ffffff;">¡¡¡Crear cuenta!!!</h3>
+                        <p class="auth-subtitulo">Es gratis y toma menos de un minuto.</p>
 
                         @if ($errors->any() && old('nombre') !== null)
                           <div style="background:#fdeaea; color:#c0392b; padding:10px 14px; border-radius:8px; margin-bottom:12px; font-size:14px;">
@@ -664,6 +723,15 @@
             });
         }
 
+        // Abre la pestaña que pide el enlace (?modo=registro o ?modo=login).
+        // Si viene de un intento fallido (errores o datos viejos), mandan esos mensajes.
+        const hayMensajes = @json($errors->any() || session('error') || session('status') || old('email') !== null || old('nombre') !== null);
+        if (!hayMensajes) {
+            const modo = new URLSearchParams(window.location.search).get('modo');
+            if (modo === 'registro') showSection('register');
+            else if (modo === 'login') showSection('login');
+        }
+
         // Si venimos de un intento de registro fallido (hay datos viejos de "nombre"),
         // abre automáticamente la pestaña de Registro en vez de la de Acceso.
         @if (old('nombre') !== null)
@@ -762,6 +830,8 @@
         document.getElementById('modalAnuncio').classList.remove('activo');
       }
     </script>
+
+    <script src="{{ asset('assets/usuario/js/asistente-voz.js') }}" defer></script>
 </body>
 
 </html>

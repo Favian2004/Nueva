@@ -37,12 +37,37 @@
   }
 }
 
+/* Celular: el titulo ocupa el espacio que sobra (y baja de linea si hace falta)
+   y el logo cuadrado se queda a la derecha, SIEMPRE dentro de la tarjeta.
+   Antes el titulo tenia un ancho fijo y en pantallas de ~320-390px
+   empujaba al logo fuera del borde derecho. */
 @media (max-width: 767px) {
+  .custom-bar .level {
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .custom-bar .level-left {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .custom-bar .level-right {
+    flex: 0 0 auto;
+    margin-top: 0;
+  }
+  .custom-bar .titulo-header {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .custom-bar .title-bar-text {
+    font-size: clamp(20px, 6.6vw, 26px);
+    overflow-wrap: anywhere;
+  }
   .logo-header {
-    height: 60px !important;
-    width: 70px !important;
+    width: 64px !important;
+    height: 64px !important;
+    object-fit: contain;
     display: block;
-    margin-left: -10px !important;
+    margin-left: 0 !important;
   }
 }
   </style>
