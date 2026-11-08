@@ -185,9 +185,9 @@
       </ul>
       <p class="menu-label">Otros</p>
       <ul class="menu-list">
-        <li><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Ver empleos</span></a></li>
-        <li><a href="/usuario/publicarEmpleo" class="has-icon"><span class="icon"><i class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Publicar empleo</span></a></li>
-        <li><a href="/usuario/misEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis empleos</span></a></li>
+        <li><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Contratar un servicio</span></a></li>
+        <li><a href="/usuario/publicarEmpleo" class="has-icon"><span class="icon"><i class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Ofrecer mi servicio</span></a></li>
+        <li><a href="/usuario/misEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis servicios</span></a></li>
         <li><a href="/usuario/profile" class="has-icon"><span class="icon"><i class="mdi mdi-account-circle"></i></span><span class="menu-item-label">Perfil</span></a></li>
       </ul>
     </div>
@@ -347,7 +347,7 @@
           <div class="has-text-centered mt-5">
             @if ($esPropio)
               <p class="has-text-grey">Este es tu propio servicio.</p>
-              <a href="/usuario/misEmpleos" class="button is-light btn-accion-principal">Ir a Mis Empleos</a>
+              <a href="/usuario/misEmpleos" class="button is-light btn-accion-principal">Ir a Mis servicios</a>
             @elseif ($yaSolicitado)
               <button class="button is-large btn-accion-principal" disabled style="border-radius: 50px; font-weight: bold;">
                 Ya solicitaste este servicio

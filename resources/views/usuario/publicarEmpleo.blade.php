@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Publicar Empleo · Dashboard</title>
+  <title>Ofrecer mi servicio · Dashboard</title>
 
   <!-- CSS -->
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/main.min.css') }}">
@@ -83,7 +83,7 @@
             <i class="mdi mdi-map-marker-outline"></i>
             <span class="crumb-section">Usuario</span>
             <i class="mdi mdi-chevron-right crumb-sep"></i>
-            <span class="crumb-page">Publicar empleo</span>
+            <span class="crumb-page">Ofrecer mi servicio</span>
           </div>
         </div>
         <div class="navbar-end">
@@ -125,12 +125,12 @@
         <p class="menu-label">Otros</p>
         <ul class="menu-list">
           <li><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i
-                  class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Ver empleos</span></a></li>
+                  class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Contratar un servicio</span></a></li>
           <li><a href="/usuario/publicarEmpleo" class="is-active router-link-active has-icon"><span
                 class="icon has-update-mark"><i class="mdi mdi-square-edit-outline"></i></span><span
-                class="menu-item-label">Publicar empleo</span></a></li>
+                class="menu-item-label">Ofrecer mi servicio</span></a></li>
           <li><a href="/usuario/misEmpleos" class="has-icon"><span class="icon"><i
-                  class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis empleos</span></a>
+                  class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis servicios</span></a>
           </li>
           <li><a href="/usuario/solicitudes" class="has-icon"><span class="icon"><i
                   class="mdi mdi-account-clock"></i></span><span class="menu-item-label">Solicitudes</span></a>
@@ -146,11 +146,11 @@
 
       <div class="publicar-card">
         <div class="publicar-card-header">
-          <h2>{{ $servicio ? '✏️ Editar Publicación' : '📋 Nueva Publicación' }}</h2>
-          <p>Completa el formulario para publicar tu oferta de trabajo o servicio</p>
+          <h2>{{ $servicio ? '✏️ Editar mi servicio' : '📋 Ofrece tu servicio' }}</h2>
+          <p>Cuéntale a la gente qué trabajo sabes hacer y cuánto cobras; quien lo necesite te va a contactar. ¿Buscas solicitar personal para tu negocio? Cambia a modo Empleador y publica una vacante.</p>
         </div>
         <div class="publicar-card-body">
-          <div id="successToast" class="success-toast" style="display: none;">✅ {{ $servicio ? '¡Cambios guardados con éxito!' : '¡Tu empleo fue publicado con éxito!' }}
+          <div id="successToast" class="success-toast" style="display: none;">✅ {{ $servicio ? '¡Cambios guardados con éxito!' : '¡Tu servicio fue publicado con éxito!' }}
           </div>
           <div id="errorToast" class="success-toast" style="display: none; background:#ffe0e0; color:#c62828;">❌ Error:
             completa todos los campos obligatorios.</div>
@@ -166,7 +166,7 @@
           <form id="formPublicar" novalidate>
             <!-- Título -->
             <div class="form-group">
-              <label>Título del empleo o servicio *</label>
+              <label>¿Qué servicio ofreces? *</label>
               <input type="text" id="titulo" name="titulo" value="{{ $servicio->titulo ?? '' }}" placeholder="Ej. Plomero profesional, Diseñador gráfico..." maxlength="100" autocomplete="off" required>
             </div>
 
@@ -195,13 +195,13 @@
             <!-- Descripción -->
             <div class="form-group">
               <label>Descripción *</label>
-              <textarea id="descripcion" name="descripcion" rows="5" placeholder="Describe el trabajo, requisitos, horarios, beneficios..."
+              <textarea id="descripcion" name="descripcion" rows="5" placeholder="Cuenta qué haces, tu experiencia, tus horarios y las zonas donde trabajas..."
                 maxlength="2000" required>{{ $servicio->descripcion ?? '' }}</textarea>
             </div>
 
             <!-- Precio -->
             <div class="form-group">
-              <label>Precio (MXN) *</label>
+              <label>Precio desde (MXN) *</label>
               <input type="text" id="precio" name="precio" value="{{ $servicio->precio ?? '' }}" placeholder="Ej. 200.00" inputmode="decimal" maxlength="10" autocomplete="off" required>
               <p class="form-hint">Ingresa el costo del servicio o sueldo ofrecido. Solo números, hasta 2 decimales (de $1 a $999,999.99).</p>
             </div>
@@ -270,7 +270,7 @@
               </div>
             @endif
 
-            <button type="submit" class="btn-publicar" id="btnPublicar"><i class="mdi mdi-send"></i> {{ $servicio ? 'Guardar Cambios' : 'Publicar empleo' }}</button>
+            <button type="submit" class="btn-publicar" id="btnPublicar"><i class="mdi mdi-send"></i> {{ $servicio ? 'Guardar Cambios' : 'Publicar mi servicio' }}</button>
           </form>
         </div>
       </div>

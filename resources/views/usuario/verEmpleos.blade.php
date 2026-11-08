@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Ver Empleos · Dashboard</title>
+    <title>Contratar un servicio · Dashboard</title>
 
     <!-- Bulma is included -->
     <link rel="stylesheet" href="{{ asset('assets/usuario/css/main.min.css') }}">
@@ -647,7 +647,7 @@
                         <i class="mdi mdi-map-marker-outline"></i>
                         <span class="crumb-section">Usuario</span>
                         <i class="mdi mdi-chevron-right crumb-sep"></i>
-                        <span class="crumb-page">Ver empleos</span>
+                        <span class="crumb-page">Contratar un servicio</span>
                     </div>
                 </div>
                 <div class="navbar-end">
@@ -696,19 +696,19 @@
                     <li>
                         <a href="/usuario/verEmpleos" class="is-active router-link-active has-icon">
                             <span class="icon has-update-mark"><i class="mdi mdi-briefcase"></i></span>
-                            <span class="menu-item-label">Ver empleos</span>
+                            <span class="menu-item-label">Contratar un servicio</span>
                         </a>
                     </li>
                     <li>
                         <a href="/usuario/publicarEmpleo" class="has-icon">
                             <span class="icon "><i class="mdi mdi-square-edit-outline"></i></span>
-                            <span class="menu-item-label">Publicar empleo</span>
+                            <span class="menu-item-label">Ofrecer mi servicio</span>
                         </a>
                     </li>
                     <li>
                         <a href="/usuario/misEmpleos" class="has-icon">
                             <span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span>
-                            <span class="menu-item-label">Mis empleos</span>
+                            <span class="menu-item-label">Mis servicios</span>
                         </a>
                     </li>
                     <li>
@@ -735,8 +735,8 @@
                 <!-- BARRA DE TÍTULO + LOGO -->
                 <section class="ve-hero">
                     <div class="ve-hero-text">
-                        <h1>Empleos Zacapoaxtla</h1>
-                        <p>Tu próxima oportunidad laboral</p>
+                        <h1>Contrata a alguien de tu comunidad</h1>
+                        <p>Encuentra al profesional que necesitas en Zacapoaxtla y contáctalo directo</p>
                     </div>
                     <img src="{{ asset('assets/usuario/img/icono.png') }}" alt="Logo Empleos Zacapoaxtla" class="ve-hero-logo" width="120" height="120">
                 </section>

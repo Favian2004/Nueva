@@ -146,19 +146,19 @@
           <li>
             <a href="/usuario/verEmpleos" class="has-icon" id="sidebarVerEmpleos">
               <span class="icon"><i class="mdi mdi-briefcase"></i></span>
-              <span class="menu-item-label">Ver empleos</span>
+              <span class="menu-item-label">Contratar un servicio</span>
             </a>
           </li>
           <li>
             <a href="/usuario/publicarEmpleo" class="has-icon" id="sidebarPublicar">
               <span class="icon"><i class="mdi mdi-square-edit-outline"></i></span>
-              <span class="menu-item-label">Publicar empleo</span>
+              <span class="menu-item-label">Ofrecer mi servicio</span>
             </a>
           </li>
           <li>
             <a href="/usuario/misEmpleos" class="has-icon" id="sidebarMisEmpleos">
               <span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span>
-              <span class="menu-item-label">Mis empleos</span>
+              <span class="menu-item-label">Mis servicios</span>
             </a>
           </li>
           <li>
@@ -224,21 +224,26 @@
           </div>
         </div>
 
+        <div style="border-radius:14px; margin-bottom:18px; padding:14px 18px; background:#fff8f0; border:1px solid #ffe0bf; color:#5b4636; line-height:1.5;">
+          <strong>Estás en modo Trabajador.</strong> Aquí <strong>ofreces tu trabajo</strong> (plomero, maestra, cocinera, albañil...) para que la gente te contacte, y también puedes <strong>contratar el servicio</strong> que otra persona ofrece.
+          Si lo que necesitas es <strong>buscar personal para tu negocio</strong>, cambia a <strong>Empleador</strong> en el selector del menú de la izquierda.
+        </div>
+
         <!-- ACCIONES RÁPIDAS -->
         <div class="acciones-rapidas">
-          <h3 class="acciones-titulo">Acciones Rápidas</h3>
+          <h3 class="acciones-titulo">¿Qué quieres hacer?</h3>
           <div class="acciones-grid">
             <a href="/usuario/publicarEmpleo" class="accion-card" id="actionPublicar">
               <span class="icon"><i class="mdi mdi-plus-circle mdi-36px"></i></span>
-              <span>Publicar servicio de trabajo</span>
+              <span>Ofrecer mi servicio<small style="display:block; font-weight:400; font-size:12.5px; color:#777; margin-top:4px;">Publica lo que sabes hacer</small></span>
             </a>
             <a href="/usuario/verEmpleos" class="accion-card" id="actionVer">
               <span class="icon"><i class="mdi mdi-magnify mdi-36px"></i></span>
-              <span>Buscar Empleos</span>
+              <span>Contratar un servicio<small style="display:block; font-weight:400; font-size:12.5px; color:#777; margin-top:4px;">Busca a quien necesitas</small></span>
             </a>
             <a href="/usuario/misEmpleos" class="accion-card" id="actionMis">
               <span class="icon"><i class="mdi mdi-format-list-bulleted mdi-36px"></i></span>
-              <span>Ver Mis Empleos</span>
+              <span>Mis servicios<small style="display:block; font-weight:400; font-size:12.5px; color:#777; margin-top:4px;">Lo que ya publicaste</small></span>
             </a>
           </div>
         </div>

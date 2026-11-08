@@ -57,7 +57,7 @@
   <!-- SIDEBAR (con el ítem "Perfil" activo) -->
   <aside class="aside is-placed-left is-expanded">
     <div class="aside-tools">
-      <span><b> Perfil General</b></span>
+      <span><b id="sidebarTitulo" data-txt-trab=" Perfil General" data-txt-emp=" Modo Empleador"> Perfil General</b></span>
     </div>
     <!-- ===== INTERRUPTOR AJUSTADO ===== -->
       <div class="sidebar-role-switch">
@@ -76,20 +76,21 @@
         </div>
       </div>
     <div class="menu is-menu-main">
-      <p class="menu-label">General</p>
+      <p class="menu-label" id="sidebarLabelGeneral" data-txt-trab="General" data-txt-emp="Panel">General</p>
       <ul class="menu-list">
-        <li><a href="/usuario" class="has-icon"><span class="icon"><i class="mdi mdi-desktop-mac"></i></span><span class="menu-item-label">Inicio</span></a></li>
+        <li id="sidebarInicio" data-href-trab="/usuario" data-href-emp="/usuario/empleador"><a href="/usuario" class="has-icon"><span class="icon"><i class="mdi mdi-desktop-mac"></i></span><span class="menu-item-label">Inicio</span></a></li>
       </ul>
-      <p class="menu-label">Otros</p>
+      <p class="menu-label" id="sidebarLabelOtros" data-txt-trab="Otros" data-txt-emp="Acciones">Otros</p>
       <ul class="menu-list">
-        <li id="sidebarVerEmpleos"><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Ver empleos</span></a></li>
-        <li id="sidebarPublicar"><a href="/usuario/publicarEmpleo" class="has-icon"><span class="icon"><i class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Publicar empleo</span></a></li>
-        <li id="sidebarMisEmpleos"><a href="/usuario/misEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis empleos</span></a></li>
+        <li id="sidebarVerEmpleos"><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Contratar un servicio</span></a></li>
+        <li id="sidebarPublicar"><a href="/usuario/publicarEmpleo" class="has-icon"><span class="icon"><i class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Ofrecer mi servicio</span></a></li>
+        <li id="sidebarMisEmpleos"><a href="/usuario/misEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis servicios</span></a></li>
         <li id="sidebarSolicitudes"><a href="/usuario/solicitudes" class="has-icon"><span class="icon"><i class="mdi mdi-account-clock"></i></span><span class="menu-item-label">Solicitudes</span></a></li>
         <li id="sidebarBuscarTalento" style="display:none;"><a href="/usuario/buscar-talento" class="has-icon"><span class="icon"><i class="mdi mdi-magnify"></i></span><span class="menu-item-label">Buscar trabajo</span></a></li>
-        <li id="sidebarMisVacantes" style="display:none;"><a href="/usuario/mis-vacantes" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase-outline"></i></span><span class="menu-item-label">Mis vacantes</span></a></li>
+        <li id="sidebarMisVacantes" style="display:none;"><a href="/usuario/mis-vacantes" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Mis vacantes</span></a></li>
         <li id="sidebarPostulantes" style="display:none;"><a href="/usuario/postulantes" class="has-icon"><span class="icon"><i class="mdi mdi-account-group"></i></span><span class="menu-item-label">Postulantes</span></a></li>
         <li id="sidebarPublicarVacante" style="display:none;"><a href="/usuario/publicar-vacante" class="has-icon"><span class="icon"><i class="mdi mdi-plus-circle"></i></span><span class="menu-item-label">Publicar vacante</span></a></li>
+        <li id="sidebarPronostico" style="display:none;"><a href="/usuario/pronostico" class="has-icon"><span class="icon"><i class="mdi mdi-chart-line"></i></span><span class="menu-item-label">Pronóstico</span></a></li>
         <li><a href="/usuario/profile" class="is-active router-link-active has-icon"><span class="icon has-update-mark"><i class="mdi mdi-account-circle"></i></span><span class="menu-item-label">Perfil</span></a></li>
       </ul>
     </div>

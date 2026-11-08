@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Mis Empleos · Dashboard</title>
+  <title>Mis servicios · Dashboard</title>
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/main.min.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/styles.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/switch.css') }}">
@@ -43,7 +43,7 @@
             <i class="mdi mdi-map-marker-outline"></i>
             <span class="crumb-section">Usuario</span>
             <i class="mdi mdi-chevron-right crumb-sep"></i>
-            <span class="crumb-page">Mis Empleos</span>
+            <span class="crumb-page">Mis servicios</span>
           </div>
         </div>
         <div class="navbar-end">
@@ -88,13 +88,12 @@
         <p class="menu-label">Otros</p>
         <ul class="menu-list">
           <li><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i
-                  class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Ver empleos</span></a></li>
+                  class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Contratar un servicio</span></a></li>
           <li><a href="/usuario/publicarEmpleo" class="has-icon"><span class="icon"><i
-                  class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Publicar
-                empleo</span></a></li>
+                  class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Ofrecer mi servicio</span></a></li>
           <li><a href="/usuario/misEmpleos" class="is-active router-link-active has-icon"><span
                 class="icon has-update-mark"><i class="mdi mdi-format-list-bulleted"></i></span><span
-                class="menu-item-label">Mis empleos</span></a></li>
+                class="menu-item-label">Mis servicios</span></a></li>
           <li><a href="/usuario/solicitudes" class="has-icon"><span class="icon"><i
                   class="mdi mdi-account-clock"></i></span><span class="menu-item-label">Solicitudes</span></a></li>
           <li><a href="/usuario/profile" class="has-icon"><span class="icon"><i
@@ -125,8 +124,8 @@
       <!-- TABLA -->
       <div class="empleos-table-wrap">
         <div class="empleos-table-header">
-          <h3>📋 Mis publicaciones</h3>
-          <a href="/usuario/publicarEmpleo" class="btn-nuevo">+ Nuevo empleo</a>
+          <h3>📋 Mis servicios publicados</h3>
+          <a href="/usuario/publicarEmpleo" class="btn-nuevo">+ Ofrecer otro servicio</a>
         </div>
 
         <div style="overflow-x:auto">

@@ -195,9 +195,9 @@
         </ul>
         <p class="menu-label">Otros</p>
         <ul class="menu-list">
-          <li id="sidebarVerEmpleos"><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Ver empleos</span></a></li>
-          <li id="sidebarPublicar"><a href="/usuario/publicarEmpleo" class="has-icon"><span class="icon"><i class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Publicar empleo</span></a></li>
-          <li id="sidebarMisEmpleos"><a href="/usuario/misEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis empleos</span></a></li>
+          <li id="sidebarVerEmpleos"><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Contratar un servicio</span></a></li>
+          <li id="sidebarPublicar"><a href="/usuario/publicarEmpleo" class="has-icon"><span class="icon"><i class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Ofrecer mi servicio</span></a></li>
+          <li id="sidebarMisEmpleos"><a href="/usuario/misEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis servicios</span></a></li>
           <li id="sidebarSolicitudes"><a href="/usuario/solicitudes" class="is-active router-link-active has-icon"><span class="icon has-update-mark"><i class="mdi mdi-account-clock"></i></span><span class="menu-item-label">Solicitudes</span></a></li>
           <li id="sidebarBuscarTalento" style="display:none;"><a href="/usuario/buscar-talento" class="has-icon"><span class="icon"><i class="mdi mdi-magnify"></i></span><span class="menu-item-label">Buscar trabajo</span></a></li>
           <li id="sidebarMisVacantes" style="display:none;"><a href="/usuario/mis-vacantes" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase-outline"></i></span><span class="menu-item-label">Mis vacantes</span></a></li>
@@ -216,10 +216,10 @@
         <!-- PESTAÑAS -->
         <div style="display:flex; gap:8px; margin-bottom:18px;">
           <button type="button" onclick="mostrarTab('recibidas')" id="tabRecibidas" class="tab-solicitudes activa">
-            <i class="mdi mdi-inbox-arrow-down"></i> Recibidas
+            <i class="mdi mdi-inbox-arrow-down"></i> Me contactaron
           </button>
           <button type="button" onclick="mostrarTab('enviadas')" id="tabEnviadas" class="tab-solicitudes">
-            <i class="mdi mdi-send-outline"></i> Enviadas
+            <i class="mdi mdi-send-outline"></i> Yo contacté
           </button>
         </div>
 
@@ -387,7 +387,7 @@
               <div class="sin-solicitudes">
                 <div class="icon"><i class="mdi mdi-send-outline"></i></div>
                 <h3>No has solicitado ningún servicio todavía</h3>
-                <p>Cuando pidas un servicio desde "Ver empleos", va a aparecer aquí.</p>
+                <p>Cuando contactes a alguien desde "Contratar un servicio", va a aparecer aquí.</p>
               </div>
             @endforelse
           </div>
