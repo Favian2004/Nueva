@@ -605,6 +605,10 @@
     <!-- CONTENIDO -->
     <section class="section is-main-section">
       <div class="container">
+        <div style="border-radius:14px; margin:0 0 18px; padding:14px 18px; background:#fff8f0; border:1px solid #ffe0bf; color:#5b4636; line-height:1.55;">
+          <strong>¿Qué haces aquí?</strong> Buscas trabajo: mira lo que publicaron otras personas y pulsa <strong>"Postularme"</strong>. Tus postulaciones las ves en <strong>"Postulantes"</strong>, pestaña "Enviadas".
+        </div>
+
 
 
         @php
@@ -820,7 +824,10 @@
                   <div class="job-title">{{ $v->titulo }}</div>
 
                   <div class="job-publisher">
-                    <i class="mdi mdi-account"></i> {{ $v->publicante }} · <i class="mdi mdi-map-marker"></i> {{ $v->ubicacion }}
+                    <i class="mdi mdi-account"></i> {{ $v->publicante }} @if ($v->empleador && $v->empleador->verificacion_estado === 'aprobado')<span title="Identidad verificada" style="background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.7rem; font-weight:700; vertical-align:middle; white-space:nowrap;"><i class="mdi mdi-check-decagram"></i> Usuario verificado</span>@endif
+                  </div>
+                  <div class="job-publisher">
+                    <i class="mdi mdi-map-marker"></i> {{ $v->ubicacion }}
                     @if ($esMia)<span class="bt-tag-cerca">En tu localidad</span>@endif
                   </div>
 

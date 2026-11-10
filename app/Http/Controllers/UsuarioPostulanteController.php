@@ -15,7 +15,7 @@ class UsuarioPostulanteController extends Controller
         $estado = $request->input('estado');
         $q = $request->input('q');
 
-        $postulaciones = Postulacion::with(['postulante', 'vacante', 'curriculum'])
+        $postulaciones = Postulacion::with(['postulante.localidad', 'vacante', 'curriculum'])
             ->where('estado', '!=', 'borrador')
             ->whereHas('vacante', function ($query) {
                 $query->where('empleador_id', Auth::id());
@@ -32,6 +32,7 @@ class UsuarioPostulanteController extends Controller
 
         $statTotal = $postulaciones->count();
         $statPendientes = $postulaciones->where('estado', 'pendiente')->count();
+        $statEntrevistas = $postulaciones->where('estado', 'entrevista')->count();
         $statContratados = $postulaciones->where('estado', 'contratado')->count();
         $statRechazados = $postulaciones->where('estado', 'rechazado')->count();
 
@@ -50,6 +51,7 @@ class UsuarioPostulanteController extends Controller
             'q' => $q,
             'statTotal' => $statTotal,
             'statPendientes' => $statPendientes,
+            'statEntrevistas' => $statEntrevistas,
             'statContratados' => $statContratados,
             'statRechazados' => $statRechazados,
         ]);
@@ -58,15 +60,35 @@ class UsuarioPostulanteController extends Controller
     public function cambiarEstado(Request $request, $id)
     {
         $request->validate([
-            'estado' => 'required|in:pendiente,contratado,rechazado',
+            'estado' => 'required|in:pendiente,entrevista,contratado,rechazado',
         ]);
 
         $postulacion = Postulacion::whereHas('vacante', function ($query) {
             $query->where('empleador_id', Auth::id());
         })->findOrFail($id);
 
-        $postulacion->estado = $request->input('estado');
-        $postulacion->save();
+        $nuevo = $request->input('estado');
+
+        // El camino normal: pendiente -> entrevista -> contratado. Rechazar se puede en cualquier punto.
+        // Contratar directo (sin entrevista) sigue permitido para no romper lo que ya se hacía.
+        if ($postulacion->estado === 'borrador') {
+            return response()->json(['ok' => false, 'error' => 'Esta postulación todavía no está enviada.'], 422);
+        }
+        if ($nuevo === 'entrevista' && $postulacion->estado !== 'pendiente') {
+            return response()->json(['ok' => false, 'error' => 'Solo se puede aceptar para entrevista una postulación pendiente.'], 422);
+        }
+        if ($postulacion->estado === 'rechazado' || $postulacion->estado === 'contratado') {
+            return response()->json(['ok' => false, 'error' => 'Esta postulación ya tiene una decisión final.'], 422);
+        }
+
+        try {
+            $postulacion->estado = $nuevo;
+            $postulacion->save();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json(['ok' => false, 'error' => 'No se pudo guardar el cambio. Si acabas de actualizar el sitio, falta correr el SQL de postulaciones.'], 500);
+        }
 
         return response()->json(['ok' => true]);
     }

@@ -659,6 +659,10 @@
         <!-- CONTENIDO -->
         <section class="section is-main-section">
             <div class="container">
+        <div style="border-radius:14px; margin:0 0 18px; padding:14px 18px; background:#fff8f0; border:1px solid #ffe0bf; color:#5b4636; line-height:1.55;">
+          <strong>¿Qué haces aquí?</strong> Ves las vacantes que tú publicaste, es decir, el trabajo que ofreces para que otras personas se postulen. Desde aquí puedes editarlas, cerrarlas o reactivarlas.
+        </div>
+
 
 
                 <!-- ===== ESTADÍSTICAS ===== -->

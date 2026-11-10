@@ -230,12 +230,12 @@
               <div class="form-group">
                 <label>Teléfono de contacto</label>
                 <input type="tel" id="telefono" name="telefono" value="{{ $soloTel($servicio->telefono ?? $usuario->telefono) }}" placeholder="Ej. 2221234567" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="tel-national">
-                <p class="form-hint">10 dígitos, solo números.</p>
+                <p class="form-hint">10 dígitos. Tu número permanecerá privado y protegido. No se mostrará públicamente..</p>
               </div>
               <div class="form-group">
                 <label>WhatsApp</label>
                 <input type="tel" id="whatsapp" name="whatsapp" value="{{ $soloTel($servicio->whatsapp ?? $usuario->whatsapp) }}" placeholder="Ej. 2221234567" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="off">
-                <p class="form-hint">10 dígitos, solo números.</p>
+                <p class="form-hint">10 dígitos. Tu número permanecerá privado y protegido. No se mostrará públicamente..</p>
               </div>
             </div>
 

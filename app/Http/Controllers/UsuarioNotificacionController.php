@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use App\Services\PerfilCompleto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -18,11 +19,14 @@ class UsuarioNotificacionController extends Controller
     // Lista corta + cuántas hay sin leer (la campana lo consulta cada minuto).
     public function index(Request $request): JsonResponse
     {
+        $usuario = $request->user();
+
         if (!$this->tablaLista()) {
-            return $this->json(['no_leidas' => 0, 'items' => []]);
+            return $this->json(['no_leidas' => 0, 'items' => [], 'usuario' => $this->datosUsuario($usuario)]);
         }
 
-        $usuario = $request->user();
+        // Si le falta completar el perfil, deja (o actualiza) su aviso antes de listar.
+        PerfilCompleto::sincronizar($usuario);
 
         $items = $usuario->notifications()
             ->latest()
@@ -43,7 +47,19 @@ class UsuarioNotificacionController extends Controller
         return $this->json([
             'no_leidas' => $usuario->unreadNotifications()->count(),
             'items' => $items,
+            'usuario' => $this->datosUsuario($usuario),
         ]);
+    }
+
+    // Lo que muestra la fotito redonda junto a la campana.
+    private function datosUsuario($usuario): array
+    {
+        return [
+            'nombre' => $usuario->nombre,
+            'email' => $usuario->email,
+            'foto' => $usuario->foto_perfil,
+            'verificado' => $usuario->verificacion_estado === 'aprobado',
+        ];
     }
 
     public function leer(Request $request, string $id): JsonResponse

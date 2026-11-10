@@ -6,11 +6,15 @@ use App\Models\Localidad;
 use App\Models\Postulacion;
 use App\Models\Vacante;
 use App\Services\BusquedaTolerante;
+use App\Services\ModeracionService;
 use App\Services\SalarioVacante;
 use App\Services\UbicacionServicios;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
 
 class UsuarioEmpleadorController extends Controller
 {
@@ -33,7 +37,7 @@ class UsuarioEmpleadorController extends Controller
             ->get();
 
         $misPostulacionesIds = Postulacion::where('postulante_id', Auth::id())
-            ->whereIn('estado', ['pendiente', 'contratado'])
+            ->whereIn('estado', ['pendiente', 'entrevista', 'contratado'])
             ->pluck('vacante_id')
             ->toArray();
 
@@ -66,7 +70,7 @@ class UsuarioEmpleadorController extends Controller
 
         $yaExiste = Postulacion::where('vacante_id', $vacanteId)
             ->where('postulante_id', Auth::id())
-            ->whereIn('estado', ['pendiente', 'contratado'])
+            ->whereIn('estado', ['pendiente', 'entrevista', 'contratado'])
             ->exists();
 
         if ($yaExiste) {
@@ -82,7 +86,7 @@ class UsuarioEmpleadorController extends Controller
         return response()->json(['ok' => true, 'postulacionId' => $postulacion->id]);
     }
 
-    public function postularse(Request $request, $vacanteId)
+    public function postularse(Request $request, $vacanteId, ModeracionService $moderacion)
     {
         $vacante = Vacante::findOrFail($vacanteId);
 
@@ -96,30 +100,69 @@ class UsuarioEmpleadorController extends Controller
 
         $yaExiste = Postulacion::where('vacante_id', $vacanteId)
             ->where('postulante_id', Auth::id())
-            ->whereIn('estado', ['pendiente', 'contratado'])
+            ->whereIn('estado', ['pendiente', 'entrevista', 'contratado'])
             ->exists();
 
         if ($yaExiste) {
             return response()->json(['ok' => false, 'error' => 'Ya tienes una postulación activa para esta vacante.'], 422);
         }
 
-        $request->validate([
-            'mensaje' => 'nullable|string|max:1000',
+        $datos = $request->validate([
+            'mensaje' => 'required|string|min:10|max:500',
+            'disponibilidad' => 'required|in:' . implode(',', array_keys(Postulacion::DISPONIBILIDADES)),
+            'experiencia' => 'required|in:' . implode(',', array_keys(Postulacion::EXPERIENCIAS)),
+            'contacto_preferido' => 'required|in:' . implode(',', array_keys(Postulacion::CONTACTOS)),
+        ], [
+            'mensaje.required' => 'Cuéntale al empleador por qué eres buena opción (mínimo 10 letras).',
+            'mensaje.min' => 'Cuéntale al empleador por qué eres buena opción (mínimo 10 letras).',
+            'mensaje.max' => 'Tu presentación puede tener hasta 500 letras.',
+            'disponibilidad.required' => 'Elige cuándo puedes empezar.',
+            'experiencia.required' => 'Elige tu experiencia.',
+            'contacto_preferido.required' => 'Elige cómo prefieres que te contacten.',
         ]);
 
-        // Si ya existía un borrador (porque el modal ya había creado uno
-        // para poder subir CV/Solicitud), lo terminamos de completar aquí.
-        // Si no existía (la vacante no pedía documentos), se crea directo.
-        $postulacion = Postulacion::firstOrNew([
-            'vacante_id' => $vacanteId,
-            'postulante_id' => Auth::id(),
-            'estado' => 'borrador',
-        ]);
-        $postulacion->vacante_id = $vacanteId;
-        $postulacion->postulante_id = Auth::id();
-        $postulacion->estado = 'pendiente';
-        $postulacion->mensaje = $request->input('mensaje');
-        $postulacion->save();
+        // Máximo 3 intentos por vacante al día (evita el spam hacia un empleador).
+        $clave = 'postulacion:' . Auth::id() . ':' . $vacanteId;
+        if (RateLimiter::tooManyAttempts($clave, 3)) {
+            return response()->json(['ok' => false, 'error' => 'Ya te postulaste varias veces a esta vacante hoy. Intenta de nuevo mañana.'], 429);
+        }
+
+        // Mismo filtro de groserías que el resto del sitio.
+        $revision = $moderacion->revisar($datos['mensaje']);
+        if ($revision['flagged']) {
+            return response()->json(['ok' => false, 'error' => $revision['mensaje']], 422);
+        }
+
+        // Los campos nuevos solo se guardan si ya se corrió el SQL (así no se cae el sitio en el despliegue).
+        $conDetalles = Schema::hasColumn('postulaciones', 'disponibilidad');
+
+        $postulacion = DB::transaction(function () use ($vacanteId, $datos, $conDetalles) {
+            // Si la persona había sido rechazada y corrige su postulación, se reemplaza la anterior.
+            Postulacion::where('vacante_id', $vacanteId)
+                ->where('postulante_id', Auth::id())
+                ->where('estado', 'rechazado')
+                ->delete();
+
+            // Si ya existía un borrador (el modal lo crea para poder subir CV/Solicitud),
+            // lo terminamos de completar aquí. Si no, se crea directo.
+            $postulacion = Postulacion::firstOrNew([
+                'vacante_id' => $vacanteId,
+                'postulante_id' => Auth::id(),
+                'estado' => 'borrador',
+            ]);
+            $postulacion->estado = 'pendiente';
+            $postulacion->mensaje = $datos['mensaje'];
+            if ($conDetalles) {
+                $postulacion->disponibilidad = $datos['disponibilidad'];
+                $postulacion->experiencia = $datos['experiencia'];
+                $postulacion->contacto_preferido = $datos['contacto_preferido'];
+            }
+            $postulacion->save();
+
+            return $postulacion;
+        });
+
+        RateLimiter::hit($clave, 86400);
 
         return response()->json(['ok' => true, 'postulacionId' => $postulacion->id]);
     }
@@ -305,7 +348,7 @@ class UsuarioEmpleadorController extends Controller
             : $base . '?' . http_build_query(array_merge(Arr::except($params, ['orden']), ['orden' => 'cercania']));
 
         $misPostulacionesIds = Postulacion::where('postulante_id', Auth::id())
-            ->whereIn('estado', ['pendiente', 'contratado'])
+            ->whereIn('estado', ['pendiente', 'entrevista', 'contratado'])
             ->pluck('vacante_id')
             ->toArray();
 

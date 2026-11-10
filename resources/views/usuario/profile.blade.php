@@ -20,6 +20,11 @@
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/ads-widget.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/theme-conectaya.css') }}">
   <link rel="stylesheet" href="{{ asset('css/anuncio-negocio.css') }}">
+  <style>
+    /* Cuando llegas desde el aviso "Completa tu perfil": lo que falta se marca en naranja. */
+    .campo-falta { border-color:#ff7a18 !important; box-shadow:0 0 0 4px rgba(255,122,24,.2) !important; }
+    .btn-falta { box-shadow:0 0 0 4px rgba(255,122,24,.3) !important; background:#fff1e3 !important; }
+  </style>
 </head>
 <body>
 <div id="app">
@@ -57,7 +62,7 @@
   <!-- SIDEBAR (con el ítem "Perfil" activo) -->
   <aside class="aside is-placed-left is-expanded">
     <div class="aside-tools">
-      <span><b id="sidebarTitulo" data-txt-trab=" Perfil General" data-txt-emp=" Modo Empleador"> Perfil General</b></span>
+      <span><b> Perfil General</b></span>
     </div>
     <!-- ===== INTERRUPTOR AJUSTADO ===== -->
       <div class="sidebar-role-switch">
@@ -76,21 +81,20 @@
         </div>
       </div>
     <div class="menu is-menu-main">
-      <p class="menu-label" id="sidebarLabelGeneral" data-txt-trab="General" data-txt-emp="Panel">General</p>
+      <p class="menu-label">General</p>
       <ul class="menu-list">
-        <li id="sidebarInicio" data-href-trab="/usuario" data-href-emp="/usuario/empleador"><a href="/usuario" class="has-icon"><span class="icon"><i class="mdi mdi-desktop-mac"></i></span><span class="menu-item-label">Inicio</span></a></li>
+        <li><a href="/usuario" class="has-icon"><span class="icon"><i class="mdi mdi-desktop-mac"></i></span><span class="menu-item-label">Inicio</span></a></li>
       </ul>
-      <p class="menu-label" id="sidebarLabelOtros" data-txt-trab="Otros" data-txt-emp="Acciones">Otros</p>
+      <p class="menu-label">Otros</p>
       <ul class="menu-list">
         <li id="sidebarVerEmpleos"><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Contratar un servicio</span></a></li>
         <li id="sidebarPublicar"><a href="/usuario/publicarEmpleo" class="has-icon"><span class="icon"><i class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Ofrecer mi servicio</span></a></li>
         <li id="sidebarMisEmpleos"><a href="/usuario/misEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis servicios</span></a></li>
         <li id="sidebarSolicitudes"><a href="/usuario/solicitudes" class="has-icon"><span class="icon"><i class="mdi mdi-account-clock"></i></span><span class="menu-item-label">Solicitudes</span></a></li>
         <li id="sidebarBuscarTalento" style="display:none;"><a href="/usuario/buscar-talento" class="has-icon"><span class="icon"><i class="mdi mdi-magnify"></i></span><span class="menu-item-label">Buscar trabajo</span></a></li>
-        <li id="sidebarMisVacantes" style="display:none;"><a href="/usuario/mis-vacantes" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Mis vacantes</span></a></li>
+        <li id="sidebarMisVacantes" style="display:none;"><a href="/usuario/mis-vacantes" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase-outline"></i></span><span class="menu-item-label">Mis vacantes</span></a></li>
         <li id="sidebarPostulantes" style="display:none;"><a href="/usuario/postulantes" class="has-icon"><span class="icon"><i class="mdi mdi-account-group"></i></span><span class="menu-item-label">Postulantes</span></a></li>
         <li id="sidebarPublicarVacante" style="display:none;"><a href="/usuario/publicar-vacante" class="has-icon"><span class="icon"><i class="mdi mdi-plus-circle"></i></span><span class="menu-item-label">Publicar vacante</span></a></li>
-        <li id="sidebarPronostico" style="display:none;"><a href="/usuario/pronostico" class="has-icon"><span class="icon"><i class="mdi mdi-chart-line"></i></span><span class="menu-item-label">Pronóstico</span></a></li>
         <li><a href="/usuario/profile" class="is-active router-link-active has-icon"><span class="icon has-update-mark"><i class="mdi mdi-account-circle"></i></span><span class="menu-item-label">Perfil</span></a></li>
       </ul>
     </div>
@@ -471,22 +475,142 @@
           <div class="card-content">
             <h3 class="title is-5"><i class="mdi mdi-folder-upload"></i> Documentos para verificación</h3>
 
-            <div class="document-card">
-              <span><i class="mdi mdi-card-account-details"></i> Identificación oficial (INE)</span>
-              <span class="tag {{ $docIne && $docIne->estado === 'aprobado' ? 'is-success' : ($docIne && $docIne->estado === 'rechazado' ? 'is-danger' : 'is-warning') }}">
-                {{ $docIne ? ucfirst($docIne->estado) : 'No subido' }}
-              </span>
-              <button class="button is-small btn-outline-orange" onclick="document.getElementById('inputIne').click()">Subir</button>
-              <input type="file" id="inputIne" accept="image/*" style="display:none" onchange="subirDocumento('ine', this)">
+            <div id="avisoVerificacion" class="notification is-small {{ $usuario->verificacion_estado === 'aprobado' ? 'is-success is-light' : ($usuario->verificacion_estado === 'rechazado' ? 'is-danger is-light' : 'is-info is-light') }}" style="margin-bottom:14px; font-size:.9rem;">
+              @if($usuario->verificacion_estado === 'aprobado')
+                <strong>Tu cuenta está verificada.</strong> El administrador revisó tu INE y tu selfie y los aprobó.
+              @elseif($usuario->verificacion_estado === 'rechazado')
+                <strong>Tu verificación fue rechazada.</strong> Vuelve a subir el documento que no se veía bien o no coincidía. El administrador revisará tu INE y tu selfie juntos.
+              @else
+                Sube tu INE y tu selfie. El administrador los revisa <strong>juntos</strong> y aprueba o rechaza tu verificación completa.
+              @endif
             </div>
 
-            <div class="document-card">
-              <span><i class="mdi mdi-face-recognition"></i> Selfie con identificación</span>
-              <span class="tag {{ $docSelfie && $docSelfie->estado === 'aprobado' ? 'is-success' : ($docSelfie && $docSelfie->estado === 'rechazado' ? 'is-danger' : 'is-warning') }}">
-                {{ $docSelfie ? ucfirst($docSelfie->estado) : 'No subido' }}
-              </span>
-              <button class="button is-small btn-outline-orange" onclick="document.getElementById('inputSelfie').click()">Subir</button>
-              <input type="file" id="inputSelfie" accept="image/*" style="display:none" onchange="subirDocumento('selfie', this)">
+            @php
+              // Nombre del archivo subido: "xxxx__mi-ine.jpg" -> "mi-ine.jpg"
+              // (los archivos subidos antes de este cambio no guardaron su nombre original).
+              $nombreDoc = function ($d) {
+                if (!$d) return '';
+                $base = basename((string) parse_url($d->archivo, PHP_URL_PATH));
+                return str_contains($base, '__')
+                  ? substr($base, strpos($base, '__') + 2)
+                  : 'archivo.' . pathinfo($base, PATHINFO_EXTENSION);
+              };
+            @endphp
+
+            <style>
+              .doc-item { border:1px solid #edf2f7; border-radius:16px; padding:14px; margin-bottom:14px; background:#fff; }
+              .doc-top { display:flex; align-items:center; gap:12px; }
+              .doc-ico { flex:0 0 44px; width:44px; height:44px; border-radius:12px; background:#fff1e3; color:#ff7a18; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
+              .doc-info { flex:1; min-width:0; }
+              .doc-info strong { display:block; line-height:1.25; }
+              .doc-info small { display:block; color:#7b8794; margin-top:2px; line-height:1.35; }
+              .doc-estado { margin-top:10px; }
+              .doc-file { display:none; align-items:center; gap:10px; margin-top:12px; padding:8px 10px; background:#f7fafc; border-radius:12px; font-size:.88rem; color:#4a5568; }
+              .doc-file.is-visible { display:flex; }
+              .doc-thumb { flex:0 0 44px; width:44px; height:44px; border-radius:8px; object-fit:cover; background:#e2e8f0; }
+              .doc-file-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+              .doc-file { cursor:zoom-in; }
+              .doc-ok { margin:12px 0 0; font-size:.88rem; color:#2f855a; }
+              /* Ver la foto en grande */
+              .foto-overlay { display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.85); align-items:center; justify-content:center; padding:16px; }
+              .foto-overlay.is-open { display:flex; }
+              .foto-overlay img { max-width:100%; max-height:calc(100vh - 32px); max-height:calc(100dvh - 32px); border-radius:10px; background:#fff; object-fit:contain; }
+              .foto-cerrar { position:fixed; top:max(12px, env(safe-area-inset-top)); right:max(12px, env(safe-area-inset-right)); width:44px; height:44px; border:0; border-radius:50%; background:#fff; color:#1a202c; font-size:26px; line-height:1; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; }
+              .doc-actions { margin-top:12px; }
+              .doc-actions-2 { display:flex; flex-wrap:wrap; gap:8px; }
+              .doc-actions-2 .button { flex:1 1 140px; justify-content:center; }
+              @media (max-width: 640px) {
+                .doc-actions .button { width:100%; justify-content:center; height:2.75em; }
+              }
+              /* Estado "Subiendo…" */
+              .doc-actions .button.is-subiendo { pointer-events:none; opacity:.6; }
+              @keyframes docGira { to { transform:rotate(360deg); } }
+              .doc-spin { display:inline-block; width:.9em; height:.9em; margin-right:.4em; vertical-align:-.12em; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; animation:docGira .7s linear infinite; }
+              /* Cámara para la selfie (computadora) */
+              .cam-overlay { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.75); align-items:center; justify-content:center; padding:16px; }
+              .cam-overlay.is-open { display:flex; }
+              .cam-box { background:#fff; border-radius:18px; padding:14px; width:100%; max-width:420px; }
+              .cam-box video { width:100%; border-radius:12px; background:#000; }
+              .cam-box video.is-mirror { transform:scaleX(-1); }
+              .cam-box p { margin:8px 0 12px; font-size:.9rem; color:#4a5568; text-align:center; }
+              .cam-btns { display:flex; gap:10px; }
+              .cam-btns .button { flex:1; justify-content:center; }
+            </style>
+
+            <div class="doc-item">
+              <div class="doc-top">
+                <span class="doc-ico"><i class="mdi mdi-card-account-details"></i></span>
+                <div class="doc-info">
+                  <strong>Identificación oficial (INE)</strong>
+                  <small>Sube una foto clara y legible de tu INE.</small>
+                </div>
+              </div>
+              <div class="doc-estado">
+                <span id="tagIne" class="tag {{ $docIne && $docIne->estado === 'rechazado' ? 'is-danger' : ($docIne ? 'is-success' : 'is-warning') }}">
+                  {{ $docIne ? ($docIne->estado === 'pendiente' ? '✓ Archivo subido' : ucfirst($docIne->estado)) : 'No subido' }}
+                </span>
+              </div>
+              <div id="fileIne" class="doc-file {{ $docIne ? 'is-visible' : '' }}" onclick="verFoto('Ine')" title="Toca para ver la foto">
+                <img id="thumbIne" class="doc-thumb" alt="" onerror="this.style.display='none'" @if($docIne) src="{{ $docIne->archivo }}" @endif>
+                <span class="doc-file-name" id="nameIne"><i class="mdi mdi-paperclip"></i> {{ $nombreDoc($docIne) }}</span>
+              </div>
+              @if($docIne && $docIne->estado === 'aprobado')
+                <p class="doc-ok"><i class="mdi mdi-shield-check"></i> Documento verificado. Ya no necesitas cambiarlo.</p>
+              @else
+              <div class="doc-actions doc-actions-2">
+                <button type="button" id="btnIne" class="button is-small btn-outline-orange" onclick="document.getElementById('inputIne').click()"><i class="mdi mdi-upload"></i>&nbsp;{{ $docIne ? 'Cambiar archivo' : 'Subir archivo' }}</button>
+                <input type="file" id="inputIne" accept="image/*" style="display:none" onchange="subirDocumento('ine', this)">
+                <button type="button" id="btnIneCam" class="button is-small btn-outline-orange" onclick="abrirCamara('ine')"><i class="mdi mdi-camera"></i>&nbsp;Tomar foto</button>
+                {{-- capture="environment": en el celular abre la cámara trasera directamente --}}
+                <input type="file" id="inputIneCamara" accept="image/*" capture="environment" style="display:none" onchange="subirDocumento('ine', this)">
+              </div>
+              @endif
+            </div>
+
+            <div class="doc-item">
+              <div class="doc-top">
+                <span class="doc-ico"><i class="mdi mdi-face-recognition"></i></span>
+                <div class="doc-info">
+                  <strong>Selfie con identificación</strong>
+                  <small>Tómate una foto sosteniendo tu INE junto a tu cara.</small>
+                </div>
+              </div>
+              <div class="doc-estado">
+                <span id="tagSelfie" class="tag {{ $docSelfie && $docSelfie->estado === 'rechazado' ? 'is-danger' : ($docSelfie ? 'is-success' : 'is-warning') }}">
+                  {{ $docSelfie ? ($docSelfie->estado === 'pendiente' ? '✓ Archivo subido' : ucfirst($docSelfie->estado)) : 'No subido' }}
+                </span>
+              </div>
+              <div id="fileSelfie" class="doc-file {{ $docSelfie ? 'is-visible' : '' }}" onclick="verFoto('Selfie')" title="Toca para ver la foto">
+                <img id="thumbSelfie" class="doc-thumb" alt="" onerror="this.style.display='none'" @if($docSelfie) src="{{ $docSelfie->archivo }}" @endif>
+                <span class="doc-file-name" id="nameSelfie"><i class="mdi mdi-paperclip"></i> {{ $nombreDoc($docSelfie) }}</span>
+              </div>
+              @if($docSelfie && $docSelfie->estado === 'aprobado')
+                <p class="doc-ok"><i class="mdi mdi-shield-check"></i> Documento verificado. Ya no necesitas cambiarlo.</p>
+              @else
+              <div class="doc-actions">
+                <button type="button" id="btnSelfie" class="button is-small btn-outline-orange" onclick="abrirCamara('selfie')"><i class="mdi mdi-camera"></i>&nbsp;{{ $docSelfie ? 'Volver a tomar la foto' : 'Tomar foto' }}</button>
+                {{-- capture="user": en el celular abre la cámara frontal directamente --}}
+                <input type="file" id="inputSelfie" accept="image/*" capture="user" style="display:none" onchange="subirDocumento('selfie', this)">
+              </div>
+              @endif
+            </div>
+
+            <!-- Ver foto en grande -->
+            <div id="fotoOverlay" class="foto-overlay" onclick="if(event.target===this)cerrarFoto()">
+              <button type="button" class="foto-cerrar" onclick="cerrarFoto()" aria-label="Cerrar">&times;</button>
+              <img id="fotoGrande" alt="Documento">
+            </div>
+
+            <!-- Cámara para tomar la selfie (computadora) -->
+            <div id="camOverlay" class="cam-overlay">
+              <div class="cam-box">
+                <video id="camVideo" autoplay playsinline muted></video>
+                <p id="camTexto">Sostén tu INE junto a tu cara y toma la foto.</p>
+                <div class="cam-btns">
+                  <button type="button" class="button btn-outline-orange" onclick="cerrarCamara()">Cancelar</button>
+                  <button type="button" class="button is-warning" onclick="tomarFotoCamara()"><i class="mdi mdi-camera"></i>&nbsp;Tomar foto</button>
+                </div>
+              </div>
             </div>
 
             <div class="notification is-info is-light mt-4"><i class="mdi mdi-information"></i> Los documentos verificados te darán la insignia "Verificado" y mayor confianza. Un administrador los revisa manualmente.</div>
@@ -604,6 +728,7 @@
           return;
         }
         mostrarToast('✅ Perfil actualizado correctamente', 'is-success');
+        window.dispatchEvent(new Event('ntf:actualizar')); // la campana quita o acorta el aviso de "completa tu perfil"
         document.getElementById('displayEmailStatic').textContent = data.usuario.email;
         document.getElementById('displayPhoneStatic').textContent = data.usuario.telefono || 'Sin teléfono';
         if (data.usuario.localidad) {
@@ -680,17 +805,91 @@
   });
 
   // ===== Subir documentos de verificación (guarda de verdad) =====
-  function subirDocumento(tipo, input) {
-    const file = input.files[0];
-    if (!file) return;
+  // Marca el documento como "✓ Archivo subido" y muestra cómo se llama,
+  // sin recargar la página (así el usuario se queda en la pestaña Documentos).
+  function marcarDocumentoSubido(tipo, nombre, vistaUrl) {
+    const k = tipo === 'ine' ? 'Ine' : 'Selfie';
+    const tag = document.getElementById('tag' + k);
+    if (tag) {
+      tag.textContent = '✓ Archivo subido';
+      tag.classList.remove('is-warning', 'is-danger', 'is-info');
+      tag.classList.add('is-success');
+    }
+    const caja = document.getElementById('file' + k);
+    if (caja) caja.classList.add('is-visible');
+    const lbl = document.getElementById('name' + k);
+    if (lbl) lbl.innerHTML = '<i class="mdi mdi-paperclip"></i> ';
+    if (lbl) lbl.appendChild(document.createTextNode(nombre));
+    const img = document.getElementById('thumb' + k);
+    if (img && vistaUrl) { img.style.display = ''; img.src = vistaUrl; }
+    const btn = document.getElementById('btn' + k);
+    if (btn) btn.innerHTML = tipo === 'ine'
+      ? '<i class="mdi mdi-upload"></i>&nbsp;Cambiar archivo'
+      : '<i class="mdi mdi-camera"></i>&nbsp;Volver a tomar la foto';
+  }
 
-    const formData = new FormData();
-    formData.append('archivo', file);
+  // Muestra / quita el estado "Subiendo…" del documento (etiqueta + botones bloqueados).
+  let _tagAntes = {};
+  function estadoSubiendo(tipo, activo) {
+    const k = tipo === 'ine' ? 'Ine' : 'Selfie';
+    const tag = document.getElementById('tag' + k);
+    const botones = [document.getElementById('btn' + k), document.getElementById('btn' + k + 'Cam')].filter(Boolean);
+    if (activo) {
+      if (tag) {
+        _tagAntes[k] = { html: tag.innerHTML, clase: tag.className };
+        tag.className = 'tag is-info';
+        tag.innerHTML = '<span class="doc-spin"></span>Subiendo… no cierres esta página';
+      }
+      botones.forEach(b => { b.classList.add('is-subiendo'); b.disabled = true; });
+    } else {
+      botones.forEach(b => { b.classList.remove('is-subiendo'); b.disabled = false; });
+    }
+  }
+  function restaurarEtiqueta(tipo) {
+    const k = tipo === 'ine' ? 'Ine' : 'Selfie';
+    const tag = document.getElementById('tag' + k);
+    if (tag && _tagAntes[k]) { tag.className = _tagAntes[k].clase; tag.innerHTML = _tagAntes[k].html; }
+  }
 
-    fetch(`/usuario/profile/documento/${tipo}`, {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': csrfToken },
-      body: formData,
+  // Las fotos del celular suelen pesar más que el límite del servidor (4 MB).
+  // Si es grande, la reducimos (máx. 1800 px, JPEG) antes de enviarla.
+  function reducirImagen(file) {
+    return new Promise(resolve => {
+      if (!file.type.startsWith('image/') || file.size <= 1.5 * 1024 * 1024) return resolve(file);
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const max = 1800;
+        const escala = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * escala);
+        c.height = Math.round(img.height * escala);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(blob => {
+          if (!blob || blob.size >= file.size) return resolve(file);
+          const nombre = (file.name || 'foto').replace(/\.[^.]+$/, '') + '.jpg';
+          resolve(new File([blob], nombre, { type: 'image/jpeg' }));
+        }, 'image/jpeg', 0.85);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+
+  function subirArchivo(tipo, file, input) {
+    estadoSubiendo(tipo, true);
+    let fallo = true;
+
+    reducirImagen(file).then(listo => {
+      file = listo;
+      const formData = new FormData();
+      formData.append('archivo', file);
+      return fetch(`/usuario/profile/documento/${tipo}`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+        body: formData,
+      });
     })
       .then(res => res.json().then(data => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
@@ -702,11 +901,152 @@
           mostrarToast('❌ ' + msg, 'is-danger');
           return;
         }
-        mostrarToast('📄 Documento subido, en espera de revisión.', 'is-success');
-        setTimeout(() => location.reload(), 1200);
+        fallo = false;
+        mostrarToast('📄 Archivo subido, en espera de revisión.', 'is-success');
+        window.dispatchEvent(new Event('ntf:actualizar')); // la campana acorta o quita el aviso de verificación
+        marcarDocumentoSubido(tipo, data.nombre || file.name, URL.createObjectURL(file));
       })
-      .catch(() => mostrarToast('❌ Ocurrió un error al subir el documento.', 'is-danger'));
-  }</script>
+      .catch(() => mostrarToast('❌ Ocurrió un error al subir el documento.', 'is-danger'))
+      .finally(() => {
+        if (fallo) restaurarEtiqueta(tipo);
+        estadoSubiendo(tipo, false);
+        if (input) input.value = '';
+      });
+  }
+
+  function subirDocumento(tipo, input) {
+    const file = input.files[0];
+    if (!file) return;
+    subirArchivo(tipo, file, input);
+  }
+
+  // ===== Tomar foto con la cámara (INE y selfie) =====
+  // Celular: el input con capture abre la cámara directamente (trasera para INE, frontal para selfie).
+  // Computadora: se abre una ventana con la cámara (si no hay cámara o se niega
+  // el permiso, se abre el selector de archivos como antes).
+  let camStream = null;
+  let camTipo = null;
+
+  function abrirCamara(tipo) {
+    const input = document.getElementById(tipo === 'ine' ? 'inputIneCamara' : 'inputSelfie');
+    const esTactil = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    if (esTactil || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+      input.click();
+      return;
+    }
+    const video = document.getElementById('camVideo');
+    const frontal = tipo === 'selfie';
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: frontal ? 'user' : { ideal: 'environment' } }, audio: false })
+      .then(stream => {
+        camStream = stream;
+        camTipo = tipo;
+        video.classList.toggle('is-mirror', frontal);
+        document.getElementById('camTexto').textContent = frontal
+          ? 'Sostén tu INE junto a tu cara y toma la foto.'
+          : 'Coloca tu INE dentro del cuadro, que se lea bien, y toma la foto.';
+        video.srcObject = stream;
+        document.getElementById('camOverlay').classList.add('is-open');
+        video.play();
+      })
+      .catch(() => input.click());
+  }
+
+  function cerrarCamara() {
+    if (camStream) camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+    const video = document.getElementById('camVideo');
+    if (video) video.srcObject = null;
+    document.getElementById('camOverlay').classList.remove('is-open');
+  }
+
+  function tomarFotoCamara() {
+    const video = document.getElementById('camVideo');
+    if (!video.videoWidth) return;
+    const tipo = camTipo || 'selfie';
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(blob => {
+      cerrarCamara();
+      if (!blob) return;
+      subirArchivo(tipo, new File([blob], tipo + '.jpg', { type: 'image/jpeg' }), null);
+    }, 'image/jpeg', 0.9);
+  }
+
+  // ===== Ver la foto subida en grande =====
+  function verFoto(k) {
+    const img = document.getElementById('thumb' + k);
+    if (!img || !img.src || img.style.display === 'none') return;
+    document.getElementById('fotoGrande').src = img.src;
+    document.getElementById('fotoOverlay').classList.add('is-open');
+  }
+  function cerrarFoto() {
+    document.getElementById('fotoOverlay').classList.remove('is-open');
+    document.getElementById('fotoGrande').removeAttribute('src');
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarCamara(); cerrarFoto(); } });
+
+  // ===== Llegaste desde el aviso "Verifica tu cuenta" (campana) =====
+  // Abre la pestaña Documentos y marca en naranja lo que falta subir (o volver a subir).
+  (function () {
+    if (!new URLSearchParams(window.location.search).has('verificar')) return;
+
+    const pestana = document.querySelector('#profileTabs li[data-tab="tab-docs"]');
+    if (pestana) pestana.click();
+
+    const pendientes = ['Ine', 'Selfie'].filter(k => {
+      const tag = document.getElementById('tag' + k);
+      const caja = document.getElementById('file' + k);
+      return (tag && tag.classList.contains('is-danger')) || (caja && !caja.classList.contains('is-visible'));
+    }).map(k => document.getElementById('tag' + k).closest('.doc-item'));
+    if (!pendientes.length) return; // ya subió todo (o ya está verificado)
+
+    pendientes.forEach(c => c.classList.add('campo-falta'));
+
+    const aviso = document.createElement('div');
+    aviso.className = 'notification is-warning is-light';
+    aviso.style.cssText = 'border-radius:12px; margin-bottom:14px; font-size:.92rem;';
+    aviso.innerHTML = '<strong>Para ser usuario verificado</strong>, sube lo que está marcado en naranja. Un administrador lo revisará.';
+    const primero = document.querySelector('#tab-docs .doc-item');
+    primero.parentNode.insertBefore(aviso, primero);
+
+    setTimeout(() => pendientes[0].scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+  })();
+
+  // ===== Llegaste desde el aviso "Completa tu perfil" (campana) =====
+  // Te lleva al formulario y marca en naranja lo que falta; al escribir, la marca se quita.
+  (function () {
+    if (!new URLSearchParams(window.location.search).has('completar')) return;
+
+    const campos = ['inputPhone', 'inputDescripcion']
+      .map(id => document.getElementById(id))
+      .filter(c => c && !c.value.trim());
+    const sinFoto = !fotoPendiente && !/url\(/.test(avatarCircle.style.backgroundImage);
+
+    campos.forEach(c => {
+      c.classList.add('campo-falta');
+      c.addEventListener('input', () => c.classList.remove('campo-falta'), { once: true });
+    });
+    if (sinFoto) {
+      uploadBtn.classList.add('btn-falta');
+      photoInput.addEventListener('change', () => uploadBtn.classList.remove('btn-falta'), { once: true });
+    }
+    if (!campos.length && !sinFoto) return; // ya estaba completo
+
+    const aviso = document.createElement('div');
+    aviso.className = 'notification is-warning is-light';
+    aviso.style.cssText = 'border-radius:12px; margin-bottom:14px; font-size:.92rem;';
+    aviso.innerHTML = '<strong>Casi listo.</strong> Completa lo que está marcado en naranja y toca <strong>«Guardar cambios»</strong>.';
+    formPerfil.parentNode.insertBefore(aviso, formPerfil);
+
+    const destino = campos[0] || uploadBtn;
+    setTimeout(() => {
+      destino.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (campos[0]) campos[0].focus({ preventScroll: true });
+    }, 300);
+  })();</script>
   <script src="{{ asset('assets/usuario/js/dashboard-data.js') }}"></script>
   <script src="{{ asset('assets/usuario/js/ads-widget.js') }}"></script>
 

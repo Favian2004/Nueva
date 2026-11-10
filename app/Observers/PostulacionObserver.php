@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Postulacion;
 use App\Notifications\NuevaPostulacion;
 use App\Notifications\PostulacionContratada;
+use App\Notifications\PostulacionEntrevista;
 use App\Notifications\PostulacionRechazada;
 use App\Services\Avisos;
 
@@ -32,6 +33,8 @@ class PostulacionObserver
         if ($postulacion->estado === 'pendiente' && $antes === 'borrador') {
             // El borrador se confirmó: ahora sí es una postulación.
             $this->avisarAlEmpleador($postulacion);
+        } elseif ($postulacion->estado === 'entrevista') {
+            Avisos::enviar($postulacion->postulante, new PostulacionEntrevista($postulacion));
         } elseif ($postulacion->estado === 'contratado') {
             Avisos::enviar($postulacion->postulante, new PostulacionContratada($postulacion));
         } elseif ($postulacion->estado === 'rechazado') {

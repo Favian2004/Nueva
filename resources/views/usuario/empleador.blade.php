@@ -223,6 +223,12 @@
                             </div>
                         </div>
                     </div>
+                    <div style="border-radius:14px; margin:0 0 16px; padding:12px 14px; background:#fff8f0; border:1px solid #ffe0bf; color:#5b4636; line-height:1.45; font-size:.93rem;">
+                        <strong>Modo Empleador</strong>
+                        <p style="margin:6px 0 4px;">👥 <strong>Necesito personal:</strong> entra a "Publicar vacante" y la gente se postula.</p>
+                        <p style="margin:0 0 6px;">🔎 <strong>Busco trabajo:</strong> entra a "Buscar trabajo" y pulsa "Postularme".</p>
+                        <small style="color:#8a7566;">¿Ofreces tus servicios (plomero, maestra...)? Cambia a modo Trabajador.</small>
+                    </div>
                     <!-- ===== ACCIONES RÁPIDAS ===== -->
                     <div class="acciones-rapidas">
                         <h3 class="acciones-titulo">⚡ Acciones Rápidas</h3>
@@ -261,7 +267,10 @@
                                         <div class="job-title">{{ $v->titulo }}</div>
 
                                         <div class="job-publisher">
-                                            <i class="mdi mdi-account"></i> {{ $v->publicante }} · <i class="mdi mdi-map-marker"></i> {{ $v->ubicacion }}
+                                            <i class="mdi mdi-account"></i> {{ $v->publicante }} @if ($v->empleador && $v->empleador->verificacion_estado === 'aprobado')<span title="Identidad verificada" style="background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.7rem; font-weight:700; vertical-align:middle; white-space:nowrap;"><i class="mdi mdi-check-decagram"></i> Usuario verificado</span>@endif
+                                        </div>
+                                        <div class="job-publisher">
+                                            <i class="mdi mdi-map-marker"></i> {{ $v->ubicacion }}
                                         </div>
 
                                         <div class="job-details">

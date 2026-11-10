@@ -24,6 +24,8 @@ class UsuarioCurriculumController extends Controller
             'curriculum' => $curriculum,
             'servicio' => $servicio,
             'esPropio' => $servicio->usuario_id === Auth::id(),
+            'contactoVisible' => $servicio->usuario_id === Auth::id()
+                || \App\Models\Contratacion::contactoAbierto($servicioId, Auth::id()),
         ]);
     }
 
@@ -204,6 +206,8 @@ class UsuarioCurriculumController extends Controller
             'curriculum' => $curriculum,
             'postulacion' => $postulacion,
             'esPropio' => $esPropio,
+            // El empleador ve el teléfono y correo del CV solo si ya aceptó a la persona.
+            'contactoVisible' => $esPropio || $postulacion->contactoAbierto(),
         ]);
     }
 

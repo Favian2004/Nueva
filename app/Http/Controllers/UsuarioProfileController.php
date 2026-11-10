@@ -91,6 +91,9 @@ class UsuarioProfileController extends Controller
         $usuario->save();
         $usuario->load('localidad.municipio');
 
+        // Si ya quedó completo, se quita el aviso "Completa tu perfil" de la campana.
+        \App\Services\PerfilCompleto::sincronizar($usuario);
+
         return response()->json(['ok' => true, 'usuario' => $usuario]);
     }
 
@@ -128,18 +131,52 @@ class UsuarioProfileController extends Controller
             return response()->json(['ok' => false, 'error' => 'Tipo de documento inválido.'], 422);
         }
 
+        // Un documento ya aprobado no se puede reemplazar.
+        $yaAprobado = DocumentoVerificacion::where('usuario_id', Auth::id())
+            ->where('tipo_documento', $tipo)
+            ->whereNull('indice')
+            ->where('estado', 'aprobado')
+            ->exists();
+        if ($yaAprobado) {
+            return response()->json(['ok' => false, 'message' => 'Este documento ya fue verificado y no se puede cambiar.'], 403);
+        }
+
         $revision = $moderacion->revisar(null, $request->file('archivo'));
         if ($revision['flagged']) {
             return response()->json(['ok' => false, 'message' => $revision['mensaje']], 422);
         }
 
-        $ruta = '/storage/' . $request->file('archivo')->store('documentos', 'public');
+        // El archivo se guarda con un prefijo único + el nombre original (limpio),
+        // así en el perfil se puede mostrar cómo se llama: "xxxx__mi-ine.jpg" -> "mi-ine.jpg".
+        $archivo   = $request->file('archivo');
+        $extension = strtolower($archivo->getClientOriginalExtension() ?: $archivo->extension() ?: 'jpg');
+        $limpio    = \Illuminate\Support\Str::limit(
+            \Illuminate\Support\Str::slug(pathinfo($archivo->getClientOriginalName(), PATHINFO_FILENAME)),
+            40,
+            ''
+        ) ?: $tipo;
+        $nombre = $limpio . '.' . $extension;
+
+        $ruta = '/storage/' . $archivo->storeAs(
+            'documentos',
+            \Illuminate\Support\Str::random(10) . '__' . $nombre,
+            'public'
+        );
 
         DocumentoVerificacion::updateOrCreate(
             ['usuario_id' => Auth::id(), 'tipo_documento' => $tipo, 'indice' => null],
             ['archivo' => $ruta, 'estado' => 'pendiente']
         );
 
-        return response()->json(['ok' => true]);
+        // Si la verificación estaba rechazada, al volver a subir un documento la cuenta
+        // regresa a "pendiente" para que el administrador la vuelva a revisar.
+        Usuario::where('id', Auth::id())
+            ->where('verificacion_estado', 'rechazado')
+            ->update(['verificacion_estado' => 'pendiente']);
+
+        // Actualiza el aviso "Verifica tu cuenta" de la campana (se acorta o desaparece).
+        \App\Services\PerfilCompleto::sincronizar(Usuario::find(Auth::id()));
+
+        return response()->json(['ok' => true, 'nombre' => $nombre, 'url' => $ruta]);
     }
 }

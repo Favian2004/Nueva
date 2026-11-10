@@ -217,9 +217,14 @@
         <div class="detail-header">
           <h1>{{ $vacante->titulo }}</h1>
           <div class="company">{{ $vacante->contrato }} · {{ $vacante->tipo_pago }}</div>
-          <div class="author">
-            <i class="mdi mdi-briefcase"></i>
-            <span>Publicado por: {{ $vacante->publicante }}</span>
+          <div class="author" style="flex-wrap:nowrap; align-items:flex-start;">
+            <i class="mdi mdi-briefcase" style="flex:none; margin-top:1px;"></i>
+            <div style="flex:1; min-width:0; overflow-wrap:anywhere;">
+              <span>Publicado por: {{ $vacante->publicante }}</span>
+              @if ($vacante->empleador && $vacante->empleador->verificacion_estado === 'aprobado')
+                <span title="Identidad verificada" style="display:inline-block; margin:4px 0 0 0; background:#dcfce7; color:#16a34a; padding:2px 10px; border-radius:20px; font-size:.75rem; font-weight:700; white-space:nowrap;"><i class="mdi mdi-check-decagram"></i> Usuario verificado</span>
+              @endif
+            </div>
           </div>
           <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
             <span style="background:rgba(255,255,255,.18); color:#fff; font-size:12.5px; padding:4px 12px; border-radius:20px;">
@@ -290,11 +295,37 @@
           @if ($vacante->empleador_id !== auth()->id())
             <!-- Sección de contacto -->
             <h3 class="title is-5"><i class="mdi mdi-phone"></i> Información de Contacto</h3>
-            <div class="contact-buttons">
-              <a href="tel:{{ $vacante->telefono }}" class="btn-contact"><i class="mdi mdi-phone"></i> Llamar</a>
-              @if ($vacante->whatsapp)
-                <a href="https://wa.me/52{{ preg_replace('/\D/', '', $vacante->whatsapp) }}?text={{ urlencode('Hola, me interesa el trabajo de ' . $vacante->titulo) }}" target="_blank" class="btn-contact" style="background:#25D366;"><i class="mdi mdi-whatsapp"></i> WhatsApp</a>
-              @endif
+            @if ($contactoVisible)
+              <div class="contacto-abierto">
+                <i class="mdi mdi-check-decagram"></i>
+                <span>El empleador te aceptó para entrevista. Ya puedes contactarlo.</span>
+              </div>
+              <div class="contact-buttons">
+                <a href="tel:{{ $vacante->telefono }}" class="btn-contact"><i class="mdi mdi-phone"></i> Llamar</a>
+                @if ($vacante->whatsapp)
+                  <a href="https://wa.me/52{{ preg_replace('/\D/', '', $vacante->whatsapp) }}?text={{ urlencode('Hola, me interesa el trabajo de ' . $vacante->titulo) }}" target="_blank" class="btn-contact" style="background:#25D366;"><i class="mdi mdi-whatsapp"></i> WhatsApp</a>
+                @endif
+              </div>
+            @else
+              @php $ultimos = $vacante->telefono ? substr(preg_replace('/\D/', '', $vacante->telefono), -2) : ''; @endphp
+              <div class="contacto-oculto">
+                <div class="co-candado"><i class="mdi mdi-lock-outline"></i></div>
+                <div>
+                  <div class="co-numero">&bull;&bull;&bull;&bull; &bull;&bull;&bull; &bull;&bull;{{ $ultimos }}<span class="co-etiqueta">Contacto protegido</span></div>
+                  @if ($yaPostulado)
+                    <p>Tu postulación está en revisión. Cuando el empleador te acepte para entrevista, aquí aparecerán su teléfono y WhatsApp.</p>
+                  @else
+                    <p>Por seguridad, el contacto está oculto. Postúlate y, cuando el empleador te acepte para entrevista, aquí aparecerán su teléfono y WhatsApp.</p>
+                  @endif
+                </div>
+              </div>
+            @endif
+
+            <div class="aviso-seguridad">
+              <i class="mdi mdi-shield-alert-outline"></i>
+              <div>
+                <strong>Cuida tu seguridad.</strong> Nunca pagues por conseguir un empleo ni compartas tu contraseña o datos bancarios. Si algo te parece raro, usa <em>"Reportar esta vacante"</em>.
+              </div>
             </div>
           @endif
 
@@ -335,10 +366,18 @@
               <button class="button is-large btn-accion-principal" disabled style="border-radius: 50px; font-weight: bold;">
                 Ya te postulaste a esta vacante
               </button>
+              <p style="margin-top:10px;"><a href="/usuario/postulantes?tab=enviadas" style="color:#ff7a18; font-weight:600;">Ver el estado de mi postulación &rarr;</a></p>
             @else
-              <button class="button is-primary is-large btn-accion-principal" id="btnPostularme" style="background: linear-gradient(45deg, #ff7a18, #ffb347); border: none; border-radius: 50px; font-weight: bold;">
-                Postularme
+              <button class="button is-large btn-accion-principal btn-postular-grande" id="btnPostularme" type="button">
+                <i class="mdi mdi-account-plus"></i>
+                <span>{{ $previa ? 'Corregir y volver a postularme' : 'Postularme a este trabajo' }}</span>
               </button>
+              @unless ($previa)
+                <p style="margin-top:10px; font-size:.85rem; color:#6b7280;"><i class="mdi mdi-shield-check-outline" style="color:#16a34a;"></i> Tu teléfono no se comparte hasta que el empleador te acepte.</p>
+              @endunless
+              @if ($previa)
+                <p style="margin-top:10px; font-size:.85rem; color:#6b7280;">Tu postulación anterior no fue seleccionada. Puedes mejorarla y enviarla de nuevo.</p>
+              @endif
             @endif
           </div>
         </div>
@@ -347,6 +386,19 @@
 
     <style>
       .btn-accion-principal { padding: 12px 40px; white-space: normal; height: auto; }
+      .btn-postular-grande { display:inline-flex; align-items:center; justify-content:center; gap:10px; background:linear-gradient(45deg,#ff7a18,#ffb347) !important; color:#fff !important; border:none !important; border-radius:50px !important; font-weight:800 !important; font-size:1.15rem !important; padding:16px 44px !important; box-shadow:0 10px 24px rgba(255,122,24,.45); transition:transform .2s, box-shadow .2s; animation:pulsoPostular 2.4s ease-in-out infinite; }
+      .btn-postular-grande .mdi { font-size:1.5rem; }
+      .btn-postular-grande:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 14px 30px rgba(255,122,24,.55); animation:none; }
+      @keyframes pulsoPostular { 0%,100% { box-shadow:0 10px 24px rgba(255,122,24,.45), 0 0 0 0 rgba(255,122,24,.45); } 50% { box-shadow:0 10px 24px rgba(255,122,24,.45), 0 0 0 12px rgba(255,122,24,0); } }
+      @media (prefers-reduced-motion: reduce) { .btn-postular-grande { animation:none; } }
+      .contacto-oculto { display:flex; align-items:flex-start; gap:14px; margin:0 0 1rem; padding:14px 16px; border:1.5px dashed #f3c9a0; border-radius:14px; background:#fff8f1; }
+      .contacto-oculto .co-candado { flex:0 0 38px; width:38px; height:38px; border-radius:50%; background:#ffe8d1; color:#ea580c; display:flex; align-items:center; justify-content:center; font-size:1.25rem; }
+      .contacto-oculto .co-numero { font-size:1.05rem; font-weight:700; letter-spacing:1px; color:#1f2937; }
+      .contacto-oculto .co-etiqueta { margin-left:8px; font-size:.78rem; font-weight:600; letter-spacing:0; color:#15803d; }
+      .contacto-oculto p { margin:4px 0 0; font-size:.88rem; line-height:1.45; color:#6b7280; }
+      .contacto-abierto { display:flex; align-items:center; gap:8px; margin-bottom:.8rem; padding:10px 14px; border-radius:12px; background:#dcfce7; color:#166534; font-size:.9rem; font-weight:600; }
+      .aviso-seguridad { display:flex; gap:12px; align-items:flex-start; margin:1rem 0 .5rem; padding:12px 14px; border-radius:12px; background:#eff6ff; border:1px solid #bfdbfe; color:#1e3a8a; font-size:.86rem; line-height:1.5; }
+      .aviso-seguridad > i { font-size:1.4rem; flex:none; color:#2563eb; }
       @media (max-width: 480px) {
         .btn-accion-principal { width: 100%; max-width: 320px; padding: 12px 20px; font-size: 0.95rem; }
       }
@@ -379,11 +431,30 @@
     <section class="modal-card-body" style="background:#fffaf5; padding:22px;">
       <div id="modalPostularDocs"></div>
       <div class="field">
-        <label class="label" style="color:#3c2f2f; font-size:0.85rem;"><i class="mdi mdi-message-text-outline" style="color:#ff7a18;"></i>&nbsp;Mensaje / carta de presentación (opcional)</label>
+        <label class="label" style="color:#3c2f2f; font-size:0.85rem;"><i class="mdi mdi-message-text-outline" style="color:#ff7a18;"></i>&nbsp;Preséntate: ¿por qué eres buena opción?</label>
         <div class="control">
-          <textarea id="modalPostularMensaje" class="textarea" rows="4" placeholder="Cuéntale al empleador por qué eres una buena opción..." style="border-radius:12px; border:1.5px solid #f0d9c0; resize:vertical;"></textarea>
+          <textarea id="modalPostularMensaje" class="textarea" rows="4" maxlength="500" placeholder="Cuéntale al empleador quién eres, qué sabes hacer y por qué te interesa este trabajo..." style="border-radius:12px; border:1.5px solid #f0d9c0; resize:vertical;" oninput="document.getElementById('modalPostularContador').textContent=this.value.length"></textarea>
+        </div>
+        <p style="text-align:right; font-size:11.5px; color:#9a8a7a; margin-top:2px;"><span id="modalPostularContador">0</span>/500</p>
+      </div>
+      <div class="columns is-mobile is-multiline" style="margin:0 -6px;">
+        <div class="column is-half-tablet is-full-mobile" style="padding:6px;">
+          <label class="label" style="color:#3c2f2f; font-size:0.85rem;"><i class="mdi mdi-calendar-check" style="color:#ff7a18;"></i>&nbsp;¿Cuándo puedes empezar?</label>
+          <div class="select is-fullwidth"><select id="modalPostularDisp"><option value="">Elige...</option>@foreach (\App\Models\Postulacion::DISPONIBILIDADES as $k => $t)<option value="{{ $k }}">{{ $t }}</option>@endforeach</select></div>
+        </div>
+        <div class="column is-half-tablet is-full-mobile" style="padding:6px;">
+          <label class="label" style="color:#3c2f2f; font-size:0.85rem;"><i class="mdi mdi-briefcase-clock-outline" style="color:#ff7a18;"></i>&nbsp;Tu experiencia</label>
+          <div class="select is-fullwidth"><select id="modalPostularExp"><option value="">Elige...</option>@foreach (\App\Models\Postulacion::EXPERIENCIAS as $k => $t)<option value="{{ $k }}">{{ $t }}</option>@endforeach</select></div>
+        </div>
+        <div class="column is-full" style="padding:6px;">
+          <label class="label" style="color:#3c2f2f; font-size:0.85rem;"><i class="mdi mdi-phone-message-outline" style="color:#ff7a18;"></i>&nbsp;¿Cómo prefieres que te contacten?</label>
+          <div class="select is-fullwidth"><select id="modalPostularContacto"><option value="">Elige...</option>@foreach (\App\Models\Postulacion::CONTACTOS as $k => $t)<option value="{{ $k }}">{{ $t }}</option>@endforeach</select></div>
         </div>
       </div>
+      <div style="margin-top:12px; padding:10px 12px; border-radius:10px; background:#eef6ff; color:#1e3a8a; font-size:12.5px; line-height:1.45;">
+        <i class="mdi mdi-shield-lock-outline"></i> Tu teléfono y correo <strong>no se comparten</strong> hasta que el empleador te acepte para entrevista.
+      </div>
+      <p id="modalPostularError" style="display:none; margin-top:10px; color:#d93025; font-size:13px; font-weight:600;"></p>
     </section>
     <footer class="modal-card-foot" style="background:#fff; border-top:1px solid #f5ebe0; padding:16px 22px; display:flex; gap:10px;">
       <button id="btnEnviarPostulacion" onclick="enviarPostulacion()" style="background:linear-gradient(45deg,#ff7a18,#ffb347); border:none; color:#fff; padding:10px 22px; border-radius:30px; font-weight:700; font-size:13.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(255,122,24,0.3);">
@@ -472,7 +543,7 @@
   .reporte-motivo-opcion.selected { border-color: #ff7a18; background: #fff1e0; color: #ff7a18; font-weight: 700; }
 </style>
 
-<script src="{{ asset('assets/usuario/js/main.js') }}"></script>
+<script src="{{ \App\Support\Assets::usuarioMain() }}"></script>
 <script src="{{ asset('assets/usuario/js/ads-widget.js') }}"></script>
 <script>
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
@@ -483,6 +554,7 @@
   const modalRequiereCv = {{ $vacante->requiere_cv ? 'true' : 'false' }};
   const modalRequiereSolicitud = {{ $vacante->requiere_solicitud_empleo ? 'true' : 'false' }};
 
+  const previaPostulacion = @json($previa);
   const btnPostularme = document.getElementById('btnPostularme');
   if (btnPostularme) {
     btnPostularme.addEventListener('click', function () {
@@ -490,9 +562,19 @@
     });
   }
 
+  if (btnPostularme && new URLSearchParams(location.search).get('corregir')) {
+    setTimeout(() => btnPostularme.click(), 300);
+  }
+
   function abrirModalPostular(vacanteId, titulo, requiereCv, requiereSolicitud) {
     document.getElementById('modalPostularTitulo').textContent = titulo;
-    document.getElementById('modalPostularMensaje').value = '';
+    const pr = previaPostulacion || {};
+    document.getElementById('modalPostularMensaje').value = pr.mensaje || '';
+    document.getElementById('modalPostularContador').textContent = (pr.mensaje || '').length;
+    document.getElementById('modalPostularDisp').value = pr.disponibilidad || '';
+    document.getElementById('modalPostularExp').value = pr.experiencia || '';
+    document.getElementById('modalPostularContacto').value = pr.contacto_preferido || '';
+    document.getElementById('modalPostularError').style.display = 'none';
     document.getElementById('modal-postular').classList.add('is-active');
 
     if (!requiereCv && !requiereSolicitud) {
@@ -557,16 +639,28 @@
   }
 
   function enviarPostulacion() {
-    const mensaje = document.getElementById('modalPostularMensaje').value.trim();
+    const cuerpo = {
+      mensaje: document.getElementById('modalPostularMensaje').value.trim(),
+      disponibilidad: document.getElementById('modalPostularDisp').value,
+      experiencia: document.getElementById('modalPostularExp').value,
+      contacto_preferido: document.getElementById('modalPostularContacto').value,
+    };
+    const errorBox = document.getElementById('modalPostularError');
+    errorBox.style.display = 'none';
     fetch(`/usuario/empleador/postularse/${vacanteIdActual}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken }, body: JSON.stringify({ mensaje }),
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }, body: JSON.stringify(cuerpo),
     })
       .then(res => res.json().then(data => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
-        if (!ok) { alert('❌ ' + (data.error || 'Ocurrió un error al postularte.')); return; }
+        if (!ok) {
+          const primero = data.errors ? Object.values(data.errors)[0][0] : null;
+          errorBox.textContent = '❌ ' + (primero || data.error || data.message || 'Ocurrió un error al postularte.');
+          errorBox.style.display = 'block';
+          return;
+        }
         document.getElementById('modal-postular').classList.remove('is-active');
-        alert('✅ ¡Postulación enviada!');
-        location.reload();
+        alert('✅ ¡Postulación enviada! Te avisaremos cuando el empleador responda.');
+        window.location.href = '/usuario/postulantes?tab=enviadas';
       })
       .catch(() => alert('❌ Ocurrió un error de conexión.'));
   }

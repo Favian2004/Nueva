@@ -359,6 +359,10 @@
     <!-- CONTENIDO -->
     <section class="section is-main-section">
       <div class="container">
+        <div style="border-radius:14px; margin:0 0 18px; padding:14px 18px; background:#fff8f0; border:1px solid #ffe0bf; color:#5b4636; line-height:1.55;">
+          <strong>¿Qué haces aquí?</strong> Publicas el trabajo que ofreces: describe lo que necesitas que hagan y cuántas personas ocupas. Las personas se postulan y las ves en <strong>"Postulantes"</strong>.
+        </div>
+
 
         <div class="publicar-card">
           <div class="publicar-card-header">
@@ -426,7 +430,7 @@
               <!-- TÍTULO -->
               <div class="form-group">
                 <label for="titulo">Título de la Vacante <span class="required">*</span></label>
-                <input type="text" id="titulo" name="titulo" value="{{ $vacante->titulo ?? '' }}" placeholder="Ej: Electricista Industrial" maxlength="100" autocomplete="off" required {{ $tituloDescripcionBloqueada ? 'disabled' : '' }}>
+                <input type="text" id="titulo" name="titulo" value="{{ $vacante->titulo ?? '' }}" placeholder="Ej: Auxiliar administrativo, Ayudante general, Cocinero..." maxlength="100" autocomplete="off" required {{ $tituloDescripcionBloqueada ? 'disabled' : '' }}>
               </div>
 
               <!-- CATEGORÍA Y SUBCATEGORÍA -->
@@ -590,12 +594,12 @@
                 <div class="form-group">
                   <label for="telefono">Teléfono de contacto <span class="required">*</span></label>
                   <input type="tel" id="telefono" name="telefono" value="{{ $soloTel($vacante->telefono ?? '') }}" placeholder="Ej: 2221234567" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="tel-national" required>
-                  <span class="form-hint">10 dígitos, solo números.</span>
+                  <span class="form-hint">10 dígitos. Tu número permanecerá privado y protegido. No se mostrará públicamente..</span>
                 </div>
                 <div class="form-group">
                   <label for="whatsapp">WhatsApp</label>
                   <input type="tel" id="whatsapp" name="whatsapp" value="{{ $soloTel($vacante->whatsapp ?? '') }}" placeholder="Ej: 2221234567" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="off">
-                  <span class="form-hint">Si es diferente al teléfono. 10 dígitos, solo números.</span>
+                  <span class="form-hint">10 dígitos. Tu número permanecerá privado y protegido. No se mostrará públicamente..</span>
                 </div>
               </div>
 

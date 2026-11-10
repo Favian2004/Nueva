@@ -88,7 +88,7 @@
 
     .vacante-stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
       margin-bottom: 20px;
     }
@@ -132,6 +132,7 @@
     }
     .stat-icon.icon-total { background: #eef2ff; color: #4f46e5; }
     .stat-icon.icon-pendientes { background: #fef7e0; color: #e37400; }
+    .stat-icon.icon-entrevistas { background: #e8f0fe; color: #1a73e8; }
     .stat-icon.icon-contratados { background: #e6f4ea; color: #1e7e34; }
     .stat-icon.icon-rechazados { background: #fce8e6; color: #d93025; }
 
@@ -273,6 +274,24 @@
       color: #e37400;
     }
 
+    .status-entrevista {
+      background: #e8f0fe;
+      color: #1a73e8;
+    }
+
+    .p-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+    .p-chip { font-size:11px; font-weight:600; color:#4b5563; background:#f3f4f6; padding:4px 9px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; }
+    .p-chip.pref { background:#fff3e6; color:#c2570c; }
+    .p-ver-ok { display:inline-flex; align-items:center; gap:3px; background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; white-space:nowrap; }
+    .p-ver-no { display:inline-flex; align-items:center; gap:3px; background:#f3f4f6; color:#6b7280; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; white-space:nowrap; }
+    .p-bio { font-size:12px; color:#555; line-height:1.45; margin-bottom:8px; }
+    .p-contacto-oculto { display:flex; gap:10px; align-items:center; margin-top:10px; padding:9px 11px; border:1.5px dashed #f3c9a0; border-radius:10px; background:#fff8f1; font-size:11.5px; color:#6b7280; line-height:1.4; }
+    .p-contacto-oculto .cand { flex:0 0 28px; width:28px; height:28px; border-radius:50%; background:#ffe8d1; color:#ea580c; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+    .p-contacto-abierto { margin-top:10px; padding:10px 12px; border-radius:10px; background:#f0fdf4; border:1px solid #bbf7d0; font-size:12px; color:#166534; }
+    .p-contacto-abierto .fila { display:flex; align-items:center; gap:6px; word-break:break-all; margin-bottom:3px; }
+    .p-botones { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+    .p-botones a { flex:1; min-width:90px; text-decoration:none; padding:7px 10px; border-radius:8px; font-size:11px; font-weight:600; text-align:center; display:flex; align-items:center; justify-content:center; gap:4px; }
+    .btn-entrevista { background:linear-gradient(45deg,#1a73e8,#4f9cf9); color:#fff; }
     .status-contratado {
       background: #e6f4ea;
       color: #1e7e34;
@@ -567,6 +586,10 @@
     <!-- CONTENIDO -->
     <section class="section is-main-section">
       <div class="container">
+        <div style="border-radius:14px; margin:0 0 18px; padding:14px 18px; background:#fff8f0; border:1px solid #ffe0bf; color:#5b4636; line-height:1.55;">
+          <strong>¿Qué haces aquí?</strong> En <strong>"Recibidas"</strong> ves quién se postuló a tus vacantes, para contactarlas y contratar o rechazar. En <strong>"Enviadas"</strong> ves las vacantes a las que tú te postulaste.
+        </div>
+
 
         <!-- PESTAÑAS -->
         <div style="display:flex; gap:8px; margin-bottom:18px;">
@@ -615,6 +638,7 @@
             <select name="estado" id="filtroEstado">
               <option value="">Todos</option>
               <option value="pendiente" {{ $estado === 'pendiente' ? 'selected' : '' }}>Pendientes</option>
+              <option value="entrevista" {{ $estado === 'entrevista' ? 'selected' : '' }}>En entrevista</option>
               <option value="contratado" {{ $estado === 'contratado' ? 'selected' : '' }}>Contratados</option>
               <option value="rechazado" {{ $estado === 'rechazado' ? 'selected' : '' }}>Rechazados</option>
             </select>
@@ -639,6 +663,11 @@
             <div class="stat-label">Pendientes</div>
           </div>
           <div class="stat-item">
+            <span class="stat-icon icon-entrevistas"><i class="mdi mdi-account-voice"></i></span>
+            <div class="stat-number">{{ $statEntrevistas }}</div>
+            <div class="stat-label">En entrevista</div>
+          </div>
+          <div class="stat-item">
             <span class="stat-icon icon-contratados"><i class="mdi mdi-check-circle-outline"></i></span>
             <div class="stat-number">{{ $statContratados }}</div>
             <div class="stat-label">Contratados</div>
@@ -660,18 +689,50 @@
               $colores = ['#f57c00,#ffb74d', '#0d9488,#2dd4bf', '#d97706,#fbbf24', '#b91c1c,#f87171', '#7c3aed,#a78bfa', '#15803d,#86efac', '#ec4899,#f9a8d4'];
               $color = $colores[$p->id % count($colores)];
             @endphp
+            @php
+              $u = $p->postulante;
+              $abierto = $p->contactoAbierto();
+              $etq = ['pendiente' => 'Pendiente', 'entrevista' => 'En entrevista', 'contratado' => 'Contratado', 'rechazado' => 'Rechazado'];
+              $primerNombre = \Illuminate\Support\Str::before($nombre, ' ');
+              $bio = trim((string) ($u->descripcion ?? ''));
+              $telefono = $u->telefono ?? null;
+              $waNum = $u->whatsapp ?? $u->telefono ?? null;
+              $ultimos = $telefono ? substr(preg_replace('/\D/', '', $telefono), -2) : '';
+            @endphp
             <div class="postulante-card">
               <div class="postulante-header">
                 <div class="postulante-avatar" style="background:linear-gradient(135deg,{{ $color }});">{{ $iniciales }}</div>
-                <div style="flex:1;">
+                <div style="flex:1; min-width:0;">
                   <div class="postulante-nombre">{{ $nombre }}</div>
                   <div class="postulante-cargo">{{ $p->vacante->titulo ?? 'Vacante eliminada' }}</div>
                 </div>
-                <span class="postulante-status status-{{ $p->estado }}">{{ ucfirst($p->estado) }}</span>
+                <div style="text-align:right;">
+                  <span class="postulante-status status-{{ $p->estado }}">{{ $etq[$p->estado] ?? ucfirst($p->estado) }}</span>
+                  <div style="margin-top:4px;">
+                    @if ($u && $u->verificacion_estado === 'aprobado')
+                      <span class="p-ver-ok" title="Identidad verificada por SINTECZATE"><i class="mdi mdi-check-decagram"></i> Verificado</span>
+                    @else
+                      <span class="p-ver-no" title="Todavía no ha verificado su identidad"><i class="mdi mdi-shield-outline"></i> Sin verificar</span>
+                    @endif
+                  </div>
+                </div>
               </div>
-              <div style="font-size:12px; color:#666; margin-bottom:6px;">
-                📍 {{ $p->postulante->localidad->nombre ?? '—' }} · 🕐 {{ $p->created_at->diffForHumans() }}
+              <div style="font-size:12px; color:#666; margin-bottom:8px;">
+                📍 {{ $u->localidad->nombre ?? '—' }} · 🕐 {{ $p->created_at->diffForHumans() }}
               </div>
+              @include('usuario.partials.chip-vacante-postulada', ['vacante' => $p->vacante])
+
+              @if ($p->disponibilidad || $p->experiencia || $p->contacto_preferido)
+                <div class="p-chips">
+                  @if ($p->disponibilidad)<span class="p-chip"><i class="mdi mdi-calendar-check"></i> Empieza: {{ $p->etiquetaDisponibilidad() }}</span>@endif
+                  @if ($p->experiencia)<span class="p-chip"><i class="mdi mdi-briefcase-clock-outline"></i> {{ $p->etiquetaExperiencia() }}</span>@endif
+                  @if ($p->contacto_preferido)<span class="p-chip pref"><i class="mdi mdi-phone-message-outline"></i> Prefiere: {{ $p->etiquetaContacto() }}</span>@endif
+                </div>
+              @endif
+
+              @if ($bio !== '')
+                <div class="p-bio"><strong style="color:#374151;">Sobre {{ $primerNombre }}:</strong> {{ \Illuminate\Support\Str::limit($bio, 160) }}</div>
+              @endif
               @if ($p->mensaje)
                 <div class="postulante-mensaje">💬 "{{ $p->mensaje }}"</div>
               @endif
@@ -687,24 +748,39 @@
                 </div>
               @endif
 
+              @if ($abierto)
+                <div class="p-contacto-abierto">
+                  <div class="fila"><i class="mdi mdi-email-outline"></i> {{ $u->email ?? '—' }}</div>
+                  <div class="fila"><i class="mdi mdi-phone"></i> {{ $telefono ?? '—' }}</div>
+                  <div class="p-botones">
+                    @if ($waNum)
+                      <a href="https://wa.me/52{{ preg_replace('/\D/', '', $waNum) }}?text={{ urlencode('Hola ' . $primerNombre . ', te escribo por la vacante de ' . ($p->vacante->titulo ?? '')) }}" target="_blank" style="background:#25D366; color:#fff;"><i class="mdi mdi-whatsapp"></i> WhatsApp</a>
+                    @endif
+                    @if ($telefono)
+                      <a href="tel:{{ $telefono }}" style="background:#e8f0fe; color:#1a73e8;"><i class="mdi mdi-phone"></i> Llamar</a>
+                    @endif
+                  </div>
+                </div>
+              @elseif ($p->estado !== 'rechazado')
+                <div class="p-contacto-oculto">
+                  <div class="cand"><i class="mdi mdi-lock-outline"></i></div>
+                  <div><strong style="color:#1f2937;">&bull;&bull;&bull;&bull; &bull;&bull;&bull; &bull;&bull;{{ $ultimos }}</strong> · Contacto protegido<br>Se muestra cuando aceptes a {{ $primerNombre }} para entrevista.</div>
+                </div>
+              @endif
+
               <div class="postulante-actions">
                 @if ($p->estado === 'contratado')
                   <button class="btn-contratar" disabled style="opacity:0.5; cursor:not-allowed;"><i class="mdi mdi-check"></i> Contratado</button>
-                  @php $telPostulante = $p->postulante->whatsapp ?? $p->postulante->telefono ?? null; @endphp
-                  @if ($telPostulante)
-                    <a href="https://wa.me/52{{ preg_replace('/\D/', '', $telPostulante) }}" target="_blank" style="flex:1; text-decoration:none; background:#25D366; color:#fff; padding:7px 10px; border-radius:8px; font-size:11px; font-weight:600; text-align:center; display:flex; align-items:center; justify-content:center; gap:4px;"><i class="mdi mdi-whatsapp"></i> WhatsApp</a>
-                  @endif
                 @elseif ($p->estado === 'rechazado')
                   <button class="btn-rechazar" disabled style="opacity:0.5; cursor:not-allowed; flex:1;"><i class="mdi mdi-close"></i> Rechazado</button>
                   <button type="button" onclick="eliminarPostulacion({{ $p->id }})" title="Eliminar" style="border:none; background:#f1f3f4; color:#5f6368; border-radius:8px; padding:6px 10px; cursor:pointer;"><i class="mdi mdi-trash-can-outline"></i></button>
-                @else
+                @elseif ($p->estado === 'entrevista')
                   <button class="btn-contratar" onclick="cambiarEstado({{ $p->id }}, 'contratado')"><i class="mdi mdi-check"></i> Contratar</button>
                   <button class="btn-rechazar" onclick="cambiarEstado({{ $p->id }}, 'rechazado')"><i class="mdi mdi-close"></i></button>
+                @else
+                  <button class="btn-entrevista" onclick="cambiarEstado({{ $p->id }}, 'entrevista')"><i class="mdi mdi-account-voice"></i> Aceptar para entrevista</button>
+                  <button class="btn-rechazar" onclick="cambiarEstado({{ $p->id }}, 'rechazado')" title="Rechazar"><i class="mdi mdi-close"></i></button>
                 @endif
-              </div>
-              <div class="postulante-meta">
-                <span>📧 {{ $p->postulante->email ?? '—' }}</span>
-                <span>📞 {{ $p->postulante->telefono ?? '—' }}</span>
               </div>
             </div>
           @empty
@@ -728,34 +804,64 @@
                 $coloresP = ['#0d9488,#2dd4bf', '#7c3aed,#a78bfa', '#f57c00,#ffb74d', '#15803d,#86efac', '#b91c1c,#f87171', '#ec4899,#f9a8d4', '#d97706,#fbbf24'];
                 $colorP = $coloresP[$p->id % count($coloresP)];
               @endphp
+              @php
+                $abiertoE = $p->contactoAbierto();
+                $etqE = ['pendiente' => 'Pendiente', 'entrevista' => 'En entrevista', 'contratado' => 'Contratado', 'rechazado' => 'Rechazado'];
+                $empl = $p->vacante->empleador ?? null;
+                $telEmpleo = $p->vacante->whatsapp ?? $p->vacante->telefono ?? null;
+                $ultE = $p->vacante && $p->vacante->telefono ? substr(preg_replace('/\D/', '', $p->vacante->telefono), -2) : '';
+              @endphp
               <div class="postulante-card">
                 <div class="postulante-header">
                   <div class="postulante-avatar" style="background:linear-gradient(135deg,{{ $colorP }});">{{ $inicialesEmp }}</div>
-                  <div style="flex:1;">
+                  <div style="flex:1; min-width:0;">
                     <div class="postulante-nombre">{{ $nombreEmp }}</div>
                     <div class="postulante-cargo">{{ $p->vacante->titulo ?? 'Vacante eliminada' }}</div>
                   </div>
-                  <span class="postulante-status status-{{ $p->estado }}">{{ ucfirst($p->estado) }}</span>
+                  <div style="text-align:right;">
+                    <span class="postulante-status status-{{ $p->estado }}">{{ $etqE[$p->estado] ?? ucfirst($p->estado) }}</span>
+                    <div style="margin-top:4px;">
+                      @if ($empl && $empl->verificacion_estado === 'aprobado')
+                        <span class="p-ver-ok" title="Empleador verificado"><i class="mdi mdi-check-decagram"></i> Verificado</span>
+                      @else
+                        <span class="p-ver-no" title="Este empleador todavía no ha verificado su identidad"><i class="mdi mdi-shield-outline"></i> Sin verificar</span>
+                      @endif
+                    </div>
+                  </div>
                 </div>
                 <div style="font-size:12px; color:#666; margin-bottom:6px;">
                   🕐 Postulado {{ $p->created_at->diffForHumans() }}
                 </div>
+                @include('usuario.partials.chip-vacante-postulada', ['vacante' => $p->vacante])
                 @if ($p->mensaje)
                   <div class="postulante-mensaje">💬 "{{ $p->mensaje }}"</div>
                 @endif
+
                 @if ($p->estado === 'pendiente')
                   <p style="font-size:12px; color:#e37400; margin-top:8px;"><i class="mdi mdi-clock-outline"></i> Esperando respuesta del empleador.</p>
-                @elseif ($p->estado === 'contratado')
-                  <p style="font-size:12px; color:#16a34a; margin-top:8px;"><i class="mdi mdi-check-circle"></i> ¡Te contrataron! Contacta al empleador para coordinar.</p>
-                  @php $telEmpleo = $p->vacante->whatsapp ?? $p->vacante->telefono ?? null; @endphp
+                  <div class="p-contacto-oculto">
+                    <div class="cand"><i class="mdi mdi-lock-outline"></i></div>
+                    <div><strong style="color:#1f2937;">&bull;&bull;&bull;&bull; &bull;&bull;&bull; &bull;&bull;{{ $ultE }}</strong> · Contacto protegido<br>Se mostrará cuando el empleador te acepte para entrevista.</div>
+                  </div>
+                @elseif ($abiertoE)
+                  <p style="font-size:12px; color:#16a34a; margin-top:8px;">
+                    <i class="mdi mdi-check-circle"></i>
+                    {{ $p->estado === 'contratado' ? '¡Te contrataron! Contacta al empleador para coordinar.' : '¡Te aceptaron para entrevista! Ya puedes contactar al empleador.' }}
+                  </p>
                   @if ($telEmpleo)
-                    <div style="display:flex; gap:6px; margin-top:8px;">
-                      <a href="https://wa.me/52{{ preg_replace('/\D/', '', $telEmpleo) }}" target="_blank" style="flex:1; text-decoration:none; background:#25D366; color:#fff; padding:7px 10px; border-radius:8px; font-size:11px; font-weight:600; text-align:center; display:flex; align-items:center; justify-content:center; gap:4px;"><i class="mdi mdi-whatsapp"></i> WhatsApp</a>
-                      <a href="tel:{{ $p->vacante->telefono }}" style="flex:1; text-decoration:none; background:#e8f0fe; color:#1a73e8; padding:7px 10px; border-radius:8px; font-size:11px; font-weight:600; text-align:center; display:flex; align-items:center; justify-content:center; gap:4px;"><i class="mdi mdi-phone"></i> Llamar</a>
+                    <div class="p-botones">
+                      <a href="https://wa.me/52{{ preg_replace('/\D/', '', $telEmpleo) }}?text={{ urlencode('Hola, me postulé a «' . ($p->vacante->titulo ?? 'tu vacante') . '».') }}" target="_blank" style="background:#25D366; color:#fff;"><i class="mdi mdi-whatsapp"></i> WhatsApp</a>
+                      <a href="tel:{{ $p->vacante->telefono }}" style="background:#e8f0fe; color:#1a73e8;"><i class="mdi mdi-phone"></i> Llamar</a>
                     </div>
                   @endif
+                  <p style="font-size:11px; color:#6b7280; margin-top:8px;"><i class="mdi mdi-shield-alert-outline"></i> Nunca pagues por un empleo. Si te piden dinero, reporta la vacante.</p>
                 @else
-                  <p style="font-size:12px; color:#dc2626; margin-top:8px;"><i class="mdi mdi-close-circle"></i> Esta postulación fue rechazada.</p>
+                  <p style="font-size:12px; color:#dc2626; margin-top:8px;"><i class="mdi mdi-close-circle"></i> Esta postulación no fue seleccionada.</p>
+                  <div class="p-botones">
+                    @if ($p->vacante && $p->vacante->esta_abierta)
+                      <a href="/usuario/ver_vacante/{{ $p->vacante_id }}?corregir=1" style="background:linear-gradient(45deg,#ff7a18,#ffb347); color:#fff;"><i class="mdi mdi-pencil"></i> Corregir y volver a postularme</a>
+                    @endif
+                  </div>
                   <button type="button" onclick="eliminarPostulacion({{ $p->id }})" style="margin-top:8px; width:100%; border:none; background:#f1f3f4; color:#5f6368; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:4px;"><i class="mdi mdi-trash-can-outline"></i> Eliminar</button>
                 @endif
               </div>
@@ -789,7 +895,7 @@
 
   </div>
 
-  <script src="{{ asset('assets/usuario/js/main.js') }}"></script>
+  <script src="{{ \App\Support\Assets::usuarioMain() }}"></script>
   <script>
     (function() {
       const labelWorker = document.getElementById('labelWorker');
@@ -857,16 +963,21 @@
       document.getElementById('tabPostEnviadas').classList.toggle('activa', tab === 'enviadas');
     }
 
+    if (new URLSearchParams(location.search).get('tab') === 'enviadas') { mostrarTabPost('enviadas'); }
+
     function cambiarEstado(id, estado) {
-      const mensaje = estado === 'contratado' ? '¿Contratar a este postulante?' : '¿Rechazar a este postulante?';
+      const mensaje = estado === 'contratado' ? '¿Contratar a este postulante?'
+        : estado === 'entrevista' ? 'Vas a aceptar a esta persona para entrevista. Se compartirá tu teléfono y WhatsApp con ella, y verás su contacto. ¿Continuar?'
+        : '¿Rechazar a este postulante?';
       if (!confirm(mensaje)) return;
 
       fetch(`/usuario/postulantes/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify({ estado: estado }),
       })
-        .then(res => { if (!res.ok) throw new Error(); location.reload(); })
+        .then(res => res.json().catch(() => ({})).then(d => ({ ok: res.ok, d })))
+        .then(({ ok, d }) => { if (!ok) { alert(d.error || 'Ocurrió un error al actualizar al postulante.'); return; } location.reload(); })
         .catch(() => alert('Ocurrió un error al actualizar al postulante.'));
     }
 

@@ -25,7 +25,7 @@ class AdminPostulacionController extends Controller
     public function cambiarEstado(Request $request, $id)
     {
         $request->validate([
-            'estado' => 'required|in:pendiente,contratado,rechazado',
+            'estado' => 'required|in:pendiente,entrevista,contratado,rechazado',
         ]);
 
         $postulacion = Postulacion::findOrFail($id);

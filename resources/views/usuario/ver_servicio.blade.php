@@ -114,6 +114,47 @@
       transform: translateY(-2px);
       box-shadow: 0 5px 12px rgba(0,0,0,0.15);
     }
+    .contacto-oculto {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-top: 1rem;
+      padding: 14px 16px;
+      border: 1.5px dashed #f3c9a0;
+      border-radius: 14px;
+      background: #fff8f1;
+    }
+    .contacto-oculto .co-candado {
+      flex: 0 0 38px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #ffe8d1;
+      color: #ea580c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+    .contacto-oculto .co-numero {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #1f2937;
+    }
+    .contacto-oculto .co-etiqueta {
+      margin-left: 8px;
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      color: #15803d;
+    }
+    .contacto-oculto p {
+      margin: 4px 0 0;
+      font-size: .88rem;
+      line-height: 1.45;
+      color: #6b7280;
+    }
     .back-button {
       display: inline-flex;
       align-items: center;
@@ -135,6 +176,17 @@
       color: #fff;
       transform: translateX(-3px);
       box-shadow: 0 4px 12px rgba(255,122,24,0.25);
+    }
+    /* Insignia "Verificado" del encabezado. En computadora queda como siempre (en la misma fila,
+       junto al nombre); en celular el nombre y la insignia van en una columna junto a la foto,
+       la insignia en su propia línea, para que no se monte con el nombre. */
+    .author-texto { display: contents; }
+    .ins-verificado-det { background:#dcfce7; color:#16a34a; padding:2px 10px; border-radius:20px; font-size:.75rem; font-weight:700; margin-left:8px; }
+    @media (max-width: 768px) {
+      .author { align-items: flex-start; }
+      .author-avatar { flex: none; }
+      .author-texto { display: block; flex: 1; min-width: 0; overflow-wrap: anywhere; align-self: center; }
+      .ins-verificado-det { display: table; margin: 6px 0 0 0; white-space: nowrap; }
     }
   </style>
   <link rel="stylesheet" href="{{ asset('assets/usuario/css/ads-widget.css') }}">
@@ -188,6 +240,7 @@
         <li><a href="/usuario/verEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-briefcase"></i></span><span class="menu-item-label">Contratar un servicio</span></a></li>
         <li><a href="/usuario/publicarEmpleo" class="has-icon"><span class="icon"><i class="mdi mdi-square-edit-outline"></i></span><span class="menu-item-label">Ofrecer mi servicio</span></a></li>
         <li><a href="/usuario/misEmpleos" class="has-icon"><span class="icon"><i class="mdi mdi-format-list-bulleted"></i></span><span class="menu-item-label">Mis servicios</span></a></li>
+        <li><a href="/usuario/solicitudes" class="has-icon"><span class="icon"><i class="mdi mdi-account-clock"></i></span><span class="menu-item-label">Solicitudes</span></a></li>
         <li><a href="/usuario/profile" class="has-icon"><span class="icon"><i class="mdi mdi-account-circle"></i></span><span class="menu-item-label">Perfil</span></a></li>
       </ul>
     </div>
@@ -223,12 +276,14 @@
             @else
               <span class="author-avatar">{{ $iniciales }}</span>
             @endif
-            <span>Publicado por: {{ $nombre }}</span>
-            @if ($servicio->usuario->verificacion_estado === 'aprobado')
-              <span title="Identidad verificada" style="background:#dcfce7; color:#16a34a; padding:2px 10px; border-radius:20px; font-size:.75rem; font-weight:700; margin-left:8px;">
-                <i class="mdi mdi-check-decagram"></i> Verificado
-              </span>
-            @endif
+            <div class="author-texto">
+              <span>Publicado por: {{ $nombre }}</span>
+              @if ($servicio->usuario->verificacion_estado === 'aprobado')
+                <span class="ins-verificado-det" title="Identidad verificada">
+                  <i class="mdi mdi-check-decagram"></i> Verificado
+                </span>
+              @endif
+            </div>
           </div>
         </div>
 
@@ -262,15 +317,31 @@
               $telefono = $servicio->telefono ?? $servicio->usuario->telefono;
               $whatsapp = $servicio->whatsapp ?? $servicio->usuario->whatsapp ?? $telefono;
             @endphp
+            @unless ($contactoVisible)
+              @php $ultimos = $telefono ? substr(preg_replace('/\D/', '', $telefono), -2) : ''; @endphp
+              <div class="contacto-oculto">
+                <div class="co-candado"><i class="mdi mdi-lock-outline"></i></div>
+                <div>
+                  <div class="co-numero">&bull;&bull;&bull;&bull; &bull;&bull;&bull; &bull;&bull;{{ $ultimos }}<span class="co-etiqueta">Contacto protegido</span></div>
+                  @if ($solicitudPendiente)
+                    <p>Tu solicitud está pendiente. Cuando el trabajador la acepte, aquí aparecerán su teléfono, WhatsApp y correo.</p>
+                  @else
+                    <p>Por seguridad, el contacto está oculto. Solicita este servicio y, cuando el trabajador te acepte, aquí aparecerán su teléfono, WhatsApp y correo.</p>
+                  @endif
+                </div>
+              </div>
+            @endunless
             <div class="contact-buttons">
-              @if ($telefono)
-                <a href="tel:{{ $telefono }}" class="btn-contact"><i class="mdi mdi-phone"></i> Llamar</a>
-              @endif
-              @if ($whatsapp)
-                <a href="https://wa.me/52{{ preg_replace('/\D/', '', $whatsapp) }}" target="_blank" class="btn-contact" style="background:#25D366;"><i class="mdi mdi-whatsapp"></i> WhatsApp</a>
-              @endif
-              @if ($servicio->usuario->email)
-                <a href="mailto:{{ $servicio->usuario->email }}" class="btn-contact btn-contact-outline"><i class="mdi mdi-email"></i> Enviar Email</a>
+              @if ($contactoVisible)
+                @if ($telefono)
+                  <a href="tel:{{ $telefono }}" class="btn-contact"><i class="mdi mdi-phone"></i> Llamar</a>
+                @endif
+                @if ($whatsapp)
+                  <a href="https://wa.me/52{{ preg_replace('/\D/', '', $whatsapp) }}" target="_blank" class="btn-contact" style="background:#25D366;"><i class="mdi mdi-whatsapp"></i> WhatsApp</a>
+                @endif
+                @if ($servicio->usuario->email)
+                  <a href="mailto:{{ $servicio->usuario->email }}" class="btn-contact btn-contact-outline"><i class="mdi mdi-email"></i> Enviar Email</a>
+                @endif
               @endif
               @if ($servicio->curriculum && $servicio->curriculum->tieneContenido)
                 <a href="/usuario/servicio/{{ $servicio->id }}/cv" target="_blank" class="btn-contact btn-contact-outline"><i class="mdi mdi-file-account-outline"></i> Ver CV</a>
@@ -358,6 +429,10 @@
               </button>
             @endif
           </div>
+
+          @if (!$esPropio && !$yaSolicitado)
+            @include('partials.solicitud-servicio-form')
+          @endif
         </div>
       </div>
     </div>
@@ -515,27 +590,17 @@
   }
 </style>
 
-<script src="{{ asset('assets/usuario/js/main.js') }}"></script>
+<script src="{{ \App\Support\Assets::usuarioMain() }}"></script>
 <script src="{{ asset('assets/usuario/js/ads-widget.js') }}"></script>
 <script>
   const btnSolicitar = document.getElementById('btnSolicitar');
-  if (btnSolicitar) {
+  if (btnSolicitar && window.abrirSolicitudServicio) {
     btnSolicitar.addEventListener('click', function () {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-      fetch('/usuario/ver_servicio/{{ $servicio->id }}/solicitar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-      })
-        .then(res => res.json().then(data => ({ ok: res.ok, data })))
-        .then(({ ok, data }) => {
-          if (!ok) {
-            alert('❌ ' + (data.error || 'Ocurrió un error al solicitar el servicio.'));
-            return;
-          }
-          alert('✅ ¡Solicitud enviada! El trabajador podrá revisarla y contactarte.');
-          location.reload();
-        })
-        .catch(() => alert('❌ Ocurrió un error de conexión. Intenta de nuevo.'));
+      window.abrirSolicitudServicio({
+        servicioId: {{ $servicio->id }},
+        titulo: @json($servicio->titulo),
+        previa: @json($previa ?? null),
+      });
     });
   }
 </script>

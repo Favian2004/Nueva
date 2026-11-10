@@ -12,7 +12,7 @@ class UsuarioSolicitudController extends Controller
     {
         $estado = $request->input('estado');
 
-        $recibidas = Contratacion::with(['servicio', 'contratante'])
+        $recibidas = Contratacion::with(['servicio', 'contratante.localidad.municipio'])
             ->where('trabajador_id', Auth::id())
             ->when($estado, fn($query) => $query->where('estado', $estado))
             ->latest()

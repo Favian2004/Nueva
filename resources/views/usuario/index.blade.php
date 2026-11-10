@@ -71,6 +71,14 @@
   }
 }
   </style>
+  <style>
+    /* Insignia "Verificado" de las tarjetas: en computadora igual que siempre;
+       en celular ocupa su propia línea debajo del título (si no hay insignia, no ocupa nada). */
+    .ins-verificado { background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; vertical-align:middle; white-space:nowrap; }
+    @media (max-width: 768px) {
+      .ins-verificado { display:table; margin-top:4px; }
+    }
+  </style>
 </head>
 
 <body>
@@ -259,7 +267,7 @@
                 <div class="product-info">
                   <h4>{{ $s->titulo }}
                     @if ($s->usuario && $s->usuario->verificacion_estado === 'aprobado')
-                      <span title="Identidad verificada" style="background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; vertical-align:middle;">
+                      <span class="ins-verificado" title="Identidad verificada">
                         <i class="mdi mdi-check-decagram"></i> Verificado
                       </span>
                     @endif

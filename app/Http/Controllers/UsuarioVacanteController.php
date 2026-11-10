@@ -39,12 +39,29 @@ class UsuarioVacanteController extends Controller
 
         $yaPostulado = Postulacion::where('vacante_id', $vacante->id)
             ->where('postulante_id', Auth::id())
-            ->whereIn('estado', ['pendiente', 'contratado'])
+            ->whereIn('estado', ['pendiente', 'entrevista', 'contratado'])
             ->exists();
+
+        $esDuenio = $vacante->empleador_id === Auth::id();
+
+        // El contacto del empleador solo se ve cuando él acepta a la persona (entrevista o contratación).
+        $contactoVisible = $esDuenio || Postulacion::contactoAbiertoVacante($vacante->id, Auth::id());
+
+        // Si la persona fue rechazada, el formulario se abre con lo que había escrito para corregirlo.
+        $previa = null;
+        if (!$esDuenio && !$yaPostulado) {
+            $previa = Postulacion::where('vacante_id', $vacante->id)
+                ->where('postulante_id', Auth::id())
+                ->where('estado', 'rechazado')
+                ->latest('id')
+                ->first()?->datosParaFormulario();
+        }
 
         return view('usuario.ver-vacante', [
             'vacante' => $vacante,
             'yaPostulado' => $yaPostulado,
+            'contactoVisible' => $contactoVisible,
+            'previa' => $previa,
         ]);
     }
 

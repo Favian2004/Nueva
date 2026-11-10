@@ -303,15 +303,52 @@
                   <div class="solicitud-nombre">{{ $nombre }}</div>
                   <div class="solicitud-servicio">{{ $s->servicio->titulo ?? 'Servicio eliminado' }}</div>
                 </div>
-                <span class="solicitud-status status-{{ $s->estado }}">{{ ucfirst($s->estado) }}</span>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0;">
+                  <span class="solicitud-status status-{{ $s->estado }}">{{ ucfirst($s->estado) }}</span>
+                  @if ($s->contratante && $s->contratante->verificacion_estado === 'aprobado')
+                    <span title="Identidad verificada por SINTECZATE" style="display:inline-block; background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; white-space:nowrap;"><i class="mdi mdi-check-decagram"></i> Usuario verificado</span>
+                  @else
+                    <span title="Todavía no ha verificado su identidad" style="display:inline-block; background:#f3f4f6; color:#6b7280; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; white-space:nowrap;"><i class="mdi mdi-shield-outline"></i> Sin verificar</span>
+                  @endif
+                </div>
               </div>
               <div style="font-size:12px; color:#666; margin-bottom:6px;">
                 🕐 {{ $s->created_at->diffForHumans() }}
               </div>
-              <div style="font-size:12px; color:#666;">
-                📧 {{ $s->contratante->email ?? '—' }}<br>
-                📞 {{ $s->contratante->telefono ?? '—' }}
+              @include('usuario.partials.chip-servicio-solicitado', ['servicio' => $s->servicio])
+              @php
+                $c = $s->contratante;
+                $lugar = $c && $c->localidad
+                  ? $c->localidad->nombre . ($c->localidad->municipio ? ', ' . $c->localidad->municipio->nombre : '')
+                  : null;
+                $bio = $c && $c->descripcion ? trim($c->descripcion) : '';
+                $telVisible = $s->estado === 'aceptado';
+              @endphp
+              @if ($s->necesidad)
+                <div style="margin-bottom:8px; padding:10px 12px; background:#fff8f1; border:1px solid #fde4c8; border-radius:10px; font-size:12px; color:#444; line-height:1.5;">
+                  <div style="font-weight:800; color:#c2410c; font-size:11px; letter-spacing:.4px; margin-bottom:4px;">LO QUE NECESITA</div>
+                  <div style="white-space:pre-line; overflow-wrap:anywhere;">{{ $s->necesidad }}</div>
+                  <div style="margin-top:6px; color:#666;">
+                    @if ($s->etiquetaFecha())<div>📅 <strong>Para:</strong> {{ $s->etiquetaFecha() }}</div>@endif
+                    @if ($s->etiquetaPresupuesto())<div>💰 <strong>Presupuesto:</strong> {{ $s->etiquetaPresupuesto() }}</div>@endif
+                    @if ($s->etiquetaContacto())<div>💬 <strong>Prefiere contacto por:</strong> {{ $s->etiquetaContacto() }}</div>@endif
+                  </div>
+                </div>
+              @endif
+              <div style="font-size:12px; color:#666; line-height:1.7;">
+                📧 {{ $c->email ?? '—' }}<br>
+                @if ($lugar)📍 {{ $lugar }}<br>@endif
+                @if ($telVisible)
+                  📞 {{ $c->telefono ?? '—' }}
+                @else
+                  <span style="color:#9ca3af;">📞 •••• ••• •••• <small>(se muestra al aceptar)</small></span>
+                @endif
               </div>
+              @if ($bio !== '')
+                <div title="{{ $bio }}" style="margin-top:8px; padding:8px 10px; background:#f8fafc; border-radius:8px; font-size:12px; color:#555; line-height:1.45;">
+                  <strong style="color:#374151;">Sobre {{ \Illuminate\Support\Str::before($nombre, ' ') }}:</strong> {{ \Illuminate\Support\Str::limit($bio, 160) }}
+                </div>
+              @endif
 
               <div class="solicitud-actions">
                 @if ($s->estado === 'pendiente')
@@ -365,6 +402,7 @@
                 <div style="font-size:12px; color:#666; margin-bottom:6px;">
                   🕐 Solicitado {{ $s->created_at->diffForHumans() }}
                 </div>
+                @include('usuario.partials.chip-servicio-solicitado', ['servicio' => $s->servicio])
                 @if ($s->estado === 'pendiente')
                   <p style="font-size:12px; color:#e37400; margin-top:8px;"><i class="mdi mdi-clock-outline"></i> Esperando respuesta del trabajador.</p>
                 @elseif ($s->estado === 'aceptado')
@@ -380,6 +418,13 @@
                   <p style="font-size:12px; color:#2563eb; margin-top:8px;"><i class="mdi mdi-flag-checkered"></i> Este trabajo ya se marcó como finalizado.</p>
                 @else
                   <p style="font-size:12px; color:#dc2626; margin-top:8px;"><i class="mdi mdi-close-circle"></i> Esta solicitud fue cancelada.</p>
+                  @if ($s->servicio && $s->servicio->estado === 'activo')
+                    <button type="button" class="btn-reenviar" onclick="reenviarSolicitud(this)"
+                      data-servicio="{{ $s->servicio->id }}"
+                      data-titulo="{{ $s->servicio->titulo }}"
+                      data-previa='@json($s->datosParaFormulario())'
+                      style="margin-top:8px; width:100%; border:none; background:linear-gradient(45deg,#ff7a18,#ffb347); color:#fff; border-radius:8px; padding:8px 10px; cursor:pointer; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:5px;"><i class="mdi mdi-send-circle-outline"></i> Corregir y volver a enviar</button>
+                  @endif
                   <button type="button" onclick="eliminarSolicitud({{ $s->id }})" style="margin-top:8px; width:100%; border:none; background:#f1f3f4; color:#5f6368; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:4px;"><i class="mdi mdi-trash-can-outline"></i> Eliminar</button>
                 @endif
               </div>
@@ -417,7 +462,9 @@
 
   </div>
 
-  <script src="{{ asset('assets/usuario/js/main.js') }}"></script>
+  @include('partials.solicitud-servicio-form')
+
+  <script src="{{ \App\Support\Assets::usuarioMain() }}"></script>
   <script src="{{ asset('assets/usuario/js/interruptor.js') }}"></script>
   <script>
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
@@ -428,6 +475,9 @@
       document.getElementById('tabRecibidas').classList.toggle('activa', tab === 'recibidas');
       document.getElementById('tabEnviadas').classList.toggle('activa', tab === 'enviadas');
     }
+
+    // Si llegas con ?tab=enviadas (por ejemplo al reenviar una solicitud), se abre "Yo contacté".
+    if (new URLSearchParams(location.search).get('tab') === 'enviadas') { mostrarTab('enviadas'); }
 
     function cambiarEstado(id, estado) {
       const mensajes = {
@@ -444,6 +494,19 @@
       })
         .then(res => { if (!res.ok) throw new Error(); location.reload(); })
         .catch(() => alert('Ocurrió un error al actualizar la solicitud.'));
+    }
+
+    // Abre el formulario con los datos de la solicitud que cancelaron, para corregirlos y reenviar.
+    function reenviarSolicitud(btn) {
+      let previa = null;
+      try { previa = JSON.parse(btn.dataset.previa || 'null'); } catch (e) { previa = null; }
+      window.abrirSolicitudServicio({
+        servicioId: btn.dataset.servicio,
+        titulo: btn.dataset.titulo,
+        previa: previa,
+        reenvio: true,
+        despues: '/usuario/solicitudes?tab=enviadas',
+      });
     }
 
     function eliminarSolicitud(id) {

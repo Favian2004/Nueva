@@ -239,6 +239,7 @@
       </div>
     </div>
 
+    @if (!isset($contactoVisible) || $contactoVisible)
     <div class="contacto">
       @if ($curriculum->telefono)
         <span><i class="mdi mdi-phone"></i> {{ $curriculum->telefono }}</span>
@@ -247,6 +248,9 @@
         <span><i class="mdi mdi-email-outline"></i> {{ $curriculum->correo }}</span>
       @endif
     </div>
+    @else
+    <div class="contacto"><span><i class="mdi mdi-lock-outline"></i> Contacto protegido: se muestra cuando aceptes a esta persona para entrevista.</span></div>
+    @endif
 
     <div class="cuerpo">
 
@@ -359,7 +363,7 @@
               <div class="referencia">
                 <div class="nombre">{{ $ref['nombre'] ?? '' }}</div>
                 @if (!empty($ref['relacion']))<div class="rel">{{ $ref['relacion'] }}</div>@endif
-                @if (!empty($ref['telefono']))<div class="tel">{{ $ref['telefono'] }}</div>@endif
+                @if (!empty($ref['telefono']) && (!isset($contactoVisible) || $contactoVisible))<div class="tel">{{ $ref['telefono'] }}</div>@endif
               </div>
             @endforeach
           </div>
