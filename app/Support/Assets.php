@@ -15,7 +15,7 @@ class Assets
     /** Se usa si el servidor no deja leer la fecha de los archivos. Súbelo al cambiar el JS. */
     private const RESPALDO = '20261108';
 
-    private const ARCHIVOS = ['main.js', 'notificaciones.js'];
+    private const ARCHIVOS = ['main.js', 'notificaciones.js', 'sesion.js', 'dialogos.js'];
 
     public static function usuarioMain(): string
     {

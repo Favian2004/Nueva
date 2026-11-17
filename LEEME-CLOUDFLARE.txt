@@ -1,0 +1,18 @@
+IMAGENES GRATIS CON CLOUDFLARE (sin tarjeta)
+
+1) Crea cuenta gratis en https://dash.cloudflare.com/sign-up
+2) Ya dentro: menu "Workers AI" -> "Use REST API":
+   - copia tu ACCOUNT ID
+   - "Create a Workers AI API Token" -> crear -> copia el token
+3) En Hostinger, archivo .env de Laravel, agrega:
+   IMAGEN_PROVEEDOR=cloudflare
+   CLOUDFLARE_ACCOUNT_ID=tu_account_id
+   CLOUDFLARE_AI_TOKEN=tu_token
+4) En config/services.php agrega ANTES de 'openai' => [ ...:
+    'imagen_proveedor' => env('IMAGEN_PROVEEDOR', 'cloudflare'),
+    'cloudflare' => [
+        'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
+        'token' => env('CLOUDFLARE_AI_TOKEN'),
+    ],
+   (config/services.php.EJEMPLO es solo de referencia, no lo copies encima del tuyo)
+5) php artisan optimize:clear

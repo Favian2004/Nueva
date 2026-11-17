@@ -737,10 +737,15 @@
                 <div class="postulante-mensaje">💬 "{{ $p->mensaje }}"</div>
               @endif
 
-              @if (($p->curriculum && $p->curriculum->tieneContenido) || $p->solicitud_empleo)
+              @if (($p->curriculum && ($p->curriculum->nombre || $p->curriculum->archivo_subido)) || $p->solicitud_empleo)
                 <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
-                  @if ($p->curriculum && $p->curriculum->tieneContenido)
+                  {{-- CV creado con el formulario de la plataforma --}}
+                  @if ($p->curriculum && $p->curriculum->nombre)
                     <a href="/usuario/postulacion/{{ $p->id }}/cv" style="font-size:11px; font-weight:700; color:#8a6d1f; background:#f7e9c9; padding:5px 10px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;"><i class="mdi mdi-file-account-outline"></i> Ver CV</a>
+                  @endif
+                  {{-- CV que la persona subió como archivo (PDF/Word): se abre directo. Si además creó uno en la plataforma, se distingue como "Ver CV subido". --}}
+                  @if ($p->curriculum && $p->curriculum->archivo_subido)
+                    <a href="{{ $p->curriculum->archivo_subido }}" target="_blank" rel="noopener" style="font-size:11px; font-weight:700; color:#8a6d1f; background:#f7e9c9; padding:5px 10px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;"><i class="mdi mdi-file-account-outline"></i> {{ $p->curriculum->nombre ? 'Ver CV subido' : 'Ver CV' }}</a>
                   @endif
                   @if ($p->solicitud_empleo)
                     <a href="{{ $p->solicitud_empleo }}" target="_blank" style="font-size:11px; font-weight:700; color:#8a6d1f; background:#f7e9c9; padding:5px 10px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;"><i class="mdi mdi-file-document-outline"></i> Ver Solicitud</a>
@@ -772,14 +777,17 @@
                 @if ($p->estado === 'contratado')
                   <button class="btn-contratar" disabled style="opacity:0.5; cursor:not-allowed;"><i class="mdi mdi-check"></i> Contratado</button>
                 @elseif ($p->estado === 'rechazado')
+                  @if (!empty($p->motivo_rechazo))
+                    <div style="flex-basis:100%; font-size:12px; color:#6b7280; background:#f9fafb; border-radius:8px; padding:7px 10px; margin-bottom:6px;"><strong style="color:#374151;">Motivo que enviaste:</strong> {{ $p->motivo_rechazo }}</div>
+                  @endif
                   <button class="btn-rechazar" disabled style="opacity:0.5; cursor:not-allowed; flex:1;"><i class="mdi mdi-close"></i> Rechazado</button>
                   <button type="button" onclick="eliminarPostulacion({{ $p->id }})" title="Eliminar" style="border:none; background:#f1f3f4; color:#5f6368; border-radius:8px; padding:6px 10px; cursor:pointer;"><i class="mdi mdi-trash-can-outline"></i></button>
                 @elseif ($p->estado === 'entrevista')
                   <button class="btn-contratar" onclick="cambiarEstado({{ $p->id }}, 'contratado')"><i class="mdi mdi-check"></i> Contratar</button>
-                  <button class="btn-rechazar" onclick="cambiarEstado({{ $p->id }}, 'rechazado')"><i class="mdi mdi-close"></i></button>
+                  <button class="btn-rechazar" onclick="abrirRechazo({{ $p->id }}, @js($nombre))" title="Rechazar"><i class="mdi mdi-close"></i></button>
                 @else
                   <button class="btn-entrevista" onclick="cambiarEstado({{ $p->id }}, 'entrevista')"><i class="mdi mdi-account-voice"></i> Aceptar para entrevista</button>
-                  <button class="btn-rechazar" onclick="cambiarEstado({{ $p->id }}, 'rechazado')" title="Rechazar"><i class="mdi mdi-close"></i></button>
+                  <button class="btn-rechazar" onclick="abrirRechazo({{ $p->id }}, @js($nombre))" title="Rechazar"><i class="mdi mdi-close"></i></button>
                 @endif
               </div>
             </div>
@@ -857,6 +865,9 @@
                   <p style="font-size:11px; color:#6b7280; margin-top:8px;"><i class="mdi mdi-shield-alert-outline"></i> Nunca pagues por un empleo. Si te piden dinero, reporta la vacante.</p>
                 @else
                   <p style="font-size:12px; color:#dc2626; margin-top:8px;"><i class="mdi mdi-close-circle"></i> Esta postulación no fue seleccionada.</p>
+                  @if (!empty($p->motivo_rechazo))
+                    <div style="font-size:12.5px; color:#7f1d1d; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:9px 12px; margin:8px 0;"><strong>Motivo del empleador:</strong> {{ $p->motivo_rechazo }}</div>
+                  @endif
                   <div class="p-botones">
                     @if ($p->vacante && $p->vacante->esta_abierta)
                       <a href="/usuario/ver_vacante/{{ $p->vacante_id }}?corregir=1" style="background:linear-gradient(45deg,#ff7a18,#ffb347); color:#fff;"><i class="mdi mdi-pencil"></i> Corregir y volver a postularme</a>
@@ -992,6 +1003,8 @@
         .catch(() => alert('Ocurrió un error al eliminar la postulación.'));
     }
   </script>
+
+  @include('usuario.partials.modal-rechazo')
 
   <script src="{{ asset('assets/usuario/js/ads-widget.js') }}"></script>
 

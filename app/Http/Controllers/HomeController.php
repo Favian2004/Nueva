@@ -84,6 +84,7 @@ class HomeController extends Controller
             ->get();
 
         $vacantes = Vacante::abiertas()
+            ->with('empleador')
             ->when($qVacante, fn($query) => $this->aplicarBusqueda($query, $qVacante, ['titulo', 'descripcion', 'ubicacion']))
             ->when($localidadVacanteId, function ($query) use ($localidadVacanteId, $localidades) {
                 $nombreLocalidad = optional($localidades->firstWhere('id', $localidadVacanteId))->nombre;

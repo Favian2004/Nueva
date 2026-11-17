@@ -418,6 +418,21 @@
       }
     }
 
+    /* ---------- Computadora: el buscador ocupa una sola fila y los demás filtros
+       se esconden detrás del botón "Filtros" (se abren solos si hay filtros puestos) ---------- */
+    @media (min-width: 769px) {
+      .bt-card { padding: 14px 20px; border-radius: 20px; }
+      .bt-head { display: none; }
+      .bt-top {
+        grid-template-columns: 1fr auto auto;
+        grid-template-areas: "q toggle buscar";
+        margin-bottom: 0;
+      }
+      .bt-toggle { display: inline-flex; }
+      .bt-panel { display: none; margin-top: 14px; }
+      .bt-panel.is-open { display: grid; }
+    }
+
     /* ---------- Celular ---------- */
     @media (max-width: 768px) {
       .bt-card {
@@ -634,7 +649,7 @@
                 </div>
               </div>
 
-              <!-- Solo en celular: abre y cierra los demás filtros -->
+              <!-- Abre y cierra los demás filtros (celular y computadora) -->
               <button type="button" class="bt-toggle" id="btToggle" aria-expanded="false" aria-controls="btPanel">
                 <i class="mdi mdi-tune"></i> Filtros
                 @if ($numFiltros)
@@ -884,7 +899,7 @@
 
                     <a href="/usuario/ver_vacante/{{ $v->id }}" class="btn-add" style="background:#fff; border:1.5px solid #ff7a18; color:#ff7a18; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
                       <i class="mdi mdi-text-box-search-outline"></i>
-                      Ver información
+                      Ver más información / Postularme
                     </a>
 
                     @if ($v->empleador_id !== auth()->id())
@@ -892,11 +907,6 @@
                         <button class="btn-add" type="button" disabled style="opacity:.6; cursor:default;">
                           <i class="mdi mdi-check-circle"></i>
                           Ya te postulaste
-                        </button>
-                      @else
-                        <button class="btn-add" type="button" onclick="abrirModalPostular({{ $v->id }}, '{{ addslashes($v->titulo) }}', {{ $v->requiere_cv ? 'true' : 'false' }}, {{ $v->requiere_solicitud_empleo ? 'true' : 'false' }})">
-                          <i class="mdi mdi-account-plus"></i>
-                          Postularme
                         </button>
                       @endif
                     @else
@@ -1121,6 +1131,11 @@
       var enCelular = function () { return window.matchMedia('(max-width: 768px)').matches; };
 
       if (toggle && panel) {
+        // En computadora, si ya hay filtros puestos, el panel arranca abierto
+        if (!enCelular() && toggle.querySelector('.bt-badge')) {
+          panel.classList.add('is-open');
+          toggle.setAttribute('aria-expanded', 'true');
+        }
         toggle.addEventListener('click', function () {
           var abierto = panel.classList.toggle('is-open');
           toggle.setAttribute('aria-expanded', abierto ? 'true' : 'false');

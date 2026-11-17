@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Curriculum;
 use App\Models\Localidad;
 use App\Models\Postulacion;
 use App\Models\Vacante;
@@ -9,6 +10,7 @@ use App\Services\BusquedaTolerante;
 use App\Services\ModeracionService;
 use App\Services\SalarioVacante;
 use App\Services\UbicacionServicios;
+use App\Services\ValidadorDocumento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -58,7 +60,10 @@ class UsuarioEmpleadorController extends Controller
      */
     public function iniciarBorrador($vacanteId)
     {
-        $vacante = Vacante::findOrFail($vacanteId);
+        $vacante = Vacante::find($vacanteId);
+        if (! $vacante) {
+            return response()->json(['ok' => false, 'error' => 'Esta vacante ya no está disponible: el empleador la eliminó. Recarga la página para ver las vacantes actuales.'], 404);
+        }
 
         if (!$vacante->esta_abierta) {
             return response()->json(['ok' => false, 'error' => 'Esta vacante ya no está recibiendo postulaciones (pasó su fecha límite o fue cerrada).'], 422);
@@ -83,12 +88,41 @@ class UsuarioEmpleadorController extends Controller
             'estado' => 'borrador',
         ]);
 
+        // "Corregir y volver a postularme": la postulación anterior (rechazada) tenía su CV y su Solicitud.
+        // Se pasan a la nueva para que la persona no tenga que crearlos otra vez. Solo se rellena lo que falta,
+        // así que si ya subió algo nuevo no se pisa.
+        $anterior = Postulacion::where('vacante_id', $vacanteId)
+            ->where('postulante_id', Auth::id())
+            ->where('estado', 'rechazado')
+            ->latest('id')
+            ->first();
+
+        if ($anterior) {
+            $cvAnterior = Curriculum::where('postulacion_id', $anterior->id)->first();
+            $cvNuevo = Curriculum::where('postulacion_id', $postulacion->id)->first();
+            $nuevoVacio = !$cvNuevo || !($cvNuevo->tieneContenido || $cvNuevo->archivo_subido);
+
+            // Solo el CV creado en la plataforma; los archivos subidos (CV/solicitud) se vuelven a subir.
+            if ($cvAnterior && !empty($cvAnterior->nombre) && empty($cvAnterior->archivo_subido) && $nuevoVacio) {
+                // Se copia (no se mueve): al reenviar, la postulación rechazada se borra.
+                $copia = $cvAnterior->replicate();
+                $copia->postulacion_id = $postulacion->id;
+                if ($cvNuevo) {
+                    $cvNuevo->delete();
+                }
+                $copia->save();
+            }
+        }
+
         return response()->json(['ok' => true, 'postulacionId' => $postulacion->id]);
     }
 
     public function postularse(Request $request, $vacanteId, ModeracionService $moderacion)
     {
-        $vacante = Vacante::findOrFail($vacanteId);
+        $vacante = Vacante::find($vacanteId);
+        if (! $vacante) {
+            return response()->json(['ok' => false, 'error' => 'Esta vacante ya no está disponible: el empleador la eliminó. Recarga la página para ver las vacantes actuales.'], 404);
+        }
 
         if (!$vacante->esta_abierta) {
             return response()->json(['ok' => false, 'error' => 'Esta vacante ya no está recibiendo postulaciones (pasó su fecha límite o fue cerrada).'], 422);
@@ -120,6 +154,23 @@ class UsuarioEmpleadorController extends Controller
             'experiencia.required' => 'Elige tu experiencia.',
             'contacto_preferido.required' => 'Elige cómo prefieres que te contacten.',
         ]);
+
+        // Si la vacante pide CV y/o Solicitud, tienen que estar ya subidos o creados.
+        // (La ventana ya lo exige, pero aquí se comprueba de verdad en el servidor.)
+        $borrador = Postulacion::where('vacante_id', $vacanteId)
+            ->where('postulante_id', Auth::id())
+            ->where('estado', 'borrador')
+            ->first();
+
+        if ($vacante->requiere_cv) {
+            $cv = $borrador ? Curriculum::where('postulacion_id', $borrador->id)->first() : null;
+            if (!($cv && ($cv->tieneContenido || $cv->archivo_subido))) {
+                return response()->json(['ok' => false, 'error' => 'Esta vacante pide tu CV. Crea tu CV desde la plataforma o súbelo antes de enviar tu postulación.'], 422);
+            }
+        }
+        if ($vacante->requiere_solicitud_empleo && !($borrador && $borrador->solicitud_empleo)) {
+            return response()->json(['ok' => false, 'error' => 'Esta vacante pide tu Solicitud de Empleo. Súbela en PDF antes de enviar tu postulación.'], 422);
+        }
 
         // Máximo 3 intentos por vacante al día (evita el spam hacia un empleador).
         $clave = 'postulacion:' . Auth::id() . ':' . $vacanteId;
@@ -171,13 +222,14 @@ class UsuarioEmpleadorController extends Controller
      * Subir la Solicitud de Empleo para una postulación específica (todavía
      * en borrador o ya confirmada).
      */
-    public function subirSolicitudPostulacion(Request $request, $postulacionId)
+    public function subirSolicitudPostulacion(Request $request, $postulacionId, ValidadorDocumento $validador)
     {
         $postulacion = Postulacion::where('postulante_id', Auth::id())->findOrFail($postulacionId);
 
-        $request->validate([
-            'archivo' => 'required|file|mimes:pdf|max:4096',
-        ]);
+        // Que sea un PDF de verdad, sin contenido indebido y que parezca una Solicitud de Empleo.
+        if ($error = $validador->respuestaSiInvalido($request, ValidadorDocumento::SOLICITUD)) {
+            return $error;
+        }
 
         $postulacion->solicitud_empleo = '/storage/' . $request->file('archivo')->store('solicitudes-empleo', 'public');
         $postulacion->save();

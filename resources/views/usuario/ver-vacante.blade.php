@@ -551,6 +551,7 @@
   let postulacionBorradorId = null;
   let miTieneCvEnBorrador = false;
   let miTieneSolicitudEnBorrador = false;
+  let miCvEsDePlataforma = false;
   const modalRequiereCv = {{ $vacante->requiere_cv ? 'true' : 'false' }};
   const modalRequiereSolicitud = {{ $vacante->requiere_solicitud_empleo ? 'true' : 'false' }};
 
@@ -562,8 +563,34 @@
     });
   }
 
+  // Al ir a crear/editar el CV se guarda lo que ya escribiste en el modal, para no perderlo al regresar.
+  const CLAVE_BORRADOR = 'postular_borrador_' + vacanteIdActual;
+  function guardarBorradorModal() {
+    try {
+      sessionStorage.setItem(CLAVE_BORRADOR, JSON.stringify({
+        mensaje: document.getElementById('modalPostularMensaje').value,
+        disponibilidad: document.getElementById('modalPostularDisp').value,
+        experiencia: document.getElementById('modalPostularExp').value,
+        contacto: document.getElementById('modalPostularContacto').value,
+      }));
+    } catch (e) {}
+  }
+
   if (btnPostularme && new URLSearchParams(location.search).get('corregir')) {
-    setTimeout(() => btnPostularme.click(), 300);
+    setTimeout(() => {
+      btnPostularme.click();
+      try {
+        const g = JSON.parse(sessionStorage.getItem(CLAVE_BORRADOR) || 'null');
+        if (g) {
+          document.getElementById('modalPostularMensaje').value = g.mensaje || '';
+          document.getElementById('modalPostularContador').textContent = (g.mensaje || '').length;
+          if (g.disponibilidad) document.getElementById('modalPostularDisp').value = g.disponibilidad;
+          if (g.experiencia) document.getElementById('modalPostularExp').value = g.experiencia;
+          if (g.contacto) document.getElementById('modalPostularContacto').value = g.contacto;
+          sessionStorage.removeItem(CLAVE_BORRADOR);
+        }
+      } catch (e) {}
+    }, 300);
   }
 
   function abrirModalPostular(vacanteId, titulo, requiereCv, requiereSolicitud) {
@@ -592,7 +619,7 @@
         fetch(`/usuario/postulantes/${postulacionBorradorId}/cv/estado`)
           .then(res => res.json())
           .then(estado => {
-            if (estado.ok) { miTieneCvEnBorrador = estado.tieneCv; miTieneSolicitudEnBorrador = estado.tieneSolicitud; }
+            if (estado.ok) { miTieneCvEnBorrador = estado.tieneCv; miTieneSolicitudEnBorrador = estado.tieneSolicitud; miCvEsDePlataforma = !!estado.creadoEnPlataforma; }
             pintarDocsModal();
           })
           .catch(() => pintarDocsModal());
@@ -605,9 +632,9 @@
     let html = '<div style="background:#fff3e6; border:1px solid #ffe0bd; border-radius:14px; padding:16px; margin-bottom:18px;"><p style="font-size:12.5px; color:#c96410; font-weight:700; margin-bottom:10px;"><i class="mdi mdi-file-check-outline"></i> Este empleador pide lo siguiente:</p>';
     if (modalRequiereCv) {
       html += miTieneCvEnBorrador
-        ? '<div style="font-size:13px; color:#1e7e34; font-weight:600; margin-bottom:10px;"><i class="mdi mdi-check-circle"></i> CV listo</div>'
+        ? `<div style="font-size:13px; color:#1e7e34; font-weight:600; margin-bottom:10px;"><i class="mdi mdi-check-circle"></i> CV listo${miCvEsDePlataforma ? ` <a href="/usuario/postulantes/${postulacionBorradorId}/cv/crear" onclick="guardarBorradorModal()" style="margin-left:8px; color:#ff7a18; font-weight:700; font-size:12.5px; text-decoration:underline;"><i class="mdi mdi-pencil-outline"></i> Editar CV</a>` : ''}</div>`
         : `<div style="margin-bottom:10px;"><div style="font-size:13px; color:#d93025; margin-bottom:8px; font-weight:600;"><i class="mdi mdi-alert-circle-outline"></i> Falta tu CV</div>
-            <a href="/usuario/postulantes/${postulacionBorradorId}/cv/crear" style="background:linear-gradient(45deg,#ff7a18,#ffb347); color:#fff; border:none; padding:7px 16px; border-radius:20px; font-size:12.5px; font-weight:700; text-decoration:none; margin-right:8px; display:inline-block;">Crear CV</a>
+            <a href="/usuario/postulantes/${postulacionBorradorId}/cv/crear" onclick="guardarBorradorModal()" style="background:linear-gradient(45deg,#ff7a18,#ffb347); color:#fff; border:none; padding:7px 16px; border-radius:20px; font-size:12.5px; font-weight:700; text-decoration:none; margin-right:8px; display:inline-block;">Crear CV</a>
             <label style="background:#fff; border:1.5px solid #ff7a18; color:#ff7a18; padding:6px 16px; border-radius:20px; font-size:12.5px; font-weight:700; cursor:pointer; display:inline-block;">Subir CV<input type="file" accept=".pdf,.doc,.docx" style="display:none;" onchange="subirCvDesdeModal(this)"></label></div>`;
     }
     if (modalRequiereSolicitud) {
@@ -625,7 +652,7 @@
     const fd = new FormData(); fd.append('archivo', file);
     fetch(`/usuario/postulantes/${postulacionBorradorId}/cv/subir-archivo`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
       .then(res => res.json().then(data => ({ ok: res.ok, data })))
-      .then(({ ok }) => { if (!ok) { alert('❌ Ocurrió un error al subir tu CV.'); return; } miTieneCvEnBorrador = true; pintarDocsModal(); })
+      .then(({ ok, data }) => { if (!ok) { alert('❌ ' + ((data && data.error) || 'Ocurrió un error al subir tu CV.')); input.value = ''; return; } miTieneCvEnBorrador = true; pintarDocsModal(); })
       .catch(() => alert('❌ Ocurrió un error de conexión.'));
   }
 
@@ -634,7 +661,7 @@
     const fd = new FormData(); fd.append('archivo', file);
     fetch(`/usuario/postulantes/${postulacionBorradorId}/solicitud-empleo`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
       .then(res => res.json().then(data => ({ ok: res.ok, data })))
-      .then(({ ok }) => { if (!ok) { alert('❌ Ocurrió un error al subir tu Solicitud.'); return; } miTieneSolicitudEnBorrador = true; pintarDocsModal(); })
+      .then(({ ok, data }) => { if (!ok) { alert('❌ ' + ((data && data.error) || 'Ocurrió un error al subir tu Solicitud.')); input.value = ''; return; } miTieneSolicitudEnBorrador = true; pintarDocsModal(); })
       .catch(() => alert('❌ Ocurrió un error de conexión.'));
   }
 

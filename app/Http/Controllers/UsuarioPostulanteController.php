@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Postulacion;
 use App\Models\Vacante;
+use App\Services\ModeracionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class UsuarioPostulanteController extends Controller
 {
@@ -57,10 +59,15 @@ class UsuarioPostulanteController extends Controller
         ]);
     }
 
-    public function cambiarEstado(Request $request, $id)
+    public function cambiarEstado(Request $request, $id, ModeracionService $moderacion)
     {
         $request->validate([
             'estado' => 'required|in:pendiente,entrevista,contratado,rechazado',
+            // Solo se usa al rechazar: lo que el empleador le explica a la persona (opcional).
+            'motivo' => 'nullable|string|min:5|max:300',
+        ], [
+            'motivo.min' => 'Si escribes un motivo, que tenga al menos 5 letras.',
+            'motivo.max' => 'El motivo puede tener hasta 300 letras.',
         ]);
 
         $postulacion = Postulacion::whereHas('vacante', function ($query) {
@@ -81,8 +88,27 @@ class UsuarioPostulanteController extends Controller
             return response()->json(['ok' => false, 'error' => 'Esta postulación ya tiene una decisión final.'], 422);
         }
 
+        // Motivo del rechazo (opcional). Pasa por el mismo filtro de groserías que el resto del sitio,
+        // porque lo va a leer otra persona.
+        $motivo = null;
+        if ($nuevo === 'rechazado') {
+            $motivo = trim((string) $request->input('motivo', ''));
+            $motivo = $motivo === '' ? null : $motivo;
+
+            if ($motivo !== null) {
+                $revision = $moderacion->revisar($motivo);
+                if ($revision['flagged']) {
+                    return response()->json(['ok' => false, 'error' => 'El motivo no se pudo enviar porque contiene lenguaje o contenido no permitido. Escríbelo de forma respetuosa.'], 422);
+                }
+            }
+        }
+
         try {
             $postulacion->estado = $nuevo;
+            // La columna se crea con el SQL "motivo-rechazo.sql"; si todavía no existe, el rechazo funciona igual (sin motivo).
+            if ($nuevo === 'rechazado' && Schema::hasColumn('postulaciones', 'motivo_rechazo')) {
+                $postulacion->motivo_rechazo = $motivo;
+            }
             $postulacion->save();
         } catch (\Throwable $e) {
             report($e);

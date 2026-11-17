@@ -48,6 +48,11 @@
   var PANTALLAS_EMPLEADOR = ['empleador', 'buscar-talento', 'mis-vacantes', 'postulantes', 'pronostico', 'publicar-vacante'];
   var PANTALLAS_TRABAJADOR = ['', 'verEmpleos', 'publicarEmpleo', 'misEmpleos', 'solicitudes'];
 
+  // Avisos que se regeneran solos mientras falte algo: no tienen sentido borrarlos.
+  var AUTOMATICOS = { completar_perfil: true, verificar_cuenta: true };
+
+  var menuAbierto = null;    // {btn, menu} del menú de tres puntitos que está abierto
+
   var estado = { items: [], noLeidas: 0 };
   var idsVistos = {};        // avisos que ya se habían visto en una consulta anterior
   var primeraCarga = true;   // en la primera consulta de la página no suena nada
@@ -190,7 +195,10 @@
       '.ntf-sonido:hover{background:#f3f4f6;color:#1f2937}',
       '.ntf-sonido:focus-visible{outline:2px solid #ff7a18;outline-offset:1px}',
       '.ntf-lista{list-style:none;margin:0;padding:0;overflow-y:auto}',
-      '.ntf-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid #f3f4f6;color:#1f2937;text-decoration:none}',
+      // Línea clara entre un aviso y otro
+      '.ntf-lista>li{position:relative;border-bottom:1px solid #e3e6ea}',
+      '.ntf-lista>li:last-child{border-bottom:0}',
+      '.ntf-item{display:flex;align-items:flex-start;gap:12px;padding:14px 46px 14px 16px;color:#1f2937;text-decoration:none}',
       '.ntf-item:hover{background:#faf7f4;color:#1f2937}',
       '.ntf-item:focus-visible{outline:2px solid #ff7a18;outline-offset:-2px}',
       '.ntf-item.is-nueva{background:#fff4e8}',
@@ -208,7 +216,19 @@
       '.ntf-chip-empleador{background:rgba(96,165,250,.18);border-color:rgba(96,165,250,.65);color:#1d4ed8}',
       '.ntf-accion{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:999px;background:#ff7a18;color:#fff;font-size:12px;font-weight:700;line-height:1.4}',
       '.ntf-item:hover .ntf-accion{background:#e56700}',
-      '.ntf-punto{flex:0 0 10px;width:10px;height:10px;margin-top:6px;border-radius:50%;background:#ff7a18}',
+      '.ntf-punto{position:absolute;right:19px;top:44px;width:10px;height:10px;border-radius:50%;background:#ff7a18}',
+      // Botón de tres puntitos de cada aviso y su menú
+      '.ntf-mas{position:absolute;top:8px;right:8px}',
+      '.ntf-mas-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:0;border-radius:50%;background:transparent;color:#6b7280;font-size:20px;cursor:pointer;padding:0}',
+      '.ntf-mas-btn:hover,.ntf-mas-btn[aria-expanded="true"]{background:rgba(0,0,0,.08);color:#1f2937}',
+      '.ntf-mas-btn:focus-visible{outline:2px solid #ff7a18;outline-offset:1px}',
+      '.ntf-menu{position:fixed;z-index:2000;width:224px;padding:6px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.2)}',
+      '.ntf-menu[hidden]{display:none}',
+      '.ntf-op{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:none;color:#1f2937;font:600 13.5px Arial,Helvetica,sans-serif;text-align:left;cursor:pointer}',
+      '.ntf-op:hover,.ntf-op:focus-visible{background:#f3f4f6;outline:none}',
+      '.ntf-op i{font-size:18px;color:#6b7280}',
+      '.ntf-op-peligro,.ntf-op-peligro i{color:#b12d25}',
+      '.ntf-op-peligro:hover,.ntf-op-peligro:focus-visible{background:#fdeaea}',
       '.ntf-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
       '.ntf-vacio{margin:0;padding:30px 20px;text-align:center;font-size:13.5px;line-height:1.5;color:#6b7280}',
       '.ntf-vacio i{display:block;margin-bottom:6px;font-size:30px;color:#c3c8cf}',
@@ -341,6 +361,7 @@
   }
 
   function cerrar(c) {
+    cerrarMenu();
     if (c.panel.hidden) return;
     c.panel.hidden = true;
     c.btn.setAttribute('aria-expanded', 'false');
@@ -362,6 +383,7 @@
       c.vacio.hidden = estado.items.length > 0;
       c.lista.hidden = estado.items.length === 0;
 
+      if (menuAbierto) return; // con un menú abierto no se redibuja la lista (se cerraría solo)
       c.lista.textContent = '';
       estado.items.forEach(function (it) {
         var li = el('li');
@@ -393,6 +415,7 @@
           marcarUna(it);
         });
         li.appendChild(a);
+        li.appendChild(crearMenuAviso(it));
         c.lista.appendChild(li);
       });
     });
@@ -584,6 +607,96 @@
     peticion('/usuario/notificaciones/' + encodeURIComponent(it.id) + '/leer', 'POST').catch(function () {});
   }
 
+  // ---------- tres puntitos de cada aviso ----------
+  function cerrarMenu() {
+    if (!menuAbierto) return;
+    menuAbierto.menu.hidden = true;
+    menuAbierto.btn.setAttribute('aria-expanded', 'false');
+    menuAbierto = null;
+  }
+
+  function crearMenuAviso(it) {
+    var cont = el('div', 'ntf-mas');
+    var btn = el('button', 'ntf-mas-btn');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Más opciones de esta notificación');
+    btn.setAttribute('aria-haspopup', 'menu');
+    btn.setAttribute('aria-expanded', 'false');
+    var puntos = el('i', 'mdi mdi-dots-vertical');
+    puntos.setAttribute('aria-hidden', 'true');
+    btn.appendChild(puntos);
+
+    var menu = el('div', 'ntf-menu');
+    menu.hidden = true;
+    menu.setAttribute('role', 'menu');
+
+    function opcion(icono, texto, clase, accion) {
+      var b = el('button', 'ntf-op' + (clase ? ' ' + clase : ''));
+      b.type = 'button';
+      b.setAttribute('role', 'menuitem');
+      var i = el('i', 'mdi ' + icono);
+      i.setAttribute('aria-hidden', 'true');
+      b.appendChild(i);
+      b.appendChild(el('span', '', texto));
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        cerrarMenu();
+        accion();
+      });
+      menu.appendChild(b);
+    }
+
+    opcion(it.leida ? 'mdi-email-outline' : 'mdi-email-open-outline',
+           it.leida ? 'Marcar como no leída' : 'Marcar como leída', '',
+           function () { alternarLeida(it); });
+    if (!AUTOMATICOS[it.tipo]) {
+      opcion('mdi-delete-outline', 'Eliminar notificación', 'ntf-op-peligro', function () { eliminarAviso(it); });
+    }
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      var yaAbierto = menuAbierto && menuAbierto.menu === menu;
+      cerrarMenu();
+      if (yaAbierto) return;
+      menu.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      menuAbierto = { btn: btn, menu: menu };
+      // Se coloca pegado al botón; si no cabe abajo, se abre hacia arriba.
+      var r = btn.getBoundingClientRect();
+      var alto = menu.offsetHeight;
+      var izq = Math.max(8, Math.min(r.right - menu.offsetWidth, window.innerWidth - menu.offsetWidth - 8));
+      var arriba = r.bottom + 4;
+      if (arriba + alto > window.innerHeight - 8) arriba = Math.max(8, r.top - alto - 4);
+      menu.style.left = izq + 'px';
+      menu.style.top = arriba + 'px';
+      var primera = menu.querySelector('.ntf-op');
+      if (primera) primera.focus({ preventScroll: true });
+    });
+
+    cont.appendChild(btn);
+    cont.appendChild(menu);
+    return cont;
+  }
+
+  function alternarLeida(it) {
+    var url = '/usuario/notificaciones/' + encodeURIComponent(it.id) + (it.leida ? '/no-leida' : '/leer');
+    if (it.leida) { it.leida = false; estado.noLeidas += 1; }
+    else { it.leida = true; estado.noLeidas = Math.max(0, estado.noLeidas - 1); }
+    pintar();
+    peticion(url, 'POST').then(function (r) { if (!r.ok) cargar(); }).catch(function () { cargar(); });
+  }
+
+  function eliminarAviso(it) {
+    estado.items = estado.items.filter(function (x) { return x.id !== it.id; });
+    if (!it.leida) estado.noLeidas = Math.max(0, estado.noLeidas - 1);
+    pintar();
+    peticion('/usuario/notificaciones/' + encodeURIComponent(it.id), 'DELETE')
+      .then(function (r) { if (!r.ok) cargar(); })
+      .catch(function () { cargar(); });
+  }
+
   function marcarTodas() {
     estado.items.forEach(function (it) { it.leida = true; });
     estado.noLeidas = 0;
@@ -626,18 +739,22 @@
     }
 
     document.addEventListener('click', function (e) {
+      cerrarMenu();
       campanas.forEach(function (c) { if (!c.raiz.contains(e.target)) cerrar(c); });
       avatares.forEach(function (a) { if (!a.raiz.contains(e.target)) cerrarAvatar(a); });
     });
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
+      if (menuAbierto) { var b = menuAbierto.btn; cerrarMenu(); b.focus(); return; }
       if (visor && !visor.hidden) { cerrarFoto(); return; }
       avatares.forEach(function (a) { if (!a.panel.hidden) { cerrarAvatar(a); a.btn.focus(); } });
       campanas.forEach(function (c) {
         if (!c.panel.hidden) { cerrar(c); c.btn.focus(); }
       });
     });
+    document.addEventListener('scroll', cerrarMenu, true);
     window.addEventListener('resize', function () {
+      cerrarMenu();
       campanas.forEach(function (c) { if (!c.panel.hidden) posicionar(c); });
       avatares.forEach(cerrarAvatar);
     });

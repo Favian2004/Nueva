@@ -1091,13 +1091,19 @@ product img {
   }
 }
 
-/* CARD PRODUCTO */
+/* CARD PRODUCTO
+   La tarjeta es una columna: la descripción se estira (flex:1) y empuja
+   estrellas, precio y botones hacia abajo, así los botones de todas las
+   tarjetas quedan a la misma altura aunque el título o la insignia
+   "Verificado" ocupen más espacio. */
 .product {
   background: #fff;
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .product:hover {
@@ -1115,6 +1121,9 @@ product img {
 /* INFO */
 .product-info {
   padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .product-info h4 {
@@ -1126,6 +1135,7 @@ product img {
   font-size: 13px;
   color: #777;
   margin-bottom: 10px;
+  flex: 1;
 }
 
 /* ESTRELLAS */
@@ -1134,24 +1144,105 @@ product img {
   font-size: 14px;
 }
 
+.rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
 /* PRECIO */
 .price {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
+  margin: 8px 0 4px;
 }
 
 .price span {
-  text-decoration: line-through;
   color: #999;
   font-size: 14px;
 }
 
-#currentPrice {
+.price p {
+  margin: 0;
+}
+
+#currentPrice,
+.currentPrice {
   color: #e63946;
   font-weight: bold;
   margin: 0;
+}
+
+/* BOTONES: "Ver más" ocupa todo lo que sobra y el corazón mide siempre lo mismo */
+.product-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.product-acciones .btn-add {
+  flex: 1;
+  width: auto;
+  margin: 0;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* CORAZÓN DE FAVORITOS */
+.btn-fav {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #f3f3f3;
+  color: #999;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s, color .2s, transform .15s;
+}
+
+.btn-fav:hover {
+  background: #ffe9ea;
+  color: #e63946;
+  transform: scale(1.08);
+}
+
+.btn-fav.activo {
+  background: #ffe9ea;
+  color: #e63946;
+}
+
+/* CELULAR (2 columnas): el botón ocupa todo el ancho y el corazón se pasa
+   a una esquina de la foto, para que el texto del botón no se parta en 3 renglones. */
+@media (max-width: 576px) {
+  .product {
+    position: relative;
+  }
+  .product-acciones .btn-fav {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, .92);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+    z-index: 2;
+  }
+  .product-acciones .btn-fav.activo {
+    background: #fff;
+  }
+  .product-acciones .btn-add {
+    font-size: 13px;
+    padding: 9px 6px;
+  }
 }
 
 /* BOTÓN */
@@ -1159,7 +1250,7 @@ product img {
   width: 100%;
   margin-top: 10px;
   border: none;
-  padding: 8px;
+  padding: 10px 8px;
   border-radius: 20px;
   background: linear-gradient(45deg, #ff7a18, #ffb347);
   color: #fff;

@@ -19,12 +19,18 @@ class PostulacionRechazada extends AvisoSimple
     protected function datos(): array
     {
         $vacante = $this->postulacion->vacante;
+        $motivo = trim((string) $this->postulacion->motivo_rechazo);
+
+        // Si el empleador explicó por qué, se le muestra a la persona; si no, el mensaje de siempre.
+        $texto = $motivo !== ''
+            ? "Tu postulación a «{$vacante?->titulo}» no fue seleccionada. Motivo del empleador: «{$motivo}»"
+            : "Tu postulación a «{$vacante?->titulo}» no fue seleccionada esta vez. ¡Sigue intentando!";
 
         return [
             'tipo' => 'rechazado',
             'modo' => 'trabajador',
             'titulo' => 'Postulación no seleccionada',
-            'texto' => "Tu postulación a «{$vacante?->titulo}» no fue seleccionada esta vez. ¡Sigue intentando!",
+            'texto' => $texto,
             'url' => '/usuario/postulantes?tab=enviadas',
         ];
     }

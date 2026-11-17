@@ -5,13 +5,41 @@ namespace App\Http\Controllers;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
-    public function redirectToGoogle()
+    // false = la sesión NO se queda abierta "para siempre". Antes se guardaba una cookie de
+    // "recordarme" de 5 años, por eso nunca volvía a pedir iniciar sesión. Ahora solo dura
+    // lo que diga SESSION_LIFETIME (minutos sin usar la página) en el .env.
+    private const RECORDAR_SESION = false;
+
+    public function redirectToGoogle(Request $request)
     {
-        return Socialite::driver('google')->redirect();
+        $driver = Socialite::driver('google');
+
+        // Si esta persona ya entró antes con Google en este navegador, le decimos
+        // a Google qué cuenta es (login_hint) para que NO muestre otra vez la
+        // pantalla "Selecciona una cuenta" y entre directo.
+        // Con ?otra=1 se salta esa ayuda y Google deja elegir otra cuenta.
+        $correo = $request->cookie('google_hint');
+
+        if ($request->boolean('otra')) {
+            $driver = $driver->with(['prompt' => 'select_account']);
+        } elseif ($correo && filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+            $driver = $driver->with(['login_hint' => $correo]);
+        }
+
+        return $driver->redirect();
+    }
+
+    // Recuerda 1 año el correo de Google con el que entró (cookie cifrada por Laravel).
+    private function recordarCuentaGoogle(?string $correo): void
+    {
+        if ($correo) {
+            Cookie::queue('google_hint', $correo, 60 * 24 * 365);
+        }
     }
 
     public function handleGoogleCallback()
@@ -48,7 +76,8 @@ class AuthController extends Controller
                 return redirect('/acceso')->with('error', 'Tu cuenta está suspendida. Motivo: ' . ($usuario->motivo_suspension ?? 'no especificado'));
             }
 
-            Auth::login($usuario, true);
+            Auth::login($usuario, self::RECORDAR_SESION);
+            $this->recordarCuentaGoogle($googleUser->getEmail());
 
             return redirect($usuario->rol === 'admin' ? '/admin' : '/usuario');
         }
@@ -113,7 +142,8 @@ class AuthController extends Controller
 
         session()->forget('google_pendiente');
 
-        Auth::login($usuario, true);
+        Auth::login($usuario, self::RECORDAR_SESION);
+        $this->recordarCuentaGoogle($datos['email']);
 
         return redirect('/usuario/profile')->with('status', '¡Bienvenido! Completa tu perfil para empezar a usar la plataforma.');
     }
@@ -135,7 +165,7 @@ class AuthController extends Controller
             return redirect('/acceso')->with('error', 'Tu cuenta está suspendida. Motivo: ' . ($usuario->motivo_suspension ?? 'no especificado'));
         }
 
-        Auth::login($usuario, true);
+        Auth::login($usuario, self::RECORDAR_SESION);
 
         if (!$usuario->hasVerifiedEmail()) {
             return redirect('/email/verify');
@@ -169,7 +199,7 @@ class AuthController extends Controller
             'terminos_aceptados_en' => now(),
         ]);
 
-        Auth::login($usuario, true);
+        Auth::login($usuario, self::RECORDAR_SESION);
 
         $usuario->sendEmailVerificationNotification();
 
@@ -206,7 +236,7 @@ class AuthController extends Controller
             $usuario->markEmailAsVerified();
         }
 
-        Auth::login($usuario, true);
+        Auth::login($usuario, self::RECORDAR_SESION);
 
         if ($usuario->rol === 'admin') {
             return redirect('/admin?verificado=1');

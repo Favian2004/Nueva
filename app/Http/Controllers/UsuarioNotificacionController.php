@@ -72,6 +72,26 @@ class UsuarioNotificacionController extends Controller
         return $this->json(['ok' => true]);
     }
 
+    // "Marcar como no leída": vuelve a aparecer como nueva.
+    public function noLeer(Request $request, string $id): JsonResponse
+    {
+        if ($this->tablaLista()) {
+            $request->user()->notifications()->where('id', $id)->first()?->markAsUnread();
+        }
+
+        return $this->json(['ok' => true]);
+    }
+
+    // Borra un aviso propio (solo de esta cuenta).
+    public function eliminar(Request $request, string $id): JsonResponse
+    {
+        if ($this->tablaLista()) {
+            $request->user()->notifications()->where('id', $id)->delete();
+        }
+
+        return $this->json(['ok' => true]);
+    }
+
     public function leerTodas(Request $request): JsonResponse
     {
         if ($this->tablaLista()) {

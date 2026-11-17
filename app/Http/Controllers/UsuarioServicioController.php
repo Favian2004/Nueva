@@ -8,6 +8,7 @@ use App\Models\Contratacion;
 use App\Models\Servicio;
 use App\Models\Usuario;
 use App\Services\ModeracionService;
+use App\Services\ValidadorDocumento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -148,13 +149,14 @@ class UsuarioServicioController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function subirSolicitudEmpleo(Request $request, $id)
+    public function subirSolicitudEmpleo(Request $request, $id, ValidadorDocumento $validador)
     {
         $servicio = Servicio::where('usuario_id', Auth::id())->findOrFail($id);
 
-        $request->validate([
-            'archivo' => 'required|file|mimes:pdf|max:4096',
-        ]);
+        // Que sea un PDF de verdad, sin contenido indebido y que parezca una Solicitud de Empleo.
+        if ($error = $validador->respuestaSiInvalido($request, ValidadorDocumento::SOLICITUD)) {
+            return $error;
+        }
 
         $servicio->solicitud_empleo = '/storage/' . $request->file('archivo')->store('solicitudes-empleo', 'public');
         $servicio->save();

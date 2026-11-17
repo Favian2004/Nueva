@@ -184,7 +184,7 @@
 </head>
 <body>
 
-@if ($curriculum->archivo_subido && !$curriculum->tieneContenido)
+@if ($curriculum->archivo_subido && empty($curriculum->nombre))
 
   {{-- Solo subió un archivo, no usó el formulario guiado: mostramos el archivo directo --}}
   <div class="barra-acciones">

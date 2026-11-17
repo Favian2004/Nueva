@@ -295,7 +295,7 @@
     </footer>
   </div>
 
-  <script src="{{ asset('assets/usuario/js/main.js') }}"></script>
+  <script src="{{ \App\Support\Assets::usuarioMain() }}"></script>
   <script src="{{ asset('assets/usuario/js/interruptor.js') }}"></script>
   <script src="{{ asset('assets/usuario/js/validaciones.js') }}"></script>
   <script>
@@ -383,8 +383,8 @@
       fd.append('archivo', file);
       fetch('/usuario/misEmpleos/{{ $servicio->id ?? "" }}/cv/subir-archivo', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
         .then(res => res.json().then(data => ({ ok: res.ok, data })))
-        .then(({ ok }) => {
-          if (!ok) { alert('❌ Ocurrió un error al subir tu CV.'); return; }
+        .then(({ ok, data }) => {
+          if (!ok) { alert('❌ ' + ((data && data.error) || 'Ocurrió un error al subir tu CV.')); input.value = ''; return; }
           alert('✅ CV subido correctamente.');
           location.reload();
         })
@@ -398,8 +398,8 @@
       fd.append('archivo', file);
       fetch('/usuario/misEmpleos/{{ $servicio->id ?? "" }}/solicitud-empleo', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
         .then(res => res.json().then(data => ({ ok: res.ok, data })))
-        .then(({ ok }) => {
-          if (!ok) { alert('❌ Ocurrió un error al subir tu Solicitud de Empleo. Confirma que sea un PDF.'); return; }
+        .then(({ ok, data }) => {
+          if (!ok) { alert('❌ ' + ((data && data.error) || 'Ocurrió un error al subir tu Solicitud de Empleo. Confirma que sea un PDF.')); input.value = ''; return; }
           alert('✅ Solicitud de Empleo subida correctamente.');
           location.reload();
         })

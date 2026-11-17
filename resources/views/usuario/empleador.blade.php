@@ -70,6 +70,86 @@
         }
 
     </style>
+    <style>
+        /* ===== PANEL EMPLEADOR: encabezado llamativo, estadísticas compactas y vacantes con botón naranja ===== */
+        :root { --emp-naranja:#ff7a18; --emp-naranja2:#ffb347; }
+
+        .emp-hero { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; gap:20px;
+            margin:0 0 14px; padding:22px 28px; border-radius:22px; color:#fff;
+            background:linear-gradient(110deg,#5e0a20 0%,#8a1232 55%,#a3173d 100%);
+            box-shadow:0 10px 26px rgba(110,12,38,.25); }
+        .emp-hero::before { content:""; position:absolute; inset:0; pointer-events:none;
+            background:radial-gradient(circle at 8% 130%,rgba(255,201,51,.32),transparent 45%),
+                       radial-gradient(circle at 85% -40%,rgba(255,255,255,.16),transparent 55%); }
+        .emp-hero > * { position:relative; }
+        .emp-hero-text { min-width:0; }
+        .emp-eyebrow { display:inline-flex; align-items:center; gap:6px; margin-bottom:8px; padding:3px 11px; border-radius:999px;
+            font-size:11.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:#ffd9a8;
+            background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); }
+        .emp-hero h1 { margin:0; font-size:clamp(1.4rem,2.9vw,2.15rem); font-weight:800; line-height:1.15; color:#fff; }
+        .emp-hero h1 em { font-style:normal; color:#ffc933; }
+        .emp-hero p { margin:6px 0 0; max-width:560px; font-size:clamp(.85rem,1.3vw,1rem); font-weight:500; line-height:1.35; color:rgba(255,255,255,.9); }
+
+        /* Botón grande "Publicar vacante" (con brillo para que llame la atención) */
+        .emp-publicar { position:relative; flex:0 0 auto; display:inline-flex; align-items:center; gap:10px; padding:15px 26px; border-radius:999px;
+            font-size:16px; font-weight:800; color:#fff !important; text-decoration:none; white-space:nowrap; overflow:hidden;
+            background:linear-gradient(45deg,#ff7a18,#ffb347); box-shadow:0 8px 20px rgba(255,122,24,.5);
+            animation:empLatido 2.4s ease-in-out infinite; transition:transform .15s, filter .2s; }
+        .emp-publicar i { font-size:24px; line-height:1; }
+        .emp-publicar::after { content:""; position:absolute; top:0; left:-60%; width:40%; height:100%;
+            background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent); transform:skewX(-20deg);
+            animation:empBrillo 3.2s ease-in-out infinite; }
+        .emp-publicar:hover { transform:translateY(-2px) scale(1.03); filter:brightness(.95); color:#fff !important; }
+        @keyframes empLatido { 0%,100% { box-shadow:0 8px 20px rgba(255,122,24,.5); } 50% { box-shadow:0 8px 30px rgba(255,122,24,.85); } }
+        @keyframes empBrillo { 0%,55% { left:-60%; } 100% { left:140%; } }
+        @media (prefers-reduced-motion: reduce) { .emp-publicar, .emp-publicar::after { animation:none; } }
+
+        /* Estadísticas: más compactas, con borde naranja arriba */
+        .employer-dashboard .estadisticas-row { margin-bottom:12px; }
+        .employer-dashboard .estadisticas-row .box { padding:14px 10px; border-radius:18px; border-top:4px solid var(--emp-naranja);
+            box-shadow:0 6px 18px rgba(0,0,0,.07); }
+        .employer-dashboard .estadisticas-row .box .icon { height:2rem; }
+        .employer-dashboard .estadisticas-row .box .title { margin:2px 0 0; font-size:2rem; line-height:1.1; }
+        .employer-dashboard .estadisticas-row .box p { margin:0; font-size:.9rem; }
+
+        /* Menos espacio en blanco */
+        .employer-dashboard .acciones-rapidas { margin:14px 0 6px; }
+        .employer-dashboard .acciones-titulo { margin-bottom:12px; }
+        .employer-dashboard #listJobs { padding:8px 0 24px; }
+        .employer-dashboard #listJobs > h2 { margin-bottom:18px; }
+
+        /* Vacantes: tarjetas más bonitas */
+        #listJobs .products-list { gap:16px; }
+        #listJobs .product-row { border-radius:20px; border:1px solid #f3e6da; box-shadow:0 6px 18px rgba(0,0,0,.08); }
+        #listJobs .product-row:hover { transform:translateY(-3px); box-shadow:0 14px 28px rgba(255,122,24,.22); }
+        #listJobs .product-row .product-img { width:150px; height:auto; min-height:150px; align-self:stretch; }
+        #listJobs .product-row .product-info { padding:14px 18px; }
+        #listJobs .product-row .product-info .job-title { font-size:17px; font-weight:800; }
+        #listJobs .product-row .product-info .job-actions { margin-top:8px; padding-top:12px; border-top:1px dashed #f0d9c0; }
+
+        /* BOTÓN "Ver más información / Postularme": naranja, grande, con flecha */
+        #listJobs .job-buttons { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+        #listJobs .job-buttons .btn-ver-postular { display:inline-flex !important; align-items:center; justify-content:center; gap:8px;
+            padding:12px 22px !important; border:none !important; border-radius:999px !important; font-size:14.5px !important; font-weight:800 !important;
+            color:#fff !important; text-decoration:none; background:linear-gradient(45deg,#ff7a18,#ffb347) !important;
+            box-shadow:0 6px 16px rgba(255,122,24,.45); transition:transform .15s, filter .2s, box-shadow .2s; }
+        #listJobs .job-buttons .btn-ver-postular i { font-size:19px; line-height:1; }
+        #listJobs .job-buttons .btn-ver-postular .flecha { transition:transform .2s; }
+        #listJobs .job-buttons .btn-ver-postular:hover { transform:translateY(-2px); filter:brightness(.94); box-shadow:0 10px 22px rgba(255,122,24,.55); color:#fff !important; }
+        #listJobs .job-buttons .btn-ver-postular:hover .flecha { transform:translateX(4px); }
+
+        @media (max-width: 768px) {
+            .emp-hero { flex-direction:column; align-items:stretch; gap:14px; padding:16px; border-radius:18px; }
+            .emp-eyebrow { margin-bottom:4px; padding:2px 9px; font-size:10px; }
+            .emp-publicar { justify-content:center; padding:14px 18px; font-size:15px; }
+            .employer-dashboard .estadisticas-row .box { padding:10px 6px; }
+            .employer-dashboard .estadisticas-row .box .title { font-size:1.6rem; }
+            #listJobs .product-row .product-img { width:100%; height:130px; min-height:0; }
+            #listJobs .product-row .product-info { padding:12px; }
+            #listJobs .job-buttons { width:100%; }
+            #listJobs .job-buttons .btn-ver-postular { width:100%; padding:13px 16px !important; font-size:14px !important; }
+        }
+    </style>
     <link rel="stylesheet" href="{{ asset('css/anuncio-negocio.css') }}">
 </head>
 
@@ -192,6 +272,18 @@
 
                 <!-- ===== DASHBOARD ===== -->
                 <div class="employer-dashboard">
+
+                    <!-- ===== ENCABEZADO LLAMATIVO ===== -->
+                    <section class="emp-hero">
+                        <div class="emp-hero-text">
+                            <span class="emp-eyebrow"><i class="mdi mdi-map-marker"></i> Zacapoaxtla, Puebla</span>
+                            <h1>¿Necesitas personal para tu negocio? <br><em>Publica tu vacante gratis «¡Aquí!»</em></h1>
+                            <p>En minutos tu oferta le llega a gente de tu comunidad y recibes postulaciones directas.</p>
+                        </div>
+                        <a href="/usuario/publicar-vacante" class="emp-publicar">
+                            <i class="mdi mdi-plus-circle"></i> ¡Publicar vacante!
+                        </a>
+                    </section>
 
                     <!-- ===== ESTADÍSTICAS ===== -->
                     <div class="estadisticas-row">
@@ -327,9 +419,10 @@
 
                                         <div class="job-buttons">
 
-                                            <a href="/usuario/ver_vacante/{{ $v->id }}" class="btn-add" style="background:#fff; border:1.5px solid #ff7a18; color:#ff7a18; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                                            <a href="/usuario/ver_vacante/{{ $v->id }}" class="btn-add btn-ver-postular">
                                                 <i class="mdi mdi-text-box-search-outline"></i>
-                                                Ver información
+                                                Ver más información / Postularme
+                                                <i class="mdi mdi-arrow-right flecha"></i>
                                             </a>
 
                                             @if ($v->empleador_id !== auth()->id())
@@ -337,11 +430,6 @@
                                             <button class="btn-add" type="button" disabled style="opacity:.6; cursor:default;">
                                                 <i class="mdi mdi-check-circle"></i>
                                                 Ya te postulaste
-                                            </button>
-                                            @else
-                                            <button class="btn-add" type="button" onclick="abrirModalPostular({{ $v->id }}, '{{ addslashes($v->titulo) }}', {{ $v->requiere_cv ? 'true' : 'false' }}, {{ $v->requiere_solicitud_empleo ? 'true' : 'false' }})">
-                                                <i class="mdi mdi-account-plus"></i>
-                                                Postularme
                                             </button>
                                             @endif
                                             @else

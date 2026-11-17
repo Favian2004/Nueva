@@ -13,6 +13,27 @@
   (document.body || document.documentElement).appendChild(s);
 })();
 
+// ====== VENTANAS BONITAS (reemplazan los alert() y confirm() del navegador) ======
+(function () {
+  if (document.querySelector('script[data-dialogos]')) return;
+  var actual = document.currentScript && document.currentScript.src;
+  var s = document.createElement('script');
+  s.src = actual ? actual.replace(/main\.js(\?.*)?$/, 'dialogos.js$1') : '/assets/usuario/js/dialogos.js';
+  s.setAttribute('data-dialogos', '1');
+  (document.body || document.documentElement).appendChild(s);
+})();
+
+// ====== AVISO DE SESIÓN POR INACTIVIDAD ======
+(function () {
+  if (document.querySelector('script[data-sesion]')) return;
+  var actual = document.currentScript && document.currentScript.src;
+  var s = document.createElement('script');
+  s.src = actual ? actual.replace(/main\.js(\?.*)?$/, 'sesion.js$1') : '/assets/usuario/js/sesion.js';
+  s.defer = true;
+  s.setAttribute('data-sesion', '1');
+  (document.body || document.documentElement).appendChild(s);
+})();
+
 // ====== ASISTENTE DE VOZ (botón flotante del micrófono) ======
 (function () {
   if (document.querySelector('script[data-asistente-voz]')) return;

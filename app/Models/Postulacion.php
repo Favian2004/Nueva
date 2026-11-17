@@ -18,6 +18,7 @@ class Postulacion extends Model
         'vacante_id',
         'postulante_id',
         'estado',
+        'motivo_rechazo',
         'mensaje',
         'solicitud_empleo',
         'disponibilidad',

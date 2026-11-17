@@ -11,7 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->redirectGuestsTo('/acceso');
+        $middleware->redirectGuestsTo(fn (\Illuminate\Http\Request $request) => '/acceso?sesion=expirada');
 
         // Confía en el proxy de Hostinger para que Laravel detecte bien
         // que las peticiones llegan por HTTPS (esto evita fallos raros e
@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Que el botón «atrás» no muestre páginas con sesión después de cerrarla
         $middleware->appendToGroup('web', \App\Http\Middleware\SinCacheConSesion::class);
+
+        // Cierra la sesión tras SESSION_LIFETIME minutos sin actividad real de la persona
+        $middleware->appendToGroup('web', \App\Http\Middleware\InactividadSesion::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\VersionarAssets::class);
 
         // El webhook de Mercado Pago llega directo desde sus servidores,
         // sin pasar por ningún formulario nuestro, así que nunca va a traer

@@ -632,6 +632,109 @@
       .ins-verificado { display:table; margin-top:4px; }
     }
   </style>
+  <style>
+    /* ===== INVITACIÓN (banner) + TARJETAS DE SERVICIOS (prefijo "tc-") ===== */
+    .tc-stats-btn { display:flex; width:fit-content; margin:14px 0 0 auto; align-items:center; gap:6px; padding:7px 14px; font-size:13px; font-weight:700;
+      color:var(--tc-vino); background:#fff; border:2px solid #f0d3da; border-radius:999px; cursor:pointer; transition:background .2s, border-color .2s; }
+    .tc-stats-btn:hover { background:#fff3f6; border-color:var(--tc-vino); }
+    .tc-stats-btn .tc-flecha { transition:transform .2s; }
+    .tc-stats-btn[aria-expanded="true"] .tc-flecha { transform:rotate(180deg); }
+    .tc-oculto { display:none !important; }
+    :root { --tc-vino:#8a1232; --tc-vino-osc:#6a0d26; --tc-precio:#a10f33; --tc-naranja:#ff7a18; }
+
+    .tc-banner { position:relative; display:flex; align-items:center; gap:18px; margin:0 0 22px; padding:14px 22px;
+      border-radius:22px; color:#fff; overflow:hidden;
+      background:linear-gradient(100deg,#5e0a20 0%,#8a1232 55%,#a3173d 100%);
+      box-shadow:0 10px 26px rgba(110,12,38,.28); }
+    .tc-banner::before { content:""; position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(circle at 10% 120%,rgba(255,201,51,.30),transparent 45%),
+                 radial-gradient(circle at 80% -30%,rgba(255,255,255,.14),transparent 50%); }
+    .tc-banner > * { position:relative; }
+    .tc-banner-logo { flex:0 0 auto; width:92px; height:92px; object-fit:contain; filter:drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
+    .tc-banner-texto { flex:1 1 0; min-width:0; }
+    .tc-banner .tc-banner-texto h3 { margin:0; font-size:clamp(17px,2vw,25px); font-weight:800; line-height:1.2; color:#fff; }
+    .tc-banner .tc-banner-texto h3 em { font-style:normal; color:#ffc933; }
+    .tc-banner .tc-banner-texto p { margin:5px 0 0; font-size:14px; color:rgba(255,255,255,.88); }
+    .tc-banner-botones { display:flex; align-items:center; gap:10px; flex:0 0 auto; }
+    .tc-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; width:96px; min-height:78px; padding:8px 6px;
+      border-radius:16px; background:#fff; color:var(--tc-vino); text-align:center; font-size:13px; font-weight:800; line-height:1.15;
+      text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,.18); transition:transform .15s, box-shadow .15s; }
+    .tc-tile i { font-size:28px; line-height:1; }
+    .tc-tile:hover { color:var(--tc-vino-osc); transform:translateY(-2px); box-shadow:0 8px 16px rgba(0,0,0,.25); }
+    .tc-promo { flex:0 0 auto; max-width:170px; padding:10px 16px; border-radius:16px; text-align:center; text-decoration:none;
+      font-size:14px; font-weight:800; line-height:1.2; color:#6a0d26; transform:rotate(-3deg);
+      background:linear-gradient(135deg,#ffd54a,#ffb300); box-shadow:0 6px 14px rgba(0,0,0,.25); transition:transform .15s; }
+    .tc-promo:hover { color:#6a0d26; transform:rotate(-3deg) scale(1.04); }
+
+    #listProducts .product { position:relative; display:flex; flex-direction:column; overflow:hidden; border-radius:18px; background:#fff;
+      box-shadow:0 6px 18px rgba(0,0,0,.08); transition:transform .2s, box-shadow .2s; cursor:pointer; }
+    #listProducts .product:hover { transform:translateY(-4px); box-shadow:0 14px 28px rgba(255,122,24,.2); }
+    #listProducts .tc-foto { position:relative; flex:0 0 auto; height:170px; overflow:hidden; background:#fbe9dc; }
+    #listProducts .tc-foto img { display:block; width:100%; height:100%; margin:0; object-fit:cover; border-radius:0; }
+    .tc-estado { position:absolute; left:10px; top:10px; z-index:1; display:inline-flex; align-items:center; gap:5px; padding:4px 11px;
+      border-radius:999px; font-size:12px; font-weight:700; color:#fff; background:#16a34a; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+    #listProducts .ve-tag-cerca { left:auto; right:10px; }
+    #listProducts .product-info { flex:1 1 auto; display:flex; flex-direction:column; padding:14px 16px 16px; }
+    .tc-titulo { margin:0 0 6px; font-size:17px; font-weight:800; line-height:1.25; color:#222; }
+    .tc-titulo a.tc-link { color:inherit; text-decoration:none; }
+    .tc-titulo a.tc-link::after { content:""; position:absolute; inset:0; z-index:1; }
+    .tc-titulo a.tc-link:focus-visible { outline:none; }
+    .tc-titulo a.tc-link:focus-visible::after { outline:3px solid #ffb347; outline-offset:-3px; border-radius:18px; }
+    .tc-lugar { display:flex; align-items:center; gap:4px; margin:0 0 8px; font-size:12.5px; color:#777; }
+    .tc-lugar i { color:#ff7a18; }
+    .tc-lugar span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    #listProducts .tc-desc { margin:0 0 8px; font-size:13.5px; line-height:1.45; color:#555;
+      display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+    .tc-pie { margin-top:auto; padding-top:6px; }
+    .tc-precio { display:flex; align-items:baseline; justify-content:space-between; gap:6px; margin:6px 0 10px; }
+    .tc-precio small { font-size:13px; color:#888; }
+    .tc-precio strong { font-size:22px; font-weight:800; color:var(--tc-precio); }
+    .tc-precio strong em { font-size:12px; font-style:normal; font-weight:700; color:#888; }
+    .tc-acciones { display:flex; align-items:center; gap:10px; }
+    #listProducts a.tc-contratame { position:relative; z-index:2; flex:1 1 auto; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:11px 12px; border-radius:999px; background:linear-gradient(45deg,#ff7a18,#ffb347); color:#fff; font-size:14px; font-weight:700; white-space:nowrap;
+      text-decoration:none; box-shadow:0 4px 10px rgba(255,122,24,.35); transition:filter .2s, transform .15s; }
+    #listProducts a.tc-contratame:hover { background:linear-gradient(45deg,#ff7a18,#ffb347); filter:brightness(.93); color:#fff; transform:translateY(-1px); }
+    #listProducts a.tc-contratame i { font-size:18px; }
+    #listProducts .favorite-wrapper { position:relative; z-index:2; flex:0 0 auto; }
+    #listProducts .favorite-wrapper .btn-fav { color:var(--tc-naranja); }
+
+    @media (max-width: 900px) {
+      .tc-banner { flex-wrap:wrap; padding:14px 16px; }
+      .tc-banner-texto { flex:1 1 calc(100% - 120px); }
+      .tc-banner-botones { flex:1 1 100%; }
+      .tc-tile { flex:1 1 0; width:auto; }
+      .tc-promo { margin-left:auto; }
+    }
+    @media (max-width: 560px) {
+      .tc-banner-logo { width:64px; height:64px; }
+      .tc-banner-texto { flex-basis:calc(100% - 84px); }
+      .tc-banner-texto p { font-size:12.5px; }
+      .tc-promo { flex:1 1 100%; max-width:none; transform:none; }
+      .tc-promo:hover { transform:scale(1.02); }
+      #listProducts .tc-foto { height:112px; }
+      .tc-estado { left:6px; top:6px; padding:3px 8px; font-size:11px; gap:3px; }
+      #listProducts .ve-tag-cerca { right:auto; left:6px; top:32px; font-size:10px; padding:2px 8px; }
+      #listProducts .product-info { padding:10px 10px 12px; }
+      .tc-titulo { margin-bottom:4px; font-size:14px; line-height:1.2; }
+      .tc-titulo .ins-verificado { font-size:.58rem; }
+      .tc-lugar { margin-bottom:5px; font-size:11px; }
+      #listProducts .tc-desc { margin-bottom:6px; font-size:12px; line-height:1.35; -webkit-line-clamp:2; }
+      #listProducts .rating { display:flex; align-items:center; gap:1px; margin:0; }
+      #listProducts .rating .icon-star { font-size:11px; }
+      #listProducts .rating small { display:none; }
+      .tc-precio { flex-direction:column; align-items:flex-start; gap:0; margin:6px 0 8px; }
+      .tc-precio small { font-size:11px; }
+      .tc-precio strong { font-size:18px; white-space:nowrap; }
+      .tc-precio strong em { font-size:10px; }
+      .tc-acciones { display:block; }
+      #listProducts a.tc-contratame { box-sizing:border-box; display:flex; width:100%; min-width:0; gap:5px; padding:9px 6px; font-size:12px; line-height:1.15; text-align:center; white-space:normal; box-shadow:0 3px 8px rgba(255,122,24,.35); }
+      #listProducts a.tc-contratame i { flex:0 0 auto; font-size:15px; }
+      #listProducts .favorite-wrapper { position:absolute; top:6px; right:6px; z-index:3; width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+        background:rgba(255,255,255,.94); border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+      #listProducts .favorite-wrapper .btn-fav { font-size:1.05rem !important; line-height:1; }
+    }
+  </style>
 </head>
 
 <body>
@@ -739,41 +842,6 @@
         <!-- CONTENIDO PRINCIPAL -->
         <section class="section is-main-section">
             <div class="container">
-
-                <!-- BARRA DE TÍTULO + LOGO -->
-                <section class="ve-hero">
-                    <div class="ve-hero-text">
-                        <h1>Contrata a alguien de tu comunidad</h1>
-                        <p>Encuentra al profesional que necesitas en Zacapoaxtla y contáctalo directo</p>
-                    </div>
-                    <img src="{{ asset('assets/usuario/img/icono.png') }}" alt="Logo Empleos Zacapoaxtla" class="ve-hero-logo" width="120" height="120">
-                </section>
-
-                <!-- ESTADÍSTICAS -->
-                <div class="columns mt-5 estadisticas-row">
-                    <div class="column">
-                        <div class="box has-text-centered">
-                            <span class="icon is-large"><i class="mdi mdi-briefcase mdi-36px"></i></span>
-                            <h2 class="title has-text-success">{{ $serviciosActivosCount }}</h2>
-                            <p class="has-text-grey">Servicios Activos</p>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="box has-text-centered">
-                            <span class="icon is-large"><i class="mdi mdi-office-building mdi-36px"></i></span>
-                            <h2 class="title has-text-success">{{ $empresasActivasCount }}</h2>
-                            <p class="has-text-grey">Empresas Activas</p>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="box has-text-centered">
-                            <span class="icon is-large"><i class="mdi mdi-account mdi-36px"></i></span>
-                            <h2 class="title has-text-success">{{ $misServiciosCount }}</h2>
-                            <p class="has-text-grey">Mis Servicios</p>
-                        </div>
-                    </div>
-                </div>
-
 
                 <!-- FILTROS -->
                 @php
@@ -886,8 +954,6 @@
                     </div>
                 </form>
 
-
-
                 <!-- SERVICIOS DISPONIBLES -->
                 <section class="products" id="listProducts">
                     <h2>Servicios Disponibles</h2>
@@ -941,49 +1007,52 @@
                                 : ($locId ? ($localidadesPorId[$locId]->nombre ?? '') : '');
                         @endphp
                         <div class="product">
-                            <div class="ve-foto">
-                                <img src="{{ $s->imagen ?? asset('assets/usuario/img/services/plomero.jpg') }}" alt="{{ $s->titulo }}" loading="lazy">
-                                @if ($esMia)
-                                <span class="ve-tag-cerca"><i class="mdi mdi-map-marker"></i> En tu localidad</span>
-                                @endif
+                          <div class="tc-foto">
+                            <img src="{{ $s->imagen ?? asset('assets/usuario/img/services/plomero.jpg') }}" alt="{{ $s->titulo }}" loading="lazy">
+                            <span class="tc-estado"><i class="mdi mdi-check-circle"></i> Disponible</span>
+                            @if ($esMia)
+                              <span class="ve-tag-cerca"><i class="mdi mdi-map-marker"></i> En tu localidad</span>
+                            @endif
+                          </div>
+                          <div class="product-info">
+                            <h4 class="tc-titulo"><a href="/usuario/ver_servicio/{{ $s->id }}" class="tc-link">{{ $s->titulo }}</a>
+                              @if ($s->usuario && $s->usuario->verificacion_estado === 'aprobado')
+                                <span class="ins-verificado" title="Identidad verificada">
+                                  <i class="mdi mdi-check-decagram"></i> Verificado
+                                </span>
+                              @endif
+                            </h4>
+                            @if ($lugar !== '')
+                              <p class="tc-lugar" title="{{ $lugar }}"><i class="mdi mdi-map-marker"></i> <span>{{ $lugar }}</span></p>
+                            @endif
+                            <p class="product-text tc-desc">{{ \Illuminate\Support\Str::limit($s->descripcion, 140) }}</p>
+                            <div class="rating">
+                              @php $prom = round($s->calificaciones_avg_estrellas ?? 0); @endphp
+                              @for ($i = 1; $i <= 5; $i++)
+                                <i class="fa-solid fa-star icon-star" style="color:{{ $i <= $prom ? '#ffb347' : '#ddd' }};"></i>
+                              @endfor
+                              <small style="color:#999; margin-left:4px;">
+                                {{ $s->calificaciones_avg_estrellas ? number_format($s->calificaciones_avg_estrellas, 1) : 'Sin reseñas' }}
+                                @if ($s->calificaciones_count) ({{ $s->calificaciones_count }}) @endif
+                              </small>
                             </div>
-                            <div class="product-info">
-                                <h4>{{ $s->titulo }}
-                                    @if ($s->usuario && $s->usuario->verificacion_estado === 'aprobado')
-                                    <span class="ins-verificado" title="Identidad verificada">
-                                        <i class="mdi mdi-check-decagram"></i> Verificado
-                                    </span>
-                                    @endif
-                                </h4>
-                                @if ($lugar !== '')
-                                <p class="ve-lugar" title="{{ $lugar }}"><i class="mdi mdi-map-marker"></i> <span>{{ $lugar }}</span></p>
-                                @endif
-                                <p class="product-text">{{ \Illuminate\Support\Str::limit($s->descripcion, 90) }}</p>
-                                <div class="rating">
-                                    @php $prom = round($s->calificaciones_avg_estrellas ?? 0); @endphp
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        <i class="fa-solid fa-star icon-star" style="color:{{ $i <= $prom ? '#ffb347' : '#ddd' }};"></i>
-                                        @endfor
-                                        <small style="color:#999; margin-left:4px;">
-                                            {{ $s->calificaciones_avg_estrellas ? number_format($s->calificaciones_avg_estrellas, 1) : 'Sin reseñas' }}
-                                            @if ($s->calificaciones_count) ({{ $s->calificaciones_count }}) @endif
-                                        </small>
+                            <div class="tc-pie">
+                              <div class="tc-precio">
+                                <small>Desde</small>
+                                <strong>${{ number_format($s->precio, 0) }} <em>MXN</em></strong>
+                              </div>
+                              <div class="tc-acciones">
+                                <a href="/usuario/ver_servicio/{{ $s->id }}" class="tc-contratame"><i class="mdi mdi-briefcase"></i> ¡Contratar ahora!</a>
+                                <div class="favorite-wrapper position-relative">
+                                  <i class="bi bi-heart btn-fav" style="font-size: 1.3rem; cursor: pointer;"></i>
+                                  <div class="fav-dropdown" style="display: none;">
+                                    <p>Agregado a favoritos ❤️</p>
+                                    <button class="btn btn-sm btn-danger clear-fav">Eliminar</button>
+                                  </div>
                                 </div>
-                                <div class="ve-precio">
-                                    <small>Desde</small>
-                                    <strong>${{ number_format($s->precio, 0) }} <em>MXN</em></strong>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <a href="/usuario/ver_servicio/{{ $s->id }}" class="btn-add">Ver más / Contactar</a>
-                                    <div class="favorite-wrapper position-relative">
-                                        <i class="bi bi-heart btn-fav" style="font-size: 1.3rem; cursor: pointer;"></i>
-                                        <div class="fav-dropdown" style="display: none;">
-                                            <p>Agregado a favoritos ❤️</p>
-                                            <button class="btn btn-sm btn-danger clear-fav">Eliminar</button>
-                                        </div>
-                                    </div>
-                                </div>
+                              </div>
                             </div>
+                          </div>
                         </div>
                         @empty
                         <div class="ve-vacio">

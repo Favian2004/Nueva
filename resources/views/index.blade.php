@@ -22,6 +22,70 @@
 
 
   <style>
+    /* ===== TARJETAS DE "SERVICIOS DISPONIBLES" (mismo diseño que el dashboard del usuario) =====
+       Van aquí, junto a la página, para no depender de que style.css esté al día.
+       Todo está limitado a #listProducts (servicios); las vacantes no se tocan. */
+    :root { --tc-vino:#8a1232; --tc-vino-osc:#6a0d26; --tc-precio:#a10f33; }
+
+    #listProducts .products-grid .product { position:relative; display:flex; flex-direction:column; overflow:hidden; border-radius:18px; background:#fff;
+      box-shadow:0 6px 18px rgba(0,0,0,.08); transition:transform .2s, box-shadow .2s; cursor:pointer; }
+    #listProducts .products-grid .product:hover { transform:translateY(-4px); box-shadow:0 14px 28px rgba(110,12,38,.18); }
+    #listProducts .tc-foto { position:relative; flex:0 0 auto; height:170px; overflow:hidden; background:#fbe9dc; }
+    #listProducts .tc-foto img { display:block; width:100%; height:100%; margin:0; object-fit:cover; border-radius:0; }
+    #listProducts .tc-estado { position:absolute; left:10px; top:10px; z-index:1; display:inline-flex; align-items:center; gap:5px; padding:4px 11px;
+      border-radius:999px; font-size:12px; font-weight:700; color:#fff; background:#16a34a; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+    #listProducts .products-grid .product-info { flex:1 1 auto; display:flex; flex-direction:column; padding:14px 16px 16px; }
+    #listProducts .tc-titulo { margin:0 0 6px; font-size:17px; font-weight:800; line-height:1.25; color:#222; }
+    #listProducts .tc-titulo a.tc-link { color:inherit; text-decoration:none; }
+    #listProducts .tc-titulo a.tc-link::after { content:""; position:absolute; inset:0; z-index:1; }
+    #listProducts .tc-titulo a.tc-link:focus-visible { outline:none; }
+    #listProducts .tc-titulo a.tc-link:focus-visible::after { outline:3px solid #ffb347; outline-offset:-3px; border-radius:18px; }
+    #listProducts .tc-lugar { display:flex; align-items:center; gap:4px; margin:0 0 8px; font-size:12.5px; color:#777; }
+    #listProducts .tc-lugar i { color:#ff7a18; }
+    #listProducts .tc-lugar span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    #listProducts .products-grid .tc-desc { margin:0 0 8px; font-size:13.5px; line-height:1.45; color:#555; flex:0 0 auto;
+      display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+    #listProducts .products-grid .rating { display:flex; flex-wrap:wrap; align-items:center; gap:3px; margin-bottom:0; }
+    #listProducts .tc-pie { margin-top:auto; padding-top:6px; }
+    #listProducts .tc-precio { display:flex; align-items:baseline; justify-content:space-between; gap:6px; margin:6px 0 10px; }
+    #listProducts .tc-precio small { font-size:13px; color:#888; }
+    #listProducts .tc-precio strong { font-size:22px; font-weight:800; color:var(--tc-precio); }
+    #listProducts .tc-precio strong em { font-size:12px; font-style:normal; font-weight:700; color:#888; }
+    #listProducts .products-grid .product-acciones { display:flex; align-items:center; gap:10px; width:100%; }
+    #listProducts a.tc-contratame { position:relative; z-index:2; flex:1 1 auto; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:11px 12px; border-radius:999px; background:var(--tc-vino); color:#fff; font-size:14px; font-weight:700; white-space:nowrap;
+      text-decoration:none; box-shadow:0 4px 10px rgba(138,18,50,.3); transition:background .2s, transform .15s; }
+    #listProducts a.tc-contratame:hover { background:var(--tc-vino-osc); color:#fff; transform:translateY(-1px); }
+    #listProducts a.tc-contratame i { font-size:17px; line-height:1; }
+    #listProducts .products-grid .btn-fav { position:relative; z-index:2; flex:0 0 auto; width:auto; height:auto; border:none; background:none; box-shadow:none;
+      border-radius:0; padding:4px 8px; font-size:1.4rem; line-height:1; color:var(--tc-vino); cursor:pointer; transition:color .2s; }
+    #listProducts .products-grid .btn-fav:hover,
+    #listProducts .products-grid .btn-fav.activo { color:#e63946; background:none; transform:none; }
+
+    /* Celular (2 columnas): tarjeta compacta, botón a todo el ancho y corazón sobre la foto */
+    @media (max-width: 576px) {
+      #listProducts .tc-foto { height:112px; }
+      #listProducts .tc-estado { left:6px; top:6px; padding:3px 8px; font-size:11px; gap:3px; }
+      #listProducts .products-grid .product-info { padding:10px 10px 12px; }
+      #listProducts .tc-titulo { margin-bottom:4px; font-size:14px; line-height:1.2; }
+      #listProducts .tc-lugar { margin-bottom:5px; font-size:11px; }
+      #listProducts .products-grid .tc-desc { margin-bottom:6px; font-size:12px; line-height:1.35; -webkit-line-clamp:2; }
+      #listProducts .products-grid .rating { gap:1px; }
+      #listProducts .products-grid .rating .icon-star { font-size:11px; }
+      #listProducts .products-grid .rating small { display:none; }
+      #listProducts .tc-precio { flex-direction:column; align-items:flex-start; gap:0; margin:6px 0 8px; }
+      #listProducts .tc-precio small { font-size:11px; }
+      #listProducts .tc-precio strong { font-size:18px; white-space:nowrap; }
+      #listProducts .tc-precio strong em { font-size:10px; }
+      #listProducts .products-grid .product-acciones { display:block; }
+      #listProducts a.tc-contratame { box-sizing:border-box; display:flex; width:100%; min-width:0; gap:5px; padding:9px 6px; font-size:12px; line-height:1.15;
+        text-align:center; white-space:normal; box-shadow:0 3px 8px rgba(138,18,50,.28); }
+      #listProducts a.tc-contratame i { flex:0 0 auto; font-size:14px; }
+      #listProducts .products-grid .product-acciones .btn-fav { position:absolute; top:6px; right:6px; z-index:3; width:30px; height:30px; padding:0;
+        border-radius:50%; background:rgba(255,255,255,.94); box-shadow:0 2px 6px rgba(0,0,0,.25); font-size:1.05rem;
+        display:inline-flex; align-items:center; justify-content:center; }
+    }
+
     /* ===== CONTENIDO ===== */
     .contenido {
       margin-left: 10px;
@@ -148,22 +212,6 @@
         display: block;
       }
     }
-
-    /* Carrusel principal mas "anchito" (menos delgado) en celular:
-       las imagenes son horizontales y se ven muy bajitas si solo usan
-       su alto natural, asi que les damos una altura fija y recortamos
-       con object-fit para que se vea como un banner, no una tira fina. */
-    @media (max-width: 576px) {
-      #carouselExampleDark .carousel-item img {
-        height: 200px;
-        object-fit: cover;
-      }
-    }
-
-
-
-
-
 
     /* ===== TITULO DE PUBLICIDAD ===== */
 
@@ -657,8 +705,8 @@
       position: relative;
       overflow: hidden;
       max-width: 1300px;
-      margin: 12px auto 16px;
-      padding: 30px 28px;
+      margin: 10px auto 12px;
+      padding: 18px 20px;
       border-radius: 16px;
       color: #fff;
       background: linear-gradient(120deg, #6b1021 0%, #8f1d2f 55%, #b12d25 100%);
@@ -698,7 +746,7 @@
     }
 
     .intro-hero h1 {
-      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-size: clamp(1.45rem, 2.6vw, 2.1rem);
       font-weight: 800;
       line-height: 1.15;
       margin: 0 0 12px;
@@ -708,7 +756,7 @@
       font-size: clamp(.95rem, 1.2vw, 1.05rem);
       line-height: 1.55;
       color: #f6e3e3;
-      margin: 0 0 20px;
+      margin: 0 0 16px;
       max-width: 560px;
     }
 
@@ -832,6 +880,191 @@
       .intro-card { padding: 10px 12px; gap: 12px; }
       .intro-card-icono { width: 38px; height: 38px; font-size: 18px; }
     }
+
+
+    /* ===== MITAD IZQUIERDA DEL ENCABEZADO: el slider va de fondo ===== */
+    .intro-izq {
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      padding: 22px 24px;
+      background: #6b1021;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+    }
+    .intro-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .intro-bg .carousel,
+    .intro-bg .carousel-inner,
+    .intro-bg .carousel-item {
+      height: 100%;
+    }
+    .intro-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    /* capa vino encima de las fotos para que el texto blanco se lea bien */
+    .intro-izq::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(100deg, rgba(60, 6, 18, .72) 0%, rgba(107, 16, 33, .40) 50%, rgba(107, 16, 33, .04) 100%);
+      pointer-events: none;
+    }
+    .intro-contenido {
+      position: relative;
+      z-index: 2;
+    }
+    .intro-contenido h1,
+    .intro-contenido .intro-sub,
+    .intro-contenido .intro-eyebrow,
+    .intro-contenido .intro-link {
+      text-shadow: 0 1px 3px rgba(0, 0, 0, .55), 0 2px 12px rgba(0, 0, 0, .45);
+    }
+    .intro-visitas {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, .38);
+      border: 1px solid rgba(255, 255, 255, .25);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      box-sizing: border-box;
+    }
+    .intro-visitas i { color: #ffcf33; }
+    .intro-visitas strong { color: #ffcf33; font-size: 13px; }
+
+    /* ===== CÓMO FUNCIONA: oculto hasta tocar el enlace ===== */
+    .como-funciona-section { display: none; }
+    .como-funciona-section.abierto {
+      display: block;
+      animation: cfAparece .3s ease-out;
+    }
+    @keyframes cfAparece {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .intro-link[aria-expanded="true"] .bi-arrow-down-circle { transform: rotate(180deg); }
+    .intro-link .bi-arrow-down-circle { display: inline-block; transition: .25s; }
+
+    @media (max-width: 576px) {
+      .intro-hero { margin: 8px 8px 10px; padding: 10px; }
+      .intro-hero-grid { gap: 10px; }
+      .intro-izq { padding: 16px 14px; }
+      /* en celular la foto va más cubierta porque el texto ocupa todo el ancho */
+      .intro-izq::after {
+        background: linear-gradient(180deg, rgba(60, 6, 18, .68) 0%, rgba(107, 16, 33, .48) 100%);
+      }
+      .intro-sub-extra { display: none; }
+      .intro-hero .intro-sub { font-size: .92rem; margin-bottom: 12px; }
+      .intro-hero h1 { font-size: 1.35rem; margin-bottom: 8px; }
+      .intro-acciones { gap: 8px 14px; }
+      .intro-btn { padding: 10px 18px; font-size: 14px; }
+
+      /* las 3 tarjetas pasan a 3 botones chicos en una sola fila */
+      .intro-cards { flex-direction: row; gap: 8px; }
+      .intro-cards .intro-card {
+        flex: 1 1 0;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        gap: 6px;
+        padding: 10px 6px;
+      }
+      .intro-cards .intro-card p,
+      .intro-cards .intro-card-flecha { display: none; }
+      .intro-cards .intro-card h3 { font-size: 12px; line-height: 1.2; margin: 0; }
+      .intro-cards .intro-card-icono { width: 34px; height: 34px; font-size: 17px; }
+    }
+
+    /* ===== BURBUJA FLOTANTE DE NEGOCIOS (celular/tablet; igual que en el dashboard) ===== */
+    .burbuja-anuncio {
+      position: fixed;
+      left: 12px;
+      bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+      max-width: 240px;
+      background: linear-gradient(135deg, #6b1021, #b12d25);
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(107, 16, 33, .45);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px 10px 10px;
+      z-index: 9998;
+      cursor: pointer;
+      transform: translateY(20px) scale(.92);
+      opacity: 0;
+      transition: transform .3s ease, opacity .3s ease;
+    }
+    .burbuja-anuncio::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 28px;
+      width: 16px;
+      height: 16px;
+      background: #b12d25;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+    .burbuja-anuncio.mostrar { transform: none; opacity: 1; }
+    .burbuja-anuncio img {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid rgba(255, 255, 255, .5);
+      cursor: pointer;
+    }
+    .burbuja-anuncio-texto { display: flex; flex-direction: column; min-width: 0; }
+    .burbuja-anuncio-texto small {
+      font-size: 10px;
+      color: #ffcf33;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: .03em;
+    }
+    .burbuja-anuncio-texto strong {
+      font-size: 13px;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 150px;
+    }
+    .burbuja-anuncio-cerrar {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      color: #6b1021;
+      border: 2px solid #6b1021;
+      font-size: 14px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    @media (min-width: 1201px) { .burbuja-anuncio { display: none; } }
 
   </style>
 
@@ -1046,20 +1279,49 @@
     <section class="intro-hero" aria-labelledby="introTitulo">
       <div class="intro-hero-grid">
 
-        <div>
+        <div class="intro-izq">
+
+          <div class="intro-visitas" title="Visitas a la página">
+            <i class="bi bi-eye-fill"></i>
+            <span><strong>{{ number_format($totalVisitas) }}</strong> visitas</span>
+          </div>
+
+          <!-- Slider de fondo -->
+          <div class="intro-bg" aria-hidden="true">
+            <div id="introBgCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+              <div class="carousel-inner">
+                <div class="carousel-item active" data-bs-interval="4000">
+                  <img src="{{ asset('img/slider/horizontal/img1.png') }}" alt="">
+                </div>
+                <div class="carousel-item" data-bs-interval="4000">
+                  <img src="{{ asset('img/slider/horizontal/img2.png') }}" alt="">
+                </div>
+                <div class="carousel-item" data-bs-interval="4000">
+                  <img src="{{ asset('img/slider/horizontal/img3.png') }}" alt="">
+                </div>
+                <div class="carousel-item" data-bs-interval="4000">
+                  <img src="{{ asset('img/slider/horizontal/img4.png') }}" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="intro-contenido">
           <span class="intro-eyebrow"><i class="bi bi-geo-alt-fill"></i> Zacapoaxtla, Puebla</span>
           <h1 id="introTitulo">Servicios y empleos de tu comunidad, en un solo lugar</h1>
           <p class="intro-sub">
             ¡SINTECZATE! es una plataforma digital gratuita que conecta a las personas
-            de Zacapoaxtla y sus alrededores. Aquí puedes ofrecer y encontrar servicios
+            de Zacapoaxtla y sus alrededores.
+            <span class="intro-sub-extra">Aquí puedes ofrecer y encontrar servicios
             y oficios, consultar oportunidades de empleo, publicar vacantes y postularte
             a ellas. Explora opciones, conoce las calificaciones de otros usuarios y
-            contacta directamente para generar nuevas oportunidades.
+            contacta directamente para generar nuevas oportunidades.</span>
          </p>
           <div class="intro-acciones">
             <a href="/acceso?modo=registro" class="intro-btn"><i class="bi bi-person-plus-fill"></i> Crear mi cuenta gratis</a>
             <a href="/acceso?modo=login" class="intro-link">¿Ya tienes cuenta? Inicia sesión</a>
-            <a href="#comoFunciona" class="intro-link"><i class="bi bi-arrow-down-circle"></i> ¿Cómo funciona?</a>
+            <a href="#comoFunciona" class="intro-link" id="btnComoFunciona" role="button" aria-expanded="false" aria-controls="comoFunciona"><i class="bi bi-arrow-down-circle"></i> ¿Cómo funciona?</a>
+          </div>
           </div>
         </div>
 
@@ -1092,100 +1354,6 @@
 
       </div>
     </section>
-
-      <!-- Agrega data-bs-ride="carousel" para que sea automático -->
-    <div id="carouselExampleDark" class="carousel carousel-dark slide" data-bs-ride="carousel">
-
-      <!-- INDICADORES - Agrega uno por cada slide (ya tienes 4 slides, necesitas 4 indicadores) -->
-      <div class="carousel-indicators">
-        <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="0" class="active"
-          aria-current="true" aria-label="Slide 1"></button>
-        <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="1" aria-label="Slide 2"></button>
-        <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="2" aria-label="Slide 3"></button>
-        <!-- NUEVO INDICADOR para la cuarta imagen -->
-        <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="3" aria-label="Slide 4"></button>
-      </div>
-
-      <!-- SLIDES (tus 4 imágenes) -->
-      <div class="carousel-inner">
-        <div class="carousel-item active" data-bs-interval="4000">
-          <!-- Cambié a 3 segundos para que sea más dinámico -->
-          <img src="{{ asset('img/slider/horizontal/img1.png') }}" class="d-block w-100" alt="...">
-        </div>
-
-        <div class="carousel-item" data-bs-interval="4000">
-          <img src="{{ asset('img/slider/horizontal/img2.png') }}" class="d-block w-100" alt="...">
-        </div>
-
-        <div class="carousel-item" data-bs-interval="4000">
-          <img src="{{ asset('img/slider/horizontal/img3.png') }}" class="d-block w-100" alt="...">
-        </div>
-
-        <div class="carousel-item" data-bs-interval="4000">
-          <img src="{{ asset('img/slider/horizontal/img4.png') }}" class="d-block w-100" alt="...">
-        </div>
-      </div>
-
-      <!-- CONTROLES (opcional pero recomendado) -->
-      <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleDark" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleDark" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </button>
-
-    </div>
-
-    <!-- ========================= -->
-    <!-- CONTADOR DE VISITAS -->
-    <!-- ========================= -->
-    <div class="contador-visitas">
-      <i class="bi bi-eye-fill"></i>
-      <span> ¡¡¡Visitas a la pagina!!! <strong>{{ number_format($totalVisitas) }}</strong></span>
-    </div>
-
-    <!-- ========================= -->
-    <!-- ANUNCIOS EN MÓVIL (franja horizontal con scroll) -->
-    <!-- ========================= -->
-    <div class="anuncios-mobile">
-      <div class="ad-titulo">
-        <h5>NEGOCIOS DESTACADOS</h5>
-        <div class="linea-titulo">
-          <span></span>
-          <small>de tu municipio</small>
-          <span></span>
-        </div>
-      </div>
-      @php
-        $imgsDerecha = $anunciosDerecha->flatMap(fn($a) => $a->imagenes);
-      @endphp
-      <div class="anuncios-mobile-cols">
-        @if ($imgsDerecha->count())
-          <div class="ad-box-mobile">
-            <div id="adMobileDer" class="carousel slide" data-bs-ride="carousel">
-              <div class="carousel-inner">
-                @foreach ($imgsDerecha as $index => $img)
-                  <div class="carousel-item {{ $index === 0 ? 'active' : '' }}" data-bs-interval="6000">
-                    <img src="{{ $img->imagen }}"
-                      data-nombre="{{ $img->solicitud->nombre_negocio ?? '' }}"
-                      data-eslogan="{{ $img->eslogan }}"
-                      data-link="{{ $img->link_externo }}"
-                      data-ubicacion="{{ $img->link_ubicacion }}">
-                  </div>
-                @endforeach
-              </div>
-            </div>
-          </div>
-        @endif
-      </div>
-    </div>
-
-
-
-
-
 
     <!--=====================================
     CÓMO FUNCIONA
@@ -1231,6 +1399,23 @@
         </div>
       </div>
     </div>
+
+
+
+    <!-- ANUNCIOS EN CELULAR: ya no hay franja fija; salen como burbuja flotante (ver script al final) -->
+    @php
+      $imgsDerecha = $anunciosDerecha->flatMap(fn($a) => $a->imagenes);
+      $anunciosBurbuja = [];
+      foreach ($imgsDerecha as $im) {
+        $anunciosBurbuja[] = [
+          'imagen'    => $im->imagen,
+          'nombre'    => optional($im->solicitud)->nombre_negocio ?? '',
+          'eslogan'   => $im->eslogan,
+          'link'      => $im->link_externo,
+          'ubicacion' => $im->link_ubicacion,
+        ];
+      }
+    @endphp
 
     <!-- Ancla para que el buscador te traiga directo aquí -->
     <div id="resultados"></div>
@@ -1283,47 +1468,51 @@
         <div class="products-grid container">
 
           @forelse ($servicios as $s)
-            <div class="product">
-              <img src="{{ $s->imagen ?? asset('img/services/plomero.jpg') }}" alt="{{ $s->titulo }}">
+            <div class="product" data-id="{{ $s->id }}" data-titulo="{{ $s->titulo }}">
+              <div class="tc-foto">
+                <img src="{{ $s->imagen ?? asset('img/services/plomero.jpg') }}" alt="{{ $s->titulo }}" loading="lazy">
+                <span class="tc-estado"><i class="bi bi-check-circle-fill"></i> Disponible</span>
+              </div>
 
               <div class="product-info">
-                <h4>{{ $s->titulo }}
+                <h4 class="tc-titulo"><a href="/servicio/{{ $s->id }}" class="tc-link">{{ $s->titulo }}</a>
                   @if ($s->usuario && $s->usuario->verificacion_estado === 'aprobado')
-                    <span title="Identidad verificada" style="background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; vertical-align:middle;">
+                    <span title="Identidad verificada" style="background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.65rem; font-weight:700; display:table; margin:6px 0 0 0; white-space:nowrap;">
                       <i class="bi bi-patch-check-fill"></i> Verificado
                     </span>
                   @endif
                 </h4>
-                <p class="product-text">
-                  {{ \Illuminate\Support\Str::limit($s->descripcion, 90) }}
+
+                @if (trim((string) $s->ubicacion) !== '')
+                  <p class="tc-lugar" title="{{ $s->ubicacion }}"><i class="bi bi-geo-alt-fill"></i> <span>{{ $s->ubicacion }}</span></p>
+                @endif
+
+                <p class="product-text tc-desc">
+                  {{ \Illuminate\Support\Str::limit($s->descripcion, 140) }}
                 </p>
 
-                @php $prom = round($s->calificaciones_avg_estrellas ?? 0); @endphp
-                @for ($i = 1; $i <= 5; $i++)
-                  <i class="fa-solid fa-star icon-star" style="color:{{ $i <= $prom ? '#ffb347' : '#ddd' }};"></i>
-                @endfor
-                <small style="color:#999; margin-left:4px;">
-                  {{ $s->calificaciones_avg_estrellas ? number_format($s->calificaciones_avg_estrellas, 1) : 'Sin reseñas' }}
-                  @if ($s->calificaciones_count) ({{ $s->calificaciones_count }}) @endif
-                </small>
-
-                <div class="price">
-                  <span>Desde</span>
-                  <p class="currentPrice">${{ number_format($s->precio, 0) }} MXN</p>
+                <div class="rating">
+                  @php $prom = round($s->calificaciones_avg_estrellas ?? 0); @endphp
+                  @for ($i = 1; $i <= 5; $i++)
+                    <i class="fa-solid fa-star icon-star" style="color:{{ $i <= $prom ? '#ffb347' : '#ddd' }};"></i>
+                  @endfor
+                  <small style="color:#999; margin-left:4px;">
+                    {{ $s->calificaciones_avg_estrellas ? number_format($s->calificaciones_avg_estrellas, 1) : 'Sin reseñas' }}
+                    @if ($s->calificaciones_count) ({{ $s->calificaciones_count }}) @endif
+                  </small>
                 </div>
 
-                <div class="d-flex gap-2">
-                  <a href="/servicio/{{ $s->id }}" class="btn-add" style="text-decoration:none; text-align:center;">Ver más / Contactar</a>
+                <div class="tc-pie">
+                  <div class="tc-precio">
+                    <small>Desde</small>
+                    <strong>${{ number_format($s->precio, 0) }} <em>MXN</em></strong>
+                  </div>
 
-                  <!-- BOTÓN FAVORITO -->
-                  <div class="favorite-wrapper position-relative">
-                    <i class="bi bi-heart btn-fav" style="font-size: 1.3rem; cursor: pointer;"></i>
-
-                    <!-- DROPDOWN FAVORITOS DENTRO DEL PRODUCT -->
-                    <div class="fav-dropdown" style="display: none;">
-                      <p>Agregado a favoritos ❤️</p>
-                      <button class="btn btn-sm btn-danger clear-fav">Eliminar</button>
-                    </div>
+                  <div class="product-acciones">
+                    <a href="/servicio/{{ $s->id }}" class="tc-contratame"><i class="bi bi-briefcase-fill"></i> ¡Contrátame ahora!</a>
+                    <button type="button" class="btn-fav" title="Agregar a favoritos" aria-label="Agregar a favoritos" aria-pressed="false">
+                      <i class="bi bi-heart"></i>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1383,6 +1572,9 @@
                       <i class="bi bi-person"></i> {{ $v->publicante ?? 'Empleador' }}
                       &nbsp;·&nbsp; <i class="bi bi-geo-alt"></i> {{ $v->ubicacion }}
                     </div>
+                    @if ($v->empleador && $v->empleador->verificacion_estado === 'aprobado')
+                      <span title="Identidad verificada" style="background:#dcfce7; color:#16a34a; padding:1px 8px; border-radius:20px; font-size:.7rem; font-weight:700; display:table; margin:-2px 0 8px 0; white-space:nowrap;"><i class="bi bi-patch-check-fill"></i> Usuario verificado</span>
+                    @endif
                     <p class="vacante-desc">{{ \Illuminate\Support\Str::limit($v->descripcion, 100) }}</p>
                     <div class="vacante-badges">
                       <span class="badge-salario"><i class="bi bi-currency-dollar"></i> {{ $v->salario }}</span>
@@ -1659,6 +1851,105 @@
       function cerrarModalAnuncio() {
         document.getElementById('modalAnuncio').classList.remove('activo');
       }
+    </script>
+
+
+    <script>
+      // ===== "¿Cómo funciona?": oculto hasta que se toca el enlace =====
+      document.addEventListener('DOMContentLoaded', function () {
+        const seccion = document.getElementById('comoFunciona');
+        if (!seccion) return;
+        const enlaces = document.querySelectorAll('a[href="#comoFunciona"]');
+
+        function alternar(abrir) {
+          seccion.classList.toggle('abierto', abrir);
+          enlaces.forEach(function (a) { a.setAttribute('aria-expanded', abrir ? 'true' : 'false'); });
+          if (abrir) seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        enlaces.forEach(function (a) {
+          a.addEventListener('click', function (e) {
+            e.preventDefault();
+            alternar(!seccion.classList.contains('abierto'));
+          });
+        });
+
+        // siempre empieza oculto; si la dirección trae #comoFunciona, se limpia
+        if (location.hash === '#comoFunciona' && window.history && history.replaceState) {
+          history.replaceState(null, '', location.pathname + location.search);
+        }
+      });
+    </script>
+
+
+    <script>
+      // ===== Burbuja flotante de negocios (celular/tablet): aparece de rato en rato =====
+      document.addEventListener('DOMContentLoaded', function () {
+        const anuncios = @json($anunciosBurbuja);
+
+        if (!anuncios.length) return;
+        if (!window.matchMedia('(max-width: 1200px)').matches) return;
+
+        let indice = 0;
+        try { indice = parseInt(localStorage.getItem('burbujaAnuncioIndice') || '0', 10) || 0; } catch (e) {}
+
+        function abrirModal(a) {
+          const modal = document.getElementById('modalAnuncio');
+          if (!modal) return;
+          document.getElementById('modalAnuncioImg').src = a.imagen;
+          const n = document.getElementById('modalAnuncioNombre');
+          n.textContent = a.nombre || ''; n.style.display = a.nombre ? 'block' : 'none';
+          const e = document.getElementById('modalAnuncioEslogan');
+          e.textContent = a.eslogan || ''; e.style.display = a.eslogan ? 'block' : 'none';
+          const l = document.getElementById('modalAnuncioBotonLink');
+          if (a.link) { l.href = a.link; l.style.display = 'inline-flex'; } else { l.style.display = 'none'; }
+          const u = document.getElementById('modalAnuncioBotonUbicacion');
+          if (a.ubicacion) { u.href = a.ubicacion; u.style.display = 'inline-flex'; } else { u.style.display = 'none'; }
+          modal.classList.add('activo');
+        }
+
+        function mostrarBurbuja() {
+          if (document.getElementById('burbujaAnuncio')) return;
+          // si el visitante ya tiene el anuncio ampliado abierto, no se encima otra burbuja
+          const modal = document.getElementById('modalAnuncio');
+          if (modal && modal.classList.contains('activo')) return;
+
+          const a = anuncios[indice % anuncios.length];
+          indice++;
+          try { localStorage.setItem('burbujaAnuncioIndice', indice); } catch (e) {}
+
+          const b = document.createElement('div');
+          b.id = 'burbujaAnuncio';
+          b.className = 'burbuja-anuncio';
+
+          const cerrar = document.createElement('button');
+          cerrar.type = 'button'; cerrar.className = 'burbuja-anuncio-cerrar';
+          cerrar.setAttribute('aria-label', 'Cerrar'); cerrar.innerHTML = '&times;';
+
+          const img = document.createElement('img');
+          img.src = a.imagen; img.alt = 'Negocio destacado';
+
+          const txt = document.createElement('div');
+          txt.className = 'burbuja-anuncio-texto';
+          const small = document.createElement('small'); small.textContent = 'Negocio destacado';
+          const strong = document.createElement('strong'); strong.textContent = a.nombre || 'Conoce este negocio';
+          txt.appendChild(small); txt.appendChild(strong);
+
+          b.appendChild(cerrar); b.appendChild(img); b.appendChild(txt);
+          document.body.appendChild(b);
+          requestAnimationFrame(function () { b.classList.add('mostrar'); });
+
+          function quitar() { b.classList.remove('mostrar'); setTimeout(function () { b.remove(); }, 300); }
+          const auto = setTimeout(quitar, 15000);
+
+          cerrar.addEventListener('click', function (ev) { ev.stopPropagation(); clearTimeout(auto); quitar(); });
+          b.addEventListener('click', function () { clearTimeout(auto); quitar(); abrirModal(a); });
+        }
+
+        // la primera a los 6 s de entrar; luego cada 60 s
+        setTimeout(mostrarBurbuja, 6000);
+        setInterval(mostrarBurbuja, 60000);
+      });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"

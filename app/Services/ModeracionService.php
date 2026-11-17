@@ -74,7 +74,7 @@ class ModeracionService
         'violence/graphic' => 'violencia gráfica',
     ];
 
-    public function revisar(?string $texto, ?UploadedFile $imagen = null): array
+    public function revisar(?string $texto, ?UploadedFile $imagen = null, bool $detectarTextoSinSentido = true): array
     {
         $texto = trim((string) $texto);
 
@@ -87,7 +87,8 @@ class ModeracionService
         }
 
         // 2) Detector de texto sin sentido / basura de símbolos (instantáneo).
-        $mensajeBasura = $this->mensajeSiTextoSinSentido($texto);
+        // (Se puede apagar para textos largos sacados de documentos, como un CV en PDF.)
+        $mensajeBasura = $detectarTextoSinSentido ? $this->mensajeSiTextoSinSentido($texto) : null;
         if ($mensajeBasura !== null) {
             return $this->resultadoBloqueado($mensajeBasura);
         }

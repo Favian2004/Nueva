@@ -100,6 +100,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::middleware(['auth', 'verified', 'not-admin'])->group(function () {
 
     Route::get('/usuario', [App\Http\Controllers\UsuarioDashboardController::class, 'index']);
+    Route::get('/usuario/sesion/estado', [App\Http\Controllers\SesionController::class, 'estado']);
+    Route::get('/usuario/sesion/renovar', [App\Http\Controllers\SesionController::class, 'renovar']);
     Route::get('/usuario/buscar-talento', [App\Http\Controllers\UsuarioEmpleadorController::class, 'buscarTalento']);
     Route::get('/usuario/empleador', [App\Http\Controllers\UsuarioEmpleadorController::class, 'index']);
     Route::post('/usuario/empleador/postularse/{vacanteId}', [App\Http\Controllers\UsuarioEmpleadorController::class, 'postularse']);
@@ -158,4 +160,6 @@ Route::middleware(['auth', 'verified', 'not-admin'])->group(function () {
     Route::get('/usuario/notificaciones', [App\Http\Controllers\UsuarioNotificacionController::class, 'index']);
     Route::post('/usuario/notificaciones/leer-todas', [App\Http\Controllers\UsuarioNotificacionController::class, 'leerTodas']);
     Route::post('/usuario/notificaciones/{id}/leer', [App\Http\Controllers\UsuarioNotificacionController::class, 'leer']);
+    Route::post('/usuario/notificaciones/{id}/no-leida', [App\Http\Controllers\UsuarioNotificacionController::class, 'noLeer']);
+    Route::delete('/usuario/notificaciones/{id}', [App\Http\Controllers\UsuarioNotificacionController::class, 'eliminar']);
 });

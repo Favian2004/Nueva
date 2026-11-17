@@ -46,6 +46,14 @@ return [
         'access_token' => env('MERCADOPAGO_ACCESS_TOKEN'),
     ],
 
+    // Proveedor de imágenes para "Crear con IA" en /anunciar: "cloudflare" (gratis) u "openai" (de paga).
+    'imagen_proveedor' => env('IMAGEN_PROVEEDOR', 'cloudflare'),
+
+    'cloudflare' => [
+        'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
+        'token' => env('CLOUDFLARE_AI_TOKEN'),
+    ],
+
     'openai' => [
         'key' => env('OPENAI_API_KEY'),
         // Apaga el moderador automático sin tener que borrar código,

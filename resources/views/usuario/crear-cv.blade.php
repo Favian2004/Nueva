@@ -205,6 +205,9 @@
       </div>
     </div>
 
+    @if (!($servicio ?? null))
+      <a href="/usuario/ver_vacante/{{ $postulacion->vacante_id }}?corregir=1" title="Cerrar y volver a la vacante" aria-label="Cerrar" style="position:fixed; top:14px; right:16px; z-index:50; width:38px; height:38px; border-radius:50%; background:#fff; color:#6b1021; display:flex; align-items:center; justify-content:center; font-size:22px; text-decoration:none; box-shadow:0 2px 8px rgba(0,0,0,.18);">&times;</a>
+    @endif
     <div class="contenido">
 
       {{-- ===================== PASO 0: ENCABEZADO ===================== --}}
@@ -236,8 +239,12 @@
           </p>
         @endif
         <div class="fila-2">
-          <div class="campo"><label>Teléfono</label><input type="text" name="telefono" placeholder="Ej. 233 116 1247"></div>
+          <div class="campo"><label>Teléfono</label><input type="text" name="telefono" placeholder="10 dígitos, Ej. 2331161247" inputmode="numeric"></div>
           <div class="campo"><label>Correo electrónico</label><input type="text" name="correo" placeholder="Ej. tucorreo@gmail.com"></div>
+        </div>
+        <div class="fila-2">
+          <div class="campo"><label>Fecha de nacimiento (opcional)</label><input type="date" name="fecha_nacimiento" id="inputFechaNac"></div>
+          <div class="campo"><label>Edad</label><div id="edadTexto" style="padding:12px 14px; border-radius:10px; background:var(--papel-oscuro); font-size:14px; color:var(--texto-suave);">Se calcula con tu fecha de nacimiento</div></div>
         </div>
 
         <div class="adicional-toggle" onclick="toggleAdicional(this)">
@@ -247,7 +254,6 @@
         <div class="adicional-cuerpo" id="adicionalCuerpo" style="display:none;">
           <div class="fila-2">
             <div class="campo"><label>Dirección</label><input type="text" name="direccion" placeholder="Opcional"></div>
-            <div class="campo"><label>Fecha de nacimiento</label><input type="date" name="fecha_nacimiento"></div>
           </div>
           <div class="fila-2">
             <div class="campo"><label>Nacionalidad</label><input type="text" name="nacionalidad" placeholder="Ej. Mexicana"></div>
@@ -376,6 +382,25 @@
 <script>
   const UBICACION_USUARIO = @json($ubicacion);
   const TOTAL_PASOS = 8;
+  const ES_POSTULACION = {{ ($servicio ?? null) ? 'false' : 'true' }};
+  // A dónde regresar: a la vacante desde donde se abrió (el modal de postulación se vuelve a abrir solo).
+  const VOLVER_URL = '{{ ($servicio ?? null) ? "/usuario/misEmpleos/" . $servicio->id . "/editar" : "/usuario/ver_vacante/" . $postulacion->vacante_id . "?corregir=1" }}';
+
+  // Pantalla final: explica qué pasó y regresa a la vacante (sola en unos segundos o con el botón).
+  function pantallaListo(texto) {
+    document.body.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:center; min-height:100vh; font-family:Nunito,sans-serif; text-align:center; padding:20px; background:#efe6d6; position:relative;">
+        <a href="${VOLVER_URL}" title="Cerrar" aria-label="Cerrar" style="position:absolute; top:16px; right:18px; width:38px; height:38px; border-radius:50%; background:#fff; color:#6b1021; display:flex; align-items:center; justify-content:center; font-size:22px; text-decoration:none; box-shadow:0 2px 8px rgba(0,0,0,.15);">&times;</a>
+        <div style="max-width:420px;">
+          <i class="mdi mdi-check-decagram" style="font-size:56px; color:#c68f1f;"></i>
+          <p style="font-size:20px; font-weight:800; color:#241a15; margin:10px 0 6px;">${texto}</p>
+          <p style="font-size:14px; color:#5d4e45; line-height:1.5; margin:0 0 18px;">Te llevamos de regreso a la vacante para que termines tu postulación. Si quieres cambiar algo de tu CV, podrás volver a editarlo desde ahí.</p>
+          <a href="${VOLVER_URL}" style="display:inline-block; background:#6b1021; color:#fff; font-weight:700; padding:12px 26px; border-radius:12px; text-decoration:none;">Volver a la vacante</a>
+          <p style="font-size:12px; color:#8a7a6f; margin-top:14px;">Regresando automáticamente…</p>
+        </div>
+      </div>`;
+    setTimeout(() => { window.location.href = VOLVER_URL; }, 2500);
+  }
   let pasoActual = 0;
   let contadorFormacion = 0, contadorExperiencia = 0, contadorCursos = 0, contadorIdiomas = 0, contadorReferencias = 0;
 
@@ -392,19 +417,49 @@
     });
     document.getElementById('progresoRelleno').style.width = Math.round(((n + 1) / TOTAL_PASOS) * 100) + '%';
     document.getElementById('progresoTexto').textContent = Math.round(((n + 1) / TOTAL_PASOS) * 100) + '%';
-    document.getElementById('btnVolver').textContent = n === 0 ? 'Salir a editar servicio' : 'Volver';
+    document.getElementById('btnVolver').textContent = n === 0 ? (ES_POSTULACION ? 'Volver a la vacante' : 'Salir a editar servicio') : 'Volver';
     document.getElementById('btnContinuar').textContent = n === TOTAL_PASOS - 1 ? 'Guardar mi CV' : 'Continuar';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function cambiarPaso(delta) {
     const siguiente = pasoActual + delta;
-    if (siguiente < 0) { window.location.href = '{{ ($servicio ?? null) ? "/usuario/misEmpleos/" . $servicio->id . "/editar" : "/usuario/postulantes" }}'; return; }
+    if (siguiente < 0) { window.location.href = VOLVER_URL; return; }
     if (siguiente >= TOTAL_PASOS) { guardarCv(); return; }
+    if (delta > 0) { revisarYAvanzar(siguiente); return; }
     irAPaso(siguiente);
   }
 
-  document.querySelectorAll('.paso-item').forEach(p => p.addEventListener('click', () => irAPaso(parseInt(p.dataset.paso))));
+  // Revisa con el moderador (texto y foto) antes de pasar al siguiente paso.
+  // Si algo no se permite, se queda en el paso y avisa qué corregir.
+  let fotoRevisada = null;
+  let revisando = false;
+  function revisarYAvanzar(destino) {
+    if (revisando) return;
+    const formData = new FormData(document.getElementById('formCv'));
+    const foto = document.getElementById('inputFoto').files[0] || null;
+    if (foto && foto === fotoRevisada) formData.delete('foto'); // ya aprobada, no se manda de nuevo
+    formData.append('solo_moderar', '1');
+    const btn = document.getElementById('btnContinuar');
+    const textoBtn = btn.textContent;
+    revisando = true; btn.disabled = true; btn.textContent = 'Revisando...';
+    const url = '{{ ($servicio ?? null) ? "/usuario/misEmpleos/" . $servicio->id . "/cv/crear" : "/usuario/postulantes/" . $postulacion->id . "/cv/crear" }}';
+    fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }, body: formData })
+      .then(res => res.json().catch(() => ({})).then(data => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok) {
+          const primero = data && data.errors ? Object.values(data.errors)[0][0] : null;
+          mostrarToast(primero || (data && data.error) || 'Revisa lo que escribiste antes de continuar.', true);
+          return;
+        }
+        if (foto) fotoRevisada = foto;
+        irAPaso(destino);
+      })
+      .catch(() => mostrarToast('Ocurrió un error de conexión.', true))
+      .finally(() => { revisando = false; btn.disabled = false; btn.textContent = pasoActual === TOTAL_PASOS - 1 ? 'Guardar mi CV' : 'Continuar'; });
+  }
+
+  document.querySelectorAll('.paso-item').forEach(p => p.addEventListener('click', () => { const n = parseInt(p.dataset.paso); if (n > pasoActual) revisarYAvanzar(n); else irAPaso(n); }));
 
   function toggleAdicional(el) {
     const cuerpo = document.getElementById('adicionalCuerpo');
@@ -437,13 +492,12 @@
     fd.append('archivo', file);
     fetch('{{ ($servicio ?? null) ? "/usuario/misEmpleos/" . $servicio->id . "/cv/subir-archivo" : "/usuario/postulantes/" . $postulacion->id . "/cv/subir-archivo" }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
       .then(res => res.json().then(data => ({ ok: res.ok, data })))
-      .then(({ ok }) => {
-        if (!ok) { mostrarToast('Ocurrió un error al subir el archivo.', true); return; }
+      .then(({ ok, data }) => {
+        if (!ok) { mostrarToast((data && data.error) || 'Ocurrió un error al subir el archivo.', true); document.getElementById('archivoNombre').textContent = ''; return; }
 
         const esPostulacion = !{{ ($servicio ?? null) ? 'true' : 'false' }};
         if (esPostulacion) {
-          document.body.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100vh; font-family:Nunito,sans-serif; text-align:center; padding:20px;"><div><i class="mdi mdi-check-decagram" style="font-size:48px; color:#c68f1f;"></i><p style="font-size:16px; color:#241a15; margin-top:12px;">¡CV subido! Ya puedes cerrar esta pestaña.</p></div></div>';
-          setTimeout(() => window.close(), 1200);
+          pantallaListo('¡CV subido!');
           return;
         }
 
@@ -535,7 +589,7 @@
         <div class="campo"><label>Nombre</label><input type="text" name="referencias[${i}][nombre]" placeholder="Ej. Rosa Hernández" value="${datos.nombre || ''}"></div>
         <div class="campo"><label>Relación</label><input type="text" name="referencias[${i}][relacion]" placeholder="Ej. Ex-jefa" value="${datos.relacion || ''}"></div>
       </div>
-      <div class="campo"><label>Teléfono</label><input type="text" name="referencias[${i}][telefono]" placeholder="Ej. 233 104 5521" value="${datos.telefono || ''}"></div>
+      <div class="campo"><label>Teléfono</label><input type="text" name="referencias[${i}][telefono]" placeholder="10 dígitos" inputmode="numeric" value="${datos.telefono || ''}"></div>
     `;
     document.getElementById('listaReferencias').appendChild(div);
   }
@@ -596,6 +650,63 @@
     return filas;
   }
 
+  // ===== Edad (se calcula con la fecha de nacimiento) y validación de tipo/tamaño al escribir =====
+  function edadDe(valor) {
+    if (!valor) return null;
+    const f = new Date(valor + 'T00:00:00');
+    if (isNaN(f)) return null;
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - f.getFullYear();
+    if (hoy.getMonth() < f.getMonth() || (hoy.getMonth() === f.getMonth() && hoy.getDate() < f.getDate())) edad--;
+    return edad;
+  }
+
+  (function () {
+    const fecha = document.getElementById('inputFechaNac');
+    const aISO = d => d.toISOString().slice(0, 10);
+    const hoy = new Date();
+    const max = new Date(hoy.getFullYear() - 15, hoy.getMonth(), hoy.getDate());
+    const min = new Date(hoy.getFullYear() - 90, hoy.getMonth(), hoy.getDate());
+    fecha.max = aISO(max); fecha.min = aISO(min);
+    function pintarEdad() {
+      const e = edadDe(fecha.value);
+      const caja = document.getElementById('edadTexto');
+      if (e === null) { caja.textContent = 'Se calcula con tu fecha de nacimiento'; caja.style.color = ''; return; }
+      if (e < 15 || e > 90) { caja.textContent = 'Revisa la fecha: la edad debe ser de 15 a 90 años'; caja.style.color = '#b12d25'; return; }
+      caja.textContent = e + ' años'; caja.style.color = '#241a15';
+    }
+    fecha.addEventListener('input', () => { pintarEdad(); actualizarPreview(); });
+    fecha.addEventListener('change', () => { pintarEdad(); actualizarPreview(); });
+    window.pintarEdadCv = pintarEdad;
+
+    // Qué se puede escribir en cada campo y cuánto (el servidor vuelve a validar lo mismo).
+    const LETRAS = /[^\p{L}\p{M}\s.'’-]/gu, NUM = /\D/g;
+    const reglas = [
+      [/^nombre$/, LETRAS, 30], [/^apellidos$/, LETRAS, 40], [/^titulo$/, null, 80], [/^telefono$/, NUM, 10], [/^correo$/, null, 100],
+      [/^direccion$/, null, 120], [/^nacionalidad$/, LETRAS, 40], [/^detalles_documento$/, null, 100],
+      [/^formacion\[\d+\]\[(titulo|institucion)\]$/, null, 100], [/^formacion\[\d+\]\[fecha\]$/, null, 30],
+      [/^experiencia\[\d+\]\[(puesto|lugar)\]$/, null, 100], [/^experiencia\[\d+\]\[fecha\]$/, null, 30], [/^experiencia\[\d+\]\[descripcion\]$/, null, 500],
+      [/^cursos\[\d+\]\[(nombre|institucion)\]$/, null, 100], [/^cursos\[\d+\]\[anio\]$/, NUM, 4],
+      [/^idiomas\[\d+\]\[nombre\]$/, LETRAS, 40],
+      [/^referencias\[\d+\]\[nombre\]$/, LETRAS, 80], [/^referencias\[\d+\]\[relacion\]$/, LETRAS, 60], [/^referencias\[\d+\]\[telefono\]$/, NUM, 10],
+    ];
+    function regla(nombre) { return reglas.find(r => r[0].test(nombre || '')); }
+    document.addEventListener('focusin', e => { const r = regla(e.target.name); if (r) e.target.maxLength = r[2]; });
+    document.addEventListener('input', e => {
+      const r = regla(e.target.name);
+      if (!r) return;
+      if (r[1]) {
+        let limpio = e.target.value.replace(r[1], '');
+        if (r[1] === LETRAS) {
+          // Sin la misma letra 3 veces seguidas y con palabras de hasta 15 letras.
+          limpio = limpio.replace(/(\p{L})\1{2,}/giu, '$1$1').replace(/[^\s.'’-]{16,}/gu, m => m.slice(0, 15));
+        }
+        if (limpio !== e.target.value) e.target.value = limpio;
+      }
+      if (e.target.value.length > r[2]) e.target.value = e.target.value.slice(0, r[2]);
+    });
+  })();
+
   function iniciales(nombre, apellidos) {
     const partes = `${nombre} ${apellidos}`.trim().split(' ').filter(Boolean);
     return partes.slice(0, 2).map(p => p[0].toUpperCase()).join('') || '?';
@@ -622,7 +733,7 @@
     let html = `
       <div class="preview-encabezado">
         <div class="preview-foto">${fotoHtml}</div>
-        <div class="preview-nombre">${nombre || 'Tu nombre'} ${apellidos}${titulo ? `<small>${titulo}</small>` : ''}${UBICACION_USUARIO ? `<small>📍 ${UBICACION_USUARIO}</small>` : ''}</div>
+        <div class="preview-nombre">${nombre || 'Tu nombre'} ${apellidos}${titulo ? `<small>${titulo}</small>` : ''}${edadDe(leerCampo('fecha_nacimiento')) !== null ? `<small>${edadDe(leerCampo('fecha_nacimiento'))} años</small>` : ''}${UBICACION_USUARIO ? `<small>📍 ${UBICACION_USUARIO}</small>` : ''}</div>
       </div>
       <div class="preview-contacto">
         ${leerCampo('telefono') ? `<span>${leerCampo('telefono')}</span>` : ''}
@@ -684,18 +795,17 @@
     btn.textContent = 'Guardando...';
     const esPostulacion = !{{ ($servicio ?? null) ? 'true' : 'false' }};
 
-    fetch('{{ ($servicio ?? null) ? "/usuario/misEmpleos/" . $servicio->id . "/cv/crear" : "/usuario/postulantes/" . $postulacion->id . "/cv/crear" }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: formData })
+    fetch('{{ ($servicio ?? null) ? "/usuario/misEmpleos/" . $servicio->id . "/cv/crear" : "/usuario/postulantes/" . $postulacion->id . "/cv/crear" }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }, body: formData })
       .then(res => res.json().then(data => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
-        if (!ok) { mostrarToast('Ocurrió un error al guardar. Revisa los campos.', true); btn.disabled = false; btn.textContent = 'Guardar mi CV'; return; }
+        if (!ok) { const primero = data && data.errors ? Object.values(data.errors)[0][0] : null; mostrarToast(primero || (data && data.error) || 'Ocurrió un error al guardar. Revisa los campos.', true); btn.disabled = false; btn.textContent = 'Guardar mi CV'; return; }
 
         // Si esto es el CV de una postulación (se creó/subió desde el modal
         // de "Postularme" en otra pestaña), avisamos que ya puede cerrar
         // esta -- la otra pestaña consulta la base de datos directo, no
         // necesita ningún aviso especial de esta.
         if (esPostulacion) {
-          document.body.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100vh; font-family:Nunito,sans-serif; text-align:center; padding:20px;"><div><i class="mdi mdi-check-decagram" style="font-size:48px; color:#c68f1f;"></i><p style="font-size:16px; color:#241a15; margin-top:12px;">¡CV guardado! Ya puedes cerrar esta pestaña.</p></div></div>';
-          setTimeout(() => window.close(), 1200);
+          pantallaListo('¡CV guardado!');
           return;
         }
 
@@ -715,6 +825,7 @@
     actualizarContador(document.querySelector('[name=resumen]'));
     document.querySelector('[name=direccion]').value = @json($curriculum->direccion ?? '');
     document.querySelector('[name=fecha_nacimiento]').value = @json($curriculum->fecha_nacimiento ? $curriculum->fecha_nacimiento->format('Y-m-d') : '');
+    pintarEdadCv();
     document.querySelector('[name=nacionalidad]').value = @json($curriculum->nacionalidad ?? '');
     if (@json($curriculum->estado_civil ?? '')) document.querySelector('[name=estado_civil]').value = @json($curriculum->estado_civil ?? '');
     if (@json($curriculum->tipo_documento ?? '')) document.querySelector('[name=tipo_documento]').value = @json($curriculum->tipo_documento ?? '');
