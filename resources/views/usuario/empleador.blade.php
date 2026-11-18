@@ -149,6 +149,19 @@
             #listJobs .job-buttons { width:100%; }
             #listJobs .job-buttons .btn-ver-postular { width:100%; padding:13px 16px !important; font-size:14px !important; }
         }
+
+        /* Banner "¿Tienes un negocio?": en computadora el de abajo (como siempre);
+           en celular el que va dentro del contenido, con el mismo ancho que todo lo demás. */
+        .emp-banner-movil { display: none; }
+        @media (max-width: 768px) {
+            .emp-banner-movil { display: block; margin: 18px 0 8px; }
+            /* Mismo ancho que "Buscar trabajo": el contenedor del panel no agrega márgenes ni relleno extra */
+            .employer-dashboard { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; margin-right: 0 !important;
+                padding-left: 0 !important; padding-right: 0 !important; }
+            .employer-dashboard .estadisticas-row, .employer-dashboard .acciones-rapidas, .employer-dashboard .products,
+            .employer-dashboard .products-list { margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !important; padding-right: 0 !important; width: 100%; max-width: 100%; }
+            .emp-banner-pc { display: none !important; }
+        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/anuncio-negocio.css') }}">
 </head>
@@ -451,6 +464,11 @@
                         </div>
                     </section>
 
+                    <!-- Banner en celular: dentro del contenido, así queda exactamente del mismo ancho -->
+                    <div class="emp-banner-movil">
+                        @include('partials.anuncio-negocio')
+                    </div>
+
                 </div>
 
             </div>
@@ -669,7 +687,7 @@
 
         </style>
 
-        <div class="container banner-sin-acercar my-4 d-none d-md-block">
+        <div class="container banner-sin-acercar my-4 emp-banner-pc">
             @include('partials.anuncio-negocio')
         </div>
 
